@@ -1,2 +1,2 @@
 # 3DARRE
-3D Acoustic Room Rendering Environment
+**3D** **A**coustic **R**oom **R**endering **E**nvironment
