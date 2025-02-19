@@ -30,8 +30,7 @@ Evan M. Matthews (evanmm3@illinois.edu), *lead programmer*
 3. Open the existing rendering GUI:
 
     ```
-    $ cd Software_3D_engine
-    $ python3 main.py
+    $ python3 panda3D/main.py
     ```
 
 If everything is setup correctly, you will see a spinning rendering of a potted plant 🪴
@@ -42,12 +41,7 @@ If everything is setup correctly, you will see a spinning rendering of a potted 
 
 - **AWSD** control camera movement on the XY-plane.
 
-- **Left and Right Arrows** control camera rotation on the XY-plane.
-
-- **Up and Down Arrows** control camera rotation on the YZ-plane.
-
-(*This makes more sense when you start playing around in the renderer.*)
-
+- **Up and Down Arrows** control camera zoom on the object.
 
 <!------------------------------------------------------------------->
 
@@ -56,7 +50,7 @@ If everything is setup correctly, you will see a spinning rendering of a potted 
 
 [Pyroomacoustics](https://github.com/LCAV/pyroomacoustics): Copyright (c)2014-2017, EPFL-LCAV
 
-[Software_3D_engine](https://github.com/StanislavPetrovV/Software_3D_engine): Copyright (c) 2020, StanislavPetrovV
+<!-- [Software_3D_engine](https://github.com/StanislavPetrovV/Software_3D_engine): Copyright (c) 2020, StanislavPetrovV -->
 
 [panda3d](https://github.com/panda3d/panda3d): Copyright (c) 2008, Carnegie Mellon University.
 

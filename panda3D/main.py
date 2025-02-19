@@ -1,6 +1,7 @@
 from direct.showbase.ShowBase import ShowBase, loadPrcFileData
-from panda3d.core import Vec3
+from panda3d.core import Vec3, TextureStage
 import math
+import simplepbr
 
 # Enable the assimp loader so that .obj files can be loaded.
 loadPrcFileData("", "load-file-type p3assimp")
@@ -9,17 +10,28 @@ class MyApp(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
 
+        simplepbr.init()
+
         # Disable default mouse camera control.
         self.disableMouse()
 
         # Load the .obj model. Change the file path as needed.
-        self.model = self.loader.loadModel("resources/eb_house_plant_01.obj")
+        self.model = self.loader.loadModel("resources/cottage_obj.obj")
         self.model.reparentTo(self.render)
         self.model.setPos(0, 50, 0)
-        
-        # Load and apply texture.
-        # texture = self.loader.loadTexture("resources/eb_house_plant_01.mtl")
-        # self.model.setTexture(texture, 1)
+        self.model.setScale(0.1)
+        self.model.setHpr(0, 90, 0)
+
+        # Set up a texture stage to apply the texture to the model.
+
+        diffuse=self.loader.loadTexture("resources/cottage_diffuse.png")
+        normal=self.loader.loadTexture("resources/cottage_normal.png")
+        self.model.setTexture(diffuse, 1)
+
+        normal_stage = TextureStage("normal_stage")
+        normal_stage.setMode(TextureStage.MNormal)
+        self.model.setTexture(normal_stage, normal, 1)
+
         
         # Set up orbit parameters so the camera rotates around the model.
         # The orbit target is the model's position.
@@ -77,12 +89,12 @@ class MyApp(ShowBase):
         if self.keyMap["s"]:
             self.cameraDistance += self.zoomSpeed * dt
 
-        # Use A/D to pan the target point sideways.
-        # This moves the center point around which the camera orbits.
-        if self.keyMap["a"]:
-            self.target -= self.camera.getQuat(self.render).getRight() * self.panSpeed * dt
-        if self.keyMap["d"]:
-            self.target += self.camera.getQuat(self.render).getRight() * self.panSpeed * dt
+        # # Use A/D to pan the target point sideways.
+        # # This moves the center point around which the camera orbits.
+        # if self.keyMap["a"]:
+        #     self.target -= self.camera.getQuat(self.render).getRight() * self.panSpeed * dt
+        # if self.keyMap["d"]:
+        #     self.target += self.camera.getQuat(self.render).getRight() * self.panSpeed * dt
 
         # Update the camera's position based on the new parameters.
         self.updateCameraPosition()
