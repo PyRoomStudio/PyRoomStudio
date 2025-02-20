@@ -37,6 +37,10 @@ class MyApp(ShowBase):
             except:
                 print("TGA texture issue")
                 sys.exit()
+        else:
+            print(path.exists(f"{filename[:-8]}_diffuse.png"))
+            print(f"{filename[:-8]}_diffuse.png")
+            sys.exit()
 
         # set textures
         self.model.setTexture(diffuse, 1)

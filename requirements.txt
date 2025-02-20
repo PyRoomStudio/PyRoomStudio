@@ -41,7 +41,6 @@ pyparsing==3.2.1
 pyroomacoustics==0.8.3
 python-dateutil==2.9.0.post0
 pyzmq==26.2.1
-samplerate==0.2.1
 scipy==1.15.1
 six==1.17.0
 sounddevice==0.5.1
