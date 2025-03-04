@@ -189,16 +189,3 @@ class Render(ShowBase):
         self.camera.setPos(newPos)
         self.camera.lookAt(self.target)
         return newPos
-
-
-"""
-To be removed later, as the application would ideally be run from a parent file
-handling pyroomacoustics and panda3D together.
-"""
-# if __name__ == "__main__":
-
-#     # Default loaded model to the cottage, but can be changed via command line.
-#     model_name: str = 'resources/cottage_obj.obj' if (len(sys.argv) < 2) else sys.argv[1]
-
-#     app = Render(filename=model_name)
-#     app.run()

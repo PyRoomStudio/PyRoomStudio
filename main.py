@@ -2,6 +2,7 @@
 from render import Render
 from acoustic import Acoustic
 import sys
+import time
 
 class App():
     def __init__(self, model_name):
@@ -13,6 +14,7 @@ class App():
     def run(self):
         while True:
             self.render.taskMgr.step()
+            time.sleep(0.025) # this is crude, remove later
             #self.acoustic.simulate()
             if self.render.win.isClosed():
                 sys.exit()
