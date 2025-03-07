@@ -16,7 +16,7 @@ class App():
         while True:
             # Main loop
             self.render.taskMgr.step()
-            time.sleep(0.025) # crude 30FPS cap, switch to Panda3D's clock later
+            #time.sleep(0.025) # crude 30FPS cap, switch to Panda3D's clock later
             self.acoustic.simulate()
 
             if self.render.win.isClosed():

@@ -5,7 +5,7 @@ rendering meshes relative to the intended acoustics simulations.
 
 
 from direct.showbase.ShowBase import ShowBase, loadPrcFileData
-from panda3d.core import Vec3, TextureStage, Point3, TextNode
+from panda3d.core import Vec4, TextureStage, Point3, TextNode, AmbientLight, DirectionalLight
 import math, sys, simplepbr, os.path as path
 from direct.gui.OnscreenText import OnscreenText
 
@@ -13,6 +13,22 @@ from direct.gui.OnscreenText import OnscreenText
 loadPrcFileData("", "load-file-type p3assimp")
 
 class Render(ShowBase):
+
+    def load_base(self, name) -> None:
+        """Loads a file from a default described in Panda3D
+
+        Args:
+            name (_type_): name of the object, i.e. teapot, cube, etc.
+        """
+        try:
+            self.model = self.loader.loadModel(name)
+            self.model.reparentTo(self.render)
+            self.model.setPos(0, 0, -0.5)
+            self.model.setScale(0.5)
+            # self.model.setHpr(0, 90, 0)
+        except:
+            print('Unable to load model. Please make sure that the model type exists.')
+
 
     def load_obj(self, filename) -> None:
         """Load a model from a .obj file.
@@ -55,24 +71,6 @@ class Render(ShowBase):
         normal_stage.setMode(TextureStage.MNormal)
         self.model.setTexture(normal_stage, normal, 1)
 
-    
-    def load_stl(self, filename) -> None:
-        """Load a model from a .stl file.
-
-        Args:
-            filename (str): file name
-        """
-        return NotImplemented
-    
-
-    def load_fbx(self, filename) -> None:
-        """Load a model from a .fbx file.
-
-        Args:
-            filename (str): file name
-        """
-        return NotImplemented
-
 
     def model_loader(self, filename) -> None:
         """Match the file extension and load the model accordingly.
@@ -81,13 +79,11 @@ class Render(ShowBase):
             filename (str): name of the model file.
         """
         print(filename[-4:]) 
-        match filename[-4:]:
-            case '.obj':
+        match filename[-4:] == '.obj':
+            case True:
                 self.load_obj(filename)
-            case '.stl':
-                self.load_stl(filename)
-            case '.fbx':
-                self.load_fbx(filename)
+            case False:
+                self.load_base(filename)
             case _:
                 print('Invalid file format. Only .obj files are supported.')
                 sys.exit()
@@ -101,18 +97,24 @@ class Render(ShowBase):
         self.setFrameRateMeter(True)
         self.frameRateMeter.setUpdateInterval(0.1)
 
+        # Set background color
+        self.setBackgroundColor(0.1, 0.1, 0.2)
+
         # Load the model.
         self.model_loader(filename)
+
+        # Set up lighting
+        self.setup_lighting()
         
         # Disable the default camera control system
         self.disableMouse()
         
         # Set up camera parameters
-        self.camera_distance = 5.0       # Distance from camera to object
+        self.camera_distance = 10.0       # Distance from camera to object
         self.min_distance = 3.0          # Minimum zoom distance
         self.max_distance = 15.0         # Maximum zoom distance
-        self.camera_heading = 0.0        # Horizontal rotation angle
-        self.camera_pitch = 0.0          # Vertical rotation angle
+        self.camera_heading = 35.0        # Horizontal rotation angle
+        self.camera_pitch = 35.0          # Vertical rotation angle
         self.min_pitch = 0.0           # Limit looking down
         self.max_pitch = 85.0            # Limit looking up
         
@@ -153,6 +155,28 @@ class Render(ShowBase):
         # Initialize camera position.
         self.update_camera_position()
 
+    def setup_lighting(self):
+        """Set up basic scene lighting"""
+        # Add ambient light
+        ambient_light = AmbientLight("ambient")
+        ambient_light.setColor(Vec4(0.3, 0.3, 0.3, 1))
+        ambient_np = self.render.attachNewNode(ambient_light)
+        self.render.setLight(ambient_np)
+        
+        # Add directional light (key light)
+        main_light = DirectionalLight("main_light")
+        main_light.setColor(Vec4(0.8, 0.8, 0.8, 1))
+        main_light_np = self.render.attachNewNode(main_light)
+        main_light_np.setHpr(45, -30, 0)
+        self.render.setLight(main_light_np)
+        
+        # Add another directional light for fill
+        fill_light = DirectionalLight("fill_light")
+        fill_light.setColor(Vec4(0.4, 0.4, 0.5, 1))
+        fill_light_np = self.render.attachNewNode(fill_light)
+        fill_light_np.setHpr(-45, 20, 0)
+        self.render.setLight(fill_light_np)
+
     def on_mouse_down(self):
         """Handler for mouse button down event"""
         if self.mouseWatcherNode.hasMouse():
@@ -189,6 +213,8 @@ class Render(ShowBase):
             # Update camera angles (scale the movement for better control)
             self.camera_heading -= dx * 100.0
             self.camera_pitch += dy * 100.0
+
+            self.camera_heading = self.camera_heading % 360.0
             
             # Clamp the pitch to prevent flipping
             self.camera_pitch = min(max(self.camera_pitch, self.min_pitch), self.max_pitch)
