@@ -59,6 +59,7 @@ class Render(ShowBase):
             print('Unable to load model. Please make sure that the model file exists.')
 
         # Set up a texture stage to apply the texture to the model.
+        texture: bool = True
         if path.exists(f"{filename[:-8]}_diffuse.png"):
             try:
                 diffuse=self.loader.loadTexture(f"{filename[:-8]}_diffuse.png")
@@ -74,15 +75,15 @@ class Render(ShowBase):
                 print("TGA texture issue")
                 sys.exit()
         else:
-            print(path.exists(f"{filename[:-8]}_diffuse.png"))
-            print(f"{filename[:-8]}_diffuse.png")
-            sys.exit()
+            texture = False
+            print('No texture found. Moving on...')
 
         # set textures
-        self.model.setTexture(diffuse, 1)
-        normal_stage = TextureStage("normal_stage")
-        normal_stage.setMode(TextureStage.MNormal)
-        self.model.setTexture(normal_stage, normal, 1)
+        if texture:
+            self.model.setTexture(diffuse, 1)
+            normal_stage = TextureStage("normal_stage")
+            normal_stage.setMode(TextureStage.MNormal)
+            self.model.setTexture(normal_stage, normal, 1)
 
 
     def model_loader(self, filename) -> None:
@@ -149,11 +150,11 @@ class Render(ShowBase):
         self.disableMouse()
         
         # Set up camera parameters
-        self.camera_distance = 10.0       # Distance from camera to object
-        self.min_distance = 0.0          # Minimum zoom distance
-        self.max_distance = 15.0         # Maximum zoom distance
-        self.camera_heading = 35.0        # Horizontal rotation angle
-        self.camera_pitch = 35.0          # Vertical rotation angle
+        self.camera_distance = CAMERA_DIST       # Distance from camera to object
+        self.min_distance = MIN_DIST          # Minimum zoom distance
+        self.max_distance = MAX_DIST         # Maximum zoom distance
+        self.camera_heading = CAMERA_HEADING        # Horizontal rotation angle
+        self.camera_pitch = CAMERA_PITCH          # Vertical rotation angle
         self.min_pitch = 0.0           # Limit looking down
         self.max_pitch = 85.0            # Limit looking up
         
