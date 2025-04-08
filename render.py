@@ -10,6 +10,7 @@ import math, sys, simplepbr, os.path as path
 from direct.gui.OnscreenText import OnscreenText
 import numpy as np
 from stl import mesh
+from acoustic import Acoustic
 
 # Enable the assimp loader so that .obj files can be loaded.
 loadPrcFileData("", "load-file-type p3assimp")
@@ -78,8 +79,8 @@ class Render(ShowBase):
 
             # Center and scale the model to fit the scene
             self.model.setScale(1/self.ratio)
-            temp = self.center/self.ratio
-            self.model.setPos(-temp[0], temp[1]*2, -temp[2])
+            newcenter = self.center/self.ratio
+            self.model.setPos(-newcenter[0], newcenter[1]*1.75, -newcenter[2])
             self.model.setHpr(0, 90, 0)
             # self.model.setPos(0, 0, -0.5)
             # self.model.setScale(0.5)
@@ -132,7 +133,7 @@ class Render(ShowBase):
         return task.cont
 
 
-    def __init__(self, filename) -> None:
+    def __init__(self, filename, acoustic: Acoustic) -> None:
         ShowBase.__init__(self)
 
         simplepbr.init()
@@ -155,6 +156,9 @@ class Render(ShowBase):
         #self.create_floor()
         self.axes_indicator()
         self.model_loader(filename)
+
+        # Give access to the acoustic class
+        self.acoustic = acoustic
 
         # Set up lighting
         self.setup_lighting()
@@ -186,6 +190,8 @@ class Render(ShowBase):
         self.accept("escape", sys.exit)
         self.accept("u", self.obj_info)
         self.accept("f", self.flip_model)
+        # self accept "p" keybind to send to the acoustic class
+        self.accept("p", self.acoustic.simulate)
 
         # Add the update task.
         self.taskMgr.add(self.update_camera, "UpdateCameraTask")
@@ -215,7 +221,7 @@ class Render(ShowBase):
     def flip_model(self) -> None:
         "Flips the model by some factor of 90 degrees"
         hpr = self.model.getHpr()
-        print(hpr, hpr[0], hpr[1], hpr[2], type(hpr))
+        #print(hpr, hpr[0], hpr[1], hpr[2], type(hpr))
         self.model.setHpr(0, hpr[1] + 90, hpr[2])
 
 
