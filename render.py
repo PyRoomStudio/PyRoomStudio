@@ -8,19 +8,61 @@ from direct.showbase.ShowBase import ShowBase, loadPrcFileData
 from panda3d.core import *
 import math, sys, simplepbr, os.path as path
 from direct.gui.OnscreenText import OnscreenText
+import numpy as np
+from stl import mesh
 
 # Enable the assimp loader so that .obj files can be loaded.
 loadPrcFileData("", "load-file-type p3assimp")
 
-CAMERA_DIST: float = 10.0      # Distance from camera to object
-MIN_DIST: float = 0.0          # Minimum zoom distance
-MAX_DIST: float = 15.0         # Maximum zoom distance
+CAMERA_DIST: float = 5.0      # Distance from camera to object
+MIN_DIST: float = 1.0          # Minimum zoom distance
+MAX_DIST: float = 5.0         # Maximum zoom distance
 CAMERA_HEADING: float = 35.0   # Horizontal rotation angle
 CAMERA_PITCH: float = 35.0     # Vertical rotation angle
 MIN_PITCH: float = 0.0         # Limit looking down
 MAX_PITCH: float = 85.0        # Limit looking up
 
 class Render(ShowBase):
+
+    def compute_volumetric_properties(self, filename: str) -> tuple[np.ndarray, float]:
+        """
+        Computes the volumetric center (centroid) of a closed triangular mesh.
+        This assumes that the mesh is watertight.
+        
+        Parameters:
+        stl_mesh (mesh.Mesh): The mesh object created using numpy-stl.
+        
+        Returns:
+        np.ndarray: The 3D coordinates of the volumetric center.
+        """
+        stl_mesh = mesh.Mesh.from_file(filename)
+
+        total_volume = 0.0
+        centroid_sum = np.zeros(3)
+
+        # Iterate over each triangle in the mesh.
+        for triangle in stl_mesh.vectors:
+            # Unpack triangle vertices
+            v0, v1, v2 = triangle
+
+            # Compute the signed volume of the tetrahedron defined by (0, v0, v1, v2)
+            # Using scalar triple product formula: V = dot(v0, cross(v1, v2)) / 6.
+            tetra_volume = np.dot(v0, np.cross(v1, v2)) / 6.0
+
+            # The centroid of the tetrahedron (including the origin 0,0,0) is given by:
+            # (0 + v0 + v1 + v2) / 4 which simplifies to (v0 + v1 + v2) / 4.
+            tetra_centroid = (v0 + v1 + v2) / 4.0
+
+            centroid_sum += tetra_centroid * tetra_volume
+            total_volume += tetra_volume
+
+        # A quick sanity check: if total_volume is nearly zero, your mesh might not be closed.
+        if np.isclose(total_volume, 0):
+            raise ValueError("Calculated volume is zero; ensure the STL mesh is closed and valid.")
+
+        # The overall centroid is the weighted average of the tetrahedron centroids.
+        volumetric_center = centroid_sum / total_volume
+        return volumetric_center, total_volume
 
     def load_base(self, name) -> None:
         """Loads a file from a default described in Panda3D
@@ -33,57 +75,20 @@ class Render(ShowBase):
         try:
             self.model = self.loader.loadModel(name)
             self.model.reparentTo(self.render)
-            self.model.setPos(0, 0, -0.5)
-            self.model.setScale(0.5)
+
+            # Center and scale the model to fit the scene
+            self.model.setScale(1/self.ratio)
+            temp = self.center/self.ratio
+            self.model.setPos(-temp[0], temp[1]*2, -temp[2])
+            self.model.setHpr(0, 90, 0)
+            # self.model.setPos(0, 0, -0.5)
+            # self.model.setScale(0.5)
             # self.model.setHpr(0, 90, 0)
-            self.model.setTransparency(TransparencyAttrib.MAlpha)
+            # self.model.setTransparency(TransparencyAttrib.MAlpha)
             # self.model.setAlphaScale(0.8)
 
         except:
             print('Unable to load model. Please make sure that the model type exists.')
-
-    def load_obj(self, filename) -> None:
-        """Load a model from a .obj file.
-
-        Args:
-            filename (str): file name
-        """
-        try:
-            self.model = self.loader.loadModel(filename)
-            self.model.reparentTo(self.render)
-            # self.model.setPos(0, 50, 0)
-            self.model.setScale(0.1)
-            self.model.setHpr(0, 90, 0)
-            
-        except:
-            print('Unable to load model. Please make sure that the model file exists.')
-
-        # Set up a texture stage to apply the texture to the model.
-        texture: bool = True
-        if path.exists(f"{filename[:-8]}_diffuse.png"):
-            try:
-                diffuse=self.loader.loadTexture(f"{filename[:-8]}_diffuse.png")
-                normal=self.loader.loadTexture(f"{filename[:-8]}_normal.png")
-            except:
-                print("PNG texture issue")
-                sys.exit()
-        elif path.exists(f"{filename[:-4]}_c.tga"):
-            try:
-                diffuse=self.loader.loadTexture(f"{filename[:-4]}_c.tga")
-                normal = self.loader.loadTexture(f"{filename[:-4]}_n.tga")
-            except:
-                print("TGA texture issue")
-                sys.exit()
-        else:
-            texture = False
-            print('No texture found. Moving on...')
-
-        # set textures
-        if texture:
-            self.model.setTexture(diffuse, 1)
-            normal_stage = TextureStage("normal_stage")
-            normal_stage.setMode(TextureStage.MNormal)
-            self.model.setTexture(normal_stage, normal, 1)
 
 
     def model_loader(self, filename) -> None:
@@ -92,14 +97,13 @@ class Render(ShowBase):
         Args:
             filename (str): name of the model file.
         """
-        match filename[-4:] == '.obj':
+        match filename[-4:] in ['.obj', '.stl']:
             case True:
-                self.load_obj(filename)
-            case False:
                 self.load_base(filename)
             case _:
                 print('Invalid file format. Only .obj files are supported.')
                 sys.exit()
+
 
     def create_floor(self):
         """Create a floor grid beneath the teapot"""
@@ -122,6 +126,7 @@ class Render(ShowBase):
         self.axis.setScale(0.025)
         self.axis.reparentTo(corner)
 
+
     def axisTask(self, task):
         self.axis.setHpr(self.camera.getHpr())
         return task.cont
@@ -138,8 +143,16 @@ class Render(ShowBase):
         # Set background color
         self.setBackgroundColor(0.1, 0.1, 0.2)
 
+        # Compute volume for model scaling
+        self.center, self.volume = self.compute_volumetric_properties(filename)
+        self.ratio = (self.volume/ 1000 / 7500)
+        print(f"Center: {self.center}\n Volume: {self.volume}")
+        print(f"New Center: {self.center/self.ratio}\n New Volume: {self.volume/self.ratio}")
+        print('Ratio: ', self.volume / 1000 / 7500)
+    
+
         # Load the model and floor
-        # self.create_floor()
+        #self.create_floor()
         self.axes_indicator()
         self.model_loader(filename)
 
@@ -172,6 +185,7 @@ class Render(ShowBase):
         self.accept("wheel_down", self.on_wheel_down)
         self.accept("escape", sys.exit)
         self.accept("u", self.obj_info)
+        self.accept("f", self.flip_model)
 
         # Add the update task.
         self.taskMgr.add(self.update_camera, "UpdateCameraTask")
@@ -196,6 +210,13 @@ class Render(ShowBase):
         
         # Initialize camera position.
         self.update_camera_position()
+
+
+    def flip_model(self) -> None:
+        "Flips the model by some factor of 90 degrees"
+        hpr = self.model.getHpr()
+        print(hpr, hpr[0], hpr[1], hpr[2], type(hpr))
+        self.model.setHpr(0, hpr[1] + 90, hpr[2])
 
 
     # see https://github.com/LCAV/pyroomacoustics/issues/392
@@ -234,6 +255,7 @@ class Render(ShowBase):
 
         return self.model.getName()
 
+
     def setup_lighting(self):
         """Set up basic scene lighting"""
         # Add ambient light
@@ -256,6 +278,7 @@ class Render(ShowBase):
         fill_light_np.setHpr(-45, 20, 0)
         self.render.setLight(fill_light_np)
 
+
     def on_mouse_down(self):
         """Handler for mouse button down event"""
         if self.mouseWatcherNode.hasMouse():
@@ -264,20 +287,24 @@ class Render(ShowBase):
             self.last_mouse_y = self.mouseWatcherNode.getMouseY()
             self.mouse_button_1 = True
     
+
     def on_mouse_up(self):
         """Handler for mouse button up event"""
         self.mouse_button_1 = False
     
+
     def on_wheel_up(self):
         """Handler for mouse wheel up (zoom in)"""
         self.camera_distance = max(self.min_distance, self.camera_distance - 0.5)
         self.update_camera_position()
     
+
     def on_wheel_down(self):
         """Handler for mouse wheel down (zoom out)"""
         self.camera_distance = min(self.max_distance, self.camera_distance + 0.5)
         self.update_camera_position()
     
+
     def update_camera(self, task):
         """Task to update camera based on mouse input"""
         if self.mouse_button_1 and self.mouseWatcherNode.hasMouse():
@@ -309,11 +336,13 @@ class Render(ShowBase):
         
         return task.cont
     
+
     def update_stats_display(self):
         """Update the onscreen text with current camera stats"""
         self.heading_text.setText(f"Heading: {self.camera_heading:.1f}°")
         self.pitch_text.setText(f"Pitch: {self.camera_pitch:.1f}°")
     
+
     def update_camera_position(self):
         """Update camera position based on current angles and distance"""
         # Convert angles to radians

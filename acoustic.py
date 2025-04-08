@@ -5,7 +5,6 @@ necessary for simulating sound in a given environment.
 
 import pyroomacoustics as pra
 import numpy as np
-import pymesh
 
 class Acoustic(pra.room.Room):
 
@@ -51,12 +50,12 @@ class Acoustic(pra.room.Room):
         plt.show()
 
 
-    def __init__(self, filename: str):
+    def __init__(self, filename: str, walls: list = None):
         pra.room.Room.__init__(self)
         self.sample_rate = 44100
         self.speed_of_sound = 343.0
 
-        self.build_obj(filename)
+        # self.build_obj(filename)
     
     def simulate(self):
         return 0

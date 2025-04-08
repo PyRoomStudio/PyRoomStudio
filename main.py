@@ -9,7 +9,7 @@ class App():
         self.name = 'App'
         self.model = None
         self.render = Render(filename=model_name)
-        self.acoustic = Acoustic(filename=model_name)
+       #self.acoustic = Acoustic(filename=model_name)
 
     def run(self):
 
@@ -17,7 +17,7 @@ class App():
             # Main loop
             self.render.taskMgr.step()
             #time.sleep(0.025) # crude 30FPS cap, switch to Panda3D's clock later
-            self.acoustic.simulate()
+            #self.acoustic.simulate()
             # if keyboard.is_pressed('q'):
             #     sys.exit()
             if self.render.win.isClosed():
