@@ -134,8 +134,8 @@ if __name__ == "__main__":
 
     wavfile.write(filename='sounds/output.wav', rate=fs, data=room.mic_array.signals[0,:])
 
-    # plt.plot(np.abs(signal), label='Original')
-    # plt.plot(np.abs(room.mic_array.signals[0, :]), label='Simulated')
-    # plt.title('Signal comparison')
-    # plt.legend()
-    # plt.show()
+    plt.plot(np.abs(signal), label='Original')
+    plt.plot(np.abs(room.mic_array.signals[0, :]), label='Simulated')
+    plt.title('Signal comparison')
+    plt.legend()
+    plt.show()
