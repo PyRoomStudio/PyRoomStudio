@@ -114,25 +114,25 @@ if __name__ == "__main__":
     print('Room volume: ', room.volume)
 
     # compute the rir
-    # print('Image source model')
-    # room.image_source_model()
-    # print('Ray tracing')
-    # room.ray_tracing()
-    # print('Compute RIR')
-    # room.compute_rir()
-    # print('Plot RIR')
-    # room.plot_rir()
+    print('Image source model')
+    room.image_source_model()
+    print('Ray tracing')
+    room.ray_tracing()
+    print('Compute RIR')
+    room.compute_rir()
+    print('Plot RIR')
+    room.plot_rir()
 
-    # print('simulate room')
-    # room.simulate()
+    print('simulate room')
+    room.simulate()
 
     # show the room
     room.plot(img_order=1)
     plt.show()
 
-    # print(f'Shapes:\n Original:{signal.shape}\n Simulation:{room.mic_array.signals.shape}')
+    print(f'Shapes:\n Original:{signal.shape}\n Simulation:{room.mic_array.signals.shape}')
 
-    # wavfile.write(filename='sounds/output.wav', rate=fs, data=room.mic_array.signals[0,:])
+    wavfile.write(filename='sounds/output.wav', rate=fs, data=room.mic_array.signals[0,:])
 
     # plt.plot(np.abs(signal), label='Original')
     # plt.plot(np.abs(room.mic_array.signals[0, :]), label='Simulated')

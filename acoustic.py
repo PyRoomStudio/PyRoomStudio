@@ -58,7 +58,17 @@ class Acoustic(pra.room.Room):
 
 
     def simulate(self):
+        try:
+            from stl import mesh
+        except ImportError as err:
+            print(
+                "The numpy-stl package is required for this example. "
+                "Install it with `pip install numpy-stl`"
+            )
+            raise err
+        
         from stl import mesh
+
         material = pra.Material(energy_absorption=0.2, scattering=0.1)
 
         # with numpy-stl
@@ -102,8 +112,16 @@ class Acoustic(pra.room.Room):
         room.ray_tracing()
         print('Compute RIR')
         room.compute_rir()
-        
-        print('saving file...')
-        print(f'Shapes:\n Original:{signal.shape}\n Simulation:{room.mic_array.signals}')
-        #wavfile.write(filename='sounds/output.wav', rate=fs, data=room.mic_array.signals[0,:])
-        print('file saved')
+        print('Plot RIR')
+        room.plot_rir()
+
+        print('simulate room')
+        room.simulate()
+
+        # show the room
+        # room.plot(img_order=1)
+        # plt.show()
+
+        print(f'Shapes:\n Original:{signal.shape}\n Simulation:{room.mic_array.signals.shape}')
+
+        wavfile.write(filename='sounds/output.wav', rate=fs, data=room.mic_array.signals[0,:])
