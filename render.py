@@ -165,6 +165,9 @@ class Render(ShowBase):
         
         # Disable the default camera control system
         self.disableMouse()
+
+        # normals rendering boolean
+        self.normals: bool = False
         
         # Set up camera parameters
         self.camera_distance = CAMERA_DIST       # Distance from camera to object
@@ -192,6 +195,7 @@ class Render(ShowBase):
         self.accept("f", self.flip_model)
         # self accept "p" keybind to send to the acoustic class
         self.accept("p", self.acoustic.simulate)
+        # self.accept("r", self.show_planenormals)
 
         # Add the update task.
         self.taskMgr.add(self.update_camera, "UpdateCameraTask")
@@ -216,6 +220,42 @@ class Render(ShowBase):
         
         # Initialize camera position.
         self.update_camera_position()
+
+
+    # def show_planenormals(self) -> None:
+    #     # If the normals are already shown, remove them
+    #     if self.normals:
+    #         for arrow in self.render.findAllMatches('**/camera'):
+    #             arrow.removeNode()
+    #         self.normals = False
+    #         return
+    #     # Draw arrows to show the normals of each plane
+    #     else:
+    #         for plane in self.model.findAllMatches('**/+GeomNode'):
+    #             geom_node = plane.node()
+    #             for i in range(geom_node.getNumGeoms()):
+    #                 geom = geom_node.getGeom(i)
+    #                 vdata = geom.getVertexData()
+    #                 normal_reader = GeomVertexReader(vdata, 'normal')
+    #                 vertex_reader = GeomVertexReader(vdata, 'vertex')
+
+    #                 for j in range(vdata.getNumRows()):
+    #                     normal_reader.setRow(j)
+    #                     vertex_reader.setRow(j)
+    #                     normal = normal_reader.getData3()
+    #                     vertex = vertex_reader.getData3()
+
+    #                     # Create an arrow to represent the normal
+    #                     arrow = self.loader.loadModel("camera")
+    #                     arrow.setScale(0.1)
+    #                     arrow.setPos(vertex[0], vertex[1], vertex[2])
+    #                     arrow.lookAt(vertex[0] + normal[0], vertex[1] + normal[1], vertex[2] + normal[2])
+    #                     arrow.reparentTo(self.render)
+    #                     arrow.setColor(1, 0, 0, 1)  # Set color to red
+    #                     arrow.setTransparency(TransparencyAttrib.MAlpha)
+    #                     arrow.setAlphaScale(0.5)  # Set transparency
+    #                     arrow.setLightOff()  # Disable lighting for the arrow  
+    #       self.normals = True
 
 
     def flip_model(self) -> None:
