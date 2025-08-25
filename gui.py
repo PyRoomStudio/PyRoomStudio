@@ -161,7 +161,7 @@ class GUI:
                                     text='ASSETS',
                                     manager=self.ui_manager,
                                     container=self.assets_panel)
-
+                                              
     def run(self):
         while self.running:
             time_delta = self.clock.tick(60) / 1000.0
@@ -171,9 +171,6 @@ class GUI:
                     self.running = False
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == self.file_menu_button:
-                        # Placeholder for file menu functionality
-                        print("File menu clicked")
                     if event.ui_element == self.sound_button:
                         self.sound_library_content.show()
                         self.material_library_content.hide()
@@ -182,8 +179,11 @@ class GUI:
                         self.material_library_content.show()
                 
                 # Pass mouse events to the renderer only if the mouse is over the 3D view
-                if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION, pygame.MOUSEWHEEL):
+                if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
                     if self.view_3d_rect.collidepoint(event.pos):
+                        self.renderer.check_keybinds(event)
+                elif event.type == pygame.MOUSEWHEEL:
+                    if self.view_3d_rect.collidepoint(pygame.mouse.get_pos()):
                         self.renderer.check_keybinds(event)
                 else:
                     self.renderer.check_keybinds(event)
