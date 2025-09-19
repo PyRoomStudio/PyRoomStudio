@@ -6,6 +6,7 @@ import os
 from render3 import Render3
 from pygame_gui.elements import (UIButton, UIPanel, UITextBox, UILabel, 
                                  UIHorizontalSlider, UITextEntryLine, UIImage)
+from OpenGL.GL import glClear, glClearColor, GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT
 
 class GUI:
     def __init__(self, width=1280, height=720):
@@ -16,9 +17,6 @@ class GUI:
         pygame.display.set_caption('3D ARRE')
 
         self.ui_manager = pygame_gui.UIManager((width, height))
-        
-        self.background = pygame.Surface((width, height))
-        self.background.fill(self.ui_manager.get_theme().get_colour('dark_bg'))
         
         self.setup_ui()
 
@@ -64,6 +62,11 @@ class GUI:
                                               text='Place Listener',
                                               manager=self.ui_manager,
                                               container=self.toolbar_panel)
+
+        self.test_button = UIButton(relative_rect=pygame.Rect(510, 10, 100, 40),
+                                    text='Test Button',
+                                    manager=self.ui_manager,
+                                    container=self.toolbar_panel)
 
         # Left library panel
         self.library_panel = UIPanel(relative_rect=pygame.Rect(0, 60, 200, self.height - 60),
@@ -178,6 +181,9 @@ class GUI:
                         self.sound_library_content.hide()
                         self.material_library_content.show()
                 
+                    if event.ui_element == self.test_button:
+                        print('Test button clicked!')
+
                 # Pass mouse events to the renderer only if the mouse is over the 3D view
                 if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION):
                     if self.view_3d_rect.collidepoint(event.pos):
@@ -192,7 +198,11 @@ class GUI:
 
             self.ui_manager.update(time_delta)
             
-            self.window_surface.blit(self.background, (0, 0))
+            # Clear the screen with a background colour.
+            # Using glClear instead of blit for OpenGL contexts.
+            bg_color = self.ui_manager.get_theme().get_colour('dark_bg')
+            glClearColor(bg_color.r / 255.0, bg_color.g / 255.0, bg_color.b / 255.0, 1.0)
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
             # Draw the 3D scene
             self.renderer.draw_scene()

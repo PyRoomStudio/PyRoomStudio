@@ -443,6 +443,9 @@ class Render3:
                 print("Reset all surfaces to default")
 
     def draw_scene(self):
+        # Save current OpenGL state to avoid interfering with pygame_gui rendering
+        glPushAttrib(GL_VIEWPORT_BIT | GL_SCISSOR_BIT)
+        
         # Set the viewport to the correct sub-region of the window
         glEnable(GL_SCISSOR_TEST)
         glScissor(self.view_rect.x, self.window_height - self.view_rect.y - self.view_rect.height, self.view_rect.width, self.view_rect.height)
@@ -453,6 +456,9 @@ class Render3:
         self.draw_model()
         
         glDisable(GL_SCISSOR_TEST)
+        
+        # Restore OpenGL state
+        glPopAttrib()
         
     def run(self):
         # The main loop is now controlled by the GUI class

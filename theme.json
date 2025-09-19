@@ -1,0 +1,50 @@
+{
+    "defaults": {
+        "colours": {
+            "dark_bg": "#E0E6EF",
+            "normal_bg": "#FFFFFF",
+            "hovered_bg": "#F0F0F0",
+            "disabled_bg": "#D0D0D0",
+            "selected_bg": "#D0D0D0",
+            "active_bg": "#C0C0C0",
+            "normal_text": "#000000",
+            "hovered_text": "#000000",
+            "selected_text": "#000000",
+            "disabled_text": "#808080",
+            "link_text": "#0000EE",
+            "link_hover": "#2020FF",
+            "link_selected": "#551A8B",
+            "text_shadow": "#777777",
+            "normal_border": "#DDDDDD",
+            "hovered_border": "#B0B0B0",
+            "disabled_border": "#808080",
+            "selected_border": "#808080",
+            "active_border": "#808080"
+        }
+    },
+    "UIPanel": {
+        "colours": {
+            "normal_bg": "#FFFFFF"
+        },
+        "misc": {
+            "border_colour": "#B0B0B0",
+            "shadow_width": 2
+        }
+    },
+    "#left_panel": {
+        "misc": {
+            "border_colour": "#0082C8",
+            "border_width": 2
+        }
+    },
+    "UIButton": {
+        "colours": {
+            "normal_bg": "#F0F0F0",
+            "hovered_bg": "#E0E0E0",
+            "normal_border": "#C0C0C0"
+        },
+        "misc": {
+            "border_width": 1
+        }
+    }
+}
