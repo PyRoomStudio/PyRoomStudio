@@ -4,6 +4,9 @@ import pygame.gfxdraw
 import math
 from typing import Tuple, List, Callable, Optional, Any
 from enum import Enum
+from OpenGL.GL import *
+from OpenGL.GLU import *
+import os
 
 # Initialize pygame
 pygame.init()
@@ -781,10 +784,10 @@ class LibraryPanel(GUIComponent):
         """Create sample galleries with placeholder data"""
         # Sound galleries
         voices_items = [
-            ("resources/icons/adult_male.png", "Adult Male"),
-            ("resources/icons/adult_female.png", "Adult Female"),
-            ("resources/icons/adult_male.png", "Young boy"),
-            ("resources/icons/adult_female.png", "Young girl"),
+            ("assets/adult_male.png", "Adult Male"),
+            ("assets/adult_female.png", "Adult Female"),
+            ("assets/adult_male.png", "Young boy"),
+            ("assets/adult_female.png", "Young girl"),
         ]
         
         voices_gallery = ImageGallery(self.rect.x + 5, self.content_y + 5, 
@@ -793,18 +796,18 @@ class LibraryPanel(GUIComponent):
         
         # Material galleries  
         hvac_items = [
-            ("resources/icons/adult_male.png", "Item 1"),
-            ("resources/icons/adult_female.png", "Item 2"),
+            ("assets/adult_male.png", "Item 1"),
+            ("assets/adult_female.png", "Item 2"),
         ]
         
         electronics_items = [
-            ("resources/icons/adult_male.png", "Item 3"),
-            ("resources/icons/adult_female.png", "Item 4"),
+            ("assets/adult_male.png", "Item 3"),
+            ("assets/adult_female.png", "Item 4"),
         ]
         
         custom_items = [
-            ("resources/icons/adult_male.png", "Item 5"),
-            ("resources/icons/adult_female.png", "Item 6"),
+            ("assets/adult_male.png", "Item 5"),
+            ("assets/adult_female.png", "Item 6"),
         ]
         
         # Create galleries at initial positions (will be repositioned dynamically)
@@ -1273,8 +1276,8 @@ class AssetsPanel(GUIComponent):
         """Create asset galleries"""
         # Sample room items
         room_items = [
-            ("resources/icons/adult_male.png", "Room 1"),
-            ("resources/icons/adult_female.png", "Room 2"),
+            ("assets/adult_male.png", "Room 1"),
+            ("assets/adult_female.png", "Room 2"),
         ]
         
         self.room_gallery = ImageGallery(self.rect.x + 5, self.content_y + 5, 
@@ -1446,14 +1449,48 @@ class MainApplication:
     def __init__(self, width: int = 1200, height: int = 800):
         self.width = width
         self.height = height
-        self.screen = pygame.display.set_mode((width, height))
+        
+        # Set up OpenGL context
+        pygame.display.gl_set_attribute(pygame.GL_DOUBLEBUFFER, 1)
+        pygame.display.gl_set_attribute(pygame.GL_DEPTH_SIZE, 24)
+        
+        self.screen = pygame.display.set_mode((width, height), pygame.OPENGL | pygame.DOUBLEBUF)
         pygame.display.set_caption("3D Architecture GUI")
+        
+        # Basic OpenGL setup - will be configured properly by Render3 class
+        # Don't set up OpenGL state here to avoid conflicts
         
         self.clock = pygame.time.Clock()
         self.running = True
         
+        # Initialize 3D renderer
+        self.renderer = None
+        self.viewport_rect = None
+        self.init_3d_renderer()
+        
         # Initialize GUI components
         self.init_gui()
+    
+    def init_3d_renderer(self):
+        """Initialize the 3D renderer"""
+        # Define viewport area (where 3D content will be rendered)
+        self.viewport_rect = pygame.Rect(200, 90, self.width - 400, self.height - 220)
+        
+        # Load a single specific STL file
+        stl_file = "resources/cube_hollow.stl"
+        
+        if os.path.exists(stl_file):
+            try:
+                # Import Render3 class
+                from render3 import Render3
+                self.renderer = Render3(stl_file, self.viewport_rect, self.height)
+                print(f"Successfully loaded 3D model: {stl_file}")
+            except Exception as e:
+                print(f"Error loading 3D renderer: {e}")
+                self.renderer = None
+        else:
+            print(f"STL file not found: {stl_file}")
+            self.renderer = None
     
     def init_gui(self):
         """Initialize all GUI components"""
@@ -1604,10 +1641,23 @@ class MainApplication:
             if event.type == pygame.QUIT:
                 self.running = False
             
-            # Let GUI components handle events
-            for component in self.components:
-                if component.handle_event(event):
-                    break  # Stop processing if event was consumed
+            # Check if event is in 3D viewport area
+            viewport_event = False
+            if hasattr(event, 'pos') and self.viewport_rect and self.renderer:
+                if self.viewport_rect.collidepoint(event.pos):
+                    viewport_event = True
+                    # Route event to 3D renderer
+                    self.renderer.check_keybinds(event)
+            
+            # Let GUI components handle events (if not consumed by 3D viewport)
+            if not viewport_event:
+                for component in self.components:
+                    if component.handle_event(event):
+                        break  # Stop processing if event was consumed
+            
+            # Handle keyboard events for 3D renderer (not position-dependent)
+            if event.type == pygame.KEYDOWN and self.renderer:
+                self.renderer.check_keybinds(event)
     
     def update(self, dt: float):
         """Update all components"""
@@ -1615,66 +1665,128 @@ class MainApplication:
             component.update(dt)
     
     def draw(self):
-        """Draw everything"""
-        self.screen.fill(Colors.WHITE)
+        """Draw everything with mixed OpenGL 3D and 2D GUI"""
+        # Clear the screen
+        glClearColor(1.0, 1.0, 1.0, 1.0)  # White background
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
-        # Draw main 3D viewport area (adjusted for menu bar)
-        viewport_rect = pygame.Rect(200, 90, self.width - 400, self.height - 220)
-        pygame.draw.rect(self.screen, Colors.LIGHT_GRAY, viewport_rect)
-        pygame.draw.rect(self.screen, Colors.DARK_GRAY, viewport_rect, 2)
+        # Render 3D scene first (if renderer is available)
+        if self.renderer:
+            self.renderer.draw_scene()
+        else:
+            # Draw placeholder viewport area
+            self.draw_placeholder_viewport()
         
-        # Draw a simple 3D-looking cube in the center
-        center_x = viewport_rect.centerx
-        center_y = viewport_rect.centery
-        cube_size = 100
+        # Switch to 2D rendering for GUI
+        self.setup_2d_rendering()
         
-        # Back face
-        back_points = [
-            (center_x - cube_size//2 + 20, center_y - cube_size//2 + 20),
-            (center_x + cube_size//2 + 20, center_y - cube_size//2 + 20),
-            (center_x + cube_size//2 + 20, center_y + cube_size//2 + 20),
-            (center_x - cube_size//2 + 20, center_y + cube_size//2 + 20)
-        ]
+        # Create a pygame surface for 2D GUI rendering
+        gui_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        gui_surface.fill((0, 0, 0, 0))  # Transparent background
         
-        # Front face
-        front_points = [
-            (center_x - cube_size//2, center_y - cube_size//2),
-            (center_x + cube_size//2, center_y - cube_size//2),
-            (center_x + cube_size//2, center_y + cube_size//2),
-            (center_x - cube_size//2, center_y + cube_size//2)
-        ]
-        
-        # Draw faces
-        pygame.draw.polygon(self.screen, Colors.GRAY, back_points)
-        pygame.draw.polygon(self.screen, Colors.WHITE, front_points)
-        
-        # Draw connecting lines
-        for i in range(4):
-            pygame.draw.line(self.screen, Colors.DARK_GRAY, front_points[i], back_points[i], 2)
-        
-        # Draw outlines
-        pygame.draw.polygon(self.screen, Colors.DARK_GRAY, back_points, 2)
-        pygame.draw.polygon(self.screen, Colors.DARK_GRAY, front_points, 2)
-        
-        # Draw all GUI components first (without any dropdowns)
+        # Draw all GUI components on the surface (without any dropdowns)
         for component in self.components:
             if isinstance(component, MenuBar):
-                # Draw menu bar but not its dropdowns yet
-                component.draw_base(self.screen)
+                component.draw_base(gui_surface)
             elif isinstance(component, PropertyPanel):
-                # Draw property panel but not its dropdowns yet
-                component.draw_base(self.screen)
+                component.draw_base(gui_surface)
             else:
-                component.draw(self.screen)
+                component.draw(gui_surface)
         
         # Draw all dropdowns last (on top of everything)
         for component in self.components:
             if isinstance(component, MenuBar):
-                component.draw_dropdowns(self.screen)
+                component.draw_dropdowns(gui_surface)
             elif isinstance(component, PropertyPanel):
-                component.draw_dropdowns(self.screen)
+                component.draw_dropdowns(gui_surface)
+        
+        # Blit the GUI surface to OpenGL
+        self.blit_surface_to_opengl(gui_surface)
         
         pygame.display.flip()
+    
+    def draw_placeholder_viewport(self):
+        """Draw a placeholder when 3D renderer is not available"""
+        # Set up 2D rendering temporarily
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+        glOrtho(0, self.width, self.height, 0, -1, 1)
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glLoadIdentity()
+        
+        # Draw viewport background
+        glColor3f(0.8, 0.8, 0.8)  # Light gray
+        glBegin(GL_QUADS)
+        glVertex2f(self.viewport_rect.x, self.viewport_rect.y)
+        glVertex2f(self.viewport_rect.right, self.viewport_rect.y)
+        glVertex2f(self.viewport_rect.right, self.viewport_rect.bottom)
+        glVertex2f(self.viewport_rect.x, self.viewport_rect.bottom)
+        glEnd()
+        
+        # Draw border
+        glColor3f(0.3, 0.3, 0.3)  # Dark gray
+        glLineWidth(2)
+        glBegin(GL_LINE_LOOP)
+        glVertex2f(self.viewport_rect.x, self.viewport_rect.y)
+        glVertex2f(self.viewport_rect.right, self.viewport_rect.y)
+        glVertex2f(self.viewport_rect.right, self.viewport_rect.bottom)
+        glVertex2f(self.viewport_rect.x, self.viewport_rect.bottom)
+        glEnd()
+        
+        # Restore matrices
+        glPopMatrix()
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glMatrixMode(GL_MODELVIEW)
+    
+    def setup_2d_rendering(self):
+        """Set up OpenGL for 2D GUI rendering"""
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+        glOrtho(0, self.width, self.height, 0, -1, 1)
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glLoadIdentity()
+        glDisable(GL_DEPTH_TEST)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    
+    def blit_surface_to_opengl(self, surface):
+        """Convert pygame surface to OpenGL texture and render it"""
+        # Convert surface to string data
+        w, h = surface.get_size()
+        raw = pygame.image.tostring(surface, 'RGBA')
+        
+        # Create and bind texture
+        texture_id = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, texture_id)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, raw)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        
+        # Enable texturing and render
+        glEnable(GL_TEXTURE_2D)
+        glColor4f(1, 1, 1, 1)
+        glBegin(GL_QUADS)
+        glTexCoord2f(0, 0); glVertex2f(0, 0)
+        glTexCoord2f(1, 0); glVertex2f(w, 0)
+        glTexCoord2f(1, 1); glVertex2f(w, h)
+        glTexCoord2f(0, 1); glVertex2f(0, h)
+        glEnd()
+        glDisable(GL_TEXTURE_2D)
+        
+        # Clean up
+        glDeleteTextures([texture_id])
+        
+        # Restore matrices
+        glPopMatrix()
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glMatrixMode(GL_MODELVIEW)
+        glEnable(GL_DEPTH_TEST)
     
     def run(self):
         """Main game loop"""
