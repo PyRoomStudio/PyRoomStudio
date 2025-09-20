@@ -640,6 +640,61 @@ class ImageItem(GUIComponent):
         text_rect = text_surface.get_rect(center=(self.rect.centerx, self.rect.bottom - 10))
         surface.blit(text_surface, text_rect)
 
+class SurfaceItem(GUIComponent):
+    """A surface item showing the color/texture of a 3D model surface"""
+    
+    def __init__(self, x: int, y: int, width: int, height: int, 
+                 surface_name: str, surface_color: Tuple[int, int, int], 
+                 surface_index: int, callback: Optional[Callable] = None):
+        super().__init__(x, y, width, height)
+        self.surface_name = surface_name
+        self.surface_color = surface_color
+        self.surface_index = surface_index
+        self.callback = callback
+        self.font = pygame.font.Font(None, 12)
+        
+        # Colors
+        self.border_color = Colors.DARK_GRAY
+        self.hover_color = Colors.LIGHT_BLUE
+        self.text_color = Colors.BLACK
+    
+    def update_color(self, new_color: Tuple[int, int, int]):
+        """Update the surface color"""
+        self.surface_color = new_color
+    
+    def on_click(self):
+        if self.callback:
+            self.callback(self.surface_index, self.surface_name)
+    
+    def draw(self, surface: pygame.Surface):
+        if not self.visible:
+            return
+        
+        # Background with hover effect
+        if self.hover:
+            pygame.draw.rect(surface, self.hover_color, self.rect)
+        
+        # Draw border
+        pygame.draw.rect(surface, self.border_color, self.rect, 1)
+        
+        # Draw color square (most of the item)
+        color_rect = pygame.Rect(self.rect.x + 2, self.rect.y + 2, 
+                               self.rect.width - 4, self.rect.height - 22)
+        
+        # Convert float color (0-1) to int color (0-255) if needed
+        if all(isinstance(c, float) for c in self.surface_color):
+            display_color = tuple(int(c * 255) for c in self.surface_color)
+        else:
+            display_color = self.surface_color
+        
+        pygame.draw.rect(surface, display_color, color_rect)
+        pygame.draw.rect(surface, self.border_color, color_rect, 1)
+        
+        # Draw surface name
+        text_surface = self.font.render(self.surface_name, True, self.text_color)
+        text_rect = text_surface.get_rect(center=(self.rect.centerx, self.rect.bottom - 10))
+        surface.blit(text_surface, text_rect)
+
 class ImageGallery(GUIComponent):
     """A collapsible gallery of image items"""
     
@@ -746,6 +801,246 @@ class ImageGallery(GUIComponent):
                 item.draw(surface)
             
             surface.set_clip(clip_rect)
+
+class SurfaceGallery(GUIComponent):
+    """A collapsible gallery of surface items with scrolling support"""
+    
+    def __init__(self, x: int, y: int, width: int, title: str, 
+                 surfaces: List[Tuple[str, Tuple[int, int, int], int]], 
+                 max_height: int = 300,
+                 callback: Optional[Callable[[int, str], None]] = None):
+        self.title_height = 25
+        self.item_width = 75
+        self.item_height = 90
+        self.items_per_row = max(1, (width - 20) // self.item_width)  # Account for scrollbar
+        self.rows = (len(surfaces) + self.items_per_row - 1) // self.items_per_row
+        
+        # Calculate content dimensions
+        full_content_height = self.rows * self.item_height + 10
+        self.max_content_height = max_height - self.title_height
+        self.needs_scrolling = full_content_height > self.max_content_height
+        
+        # Set actual height
+        if self.needs_scrolling:
+            actual_height = self.title_height + self.max_content_height
+        else:
+            actual_height = self.title_height + full_content_height
+            
+        super().__init__(x, y, width, actual_height)
+        
+        self.title = title
+        self.collapsed = False
+        self.callback = callback
+        self.font = pygame.font.Font(None, 14)
+        self.surface_items: List[SurfaceItem] = []
+        
+        # Scrolling properties
+        self.scroll_y = 0
+        self.max_scroll = max(0, full_content_height - self.max_content_height)
+        self.scrollbar_width = 15
+        self.scrollbar_dragging = False
+        self.scrollbar_drag_offset = 0
+        
+        # Colors
+        self.bg_color = Colors.WHITE
+        self.border_color = Colors.DARK_GRAY
+        self.title_bg_color = Colors.LIGHT_GRAY
+        self.title_text_color = Colors.BLACK
+        self.scrollbar_color = Colors.LIGHT_GRAY
+        self.scrollbar_handle_color = Colors.DARK_GRAY
+        
+        # Create surface items
+        self._create_surface_items(surfaces)
+        
+        # Update rect for collapsed state
+        self.expanded_height = self.rect.height
+        self.collapsed_height = self.title_height
+    
+    def _create_surface_items(self, surfaces: List[Tuple[str, Tuple[int, int, int], int]]):
+        """Create surface items from list of (name, color, index) tuples"""
+        self.surface_items.clear()
+        
+        content_width = self.rect.width - (self.scrollbar_width if self.needs_scrolling else 0) - 10
+        items_per_row = max(1, content_width // self.item_width)
+        
+        for i, (surface_name, surface_color, surface_index) in enumerate(surfaces):
+            row = i // items_per_row
+            col = i % items_per_row
+            
+            item_x = self.rect.x + 5 + col * self.item_width
+            item_y = self.rect.y + self.title_height + 5 + row * self.item_height
+            
+            item = SurfaceItem(item_x, item_y, self.item_width - 5, self.item_height - 5,
+                             surface_name, surface_color, surface_index, self.callback)
+            self.surface_items.append(item)
+    
+    def update_surface_color(self, surface_index: int, new_color: Tuple[int, int, int]):
+        """Update the color of a specific surface"""
+        for item in self.surface_items:
+            if item.surface_index == surface_index:
+                item.update_color(new_color)
+                break
+    
+    def handle_event(self, event: pygame.event.Event) -> bool:
+        if not self.visible or not self.enabled:
+            return False
+        
+        # Handle title click for collapse/expand
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            title_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.width, self.title_height)
+            if title_rect.collidepoint(event.pos):
+                self.collapsed = not self.collapsed
+                self.rect.height = self.collapsed_height if self.collapsed else self.expanded_height
+                return True
+            
+            # Handle scrollbar dragging
+            if not self.collapsed and self.needs_scrolling:
+                scrollbar_rect = self._get_scrollbar_rect()
+                if scrollbar_rect.collidepoint(event.pos):
+                    self.scrollbar_dragging = True
+                    self.scrollbar_drag_offset = event.pos[1] - self._get_scrollbar_handle_rect().y
+                    return True
+        
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            self.scrollbar_dragging = False
+        
+        elif event.type == pygame.MOUSEMOTION and self.scrollbar_dragging:
+            # Update scroll position based on mouse drag
+            scrollbar_rect = self._get_scrollbar_rect()
+            handle_height = self._get_scrollbar_handle_height()
+            
+            new_handle_y = event.pos[1] - self.scrollbar_drag_offset
+            min_y = scrollbar_rect.y
+            max_y = scrollbar_rect.bottom - handle_height
+            
+            handle_y = max(min_y, min(max_y, new_handle_y))
+            scroll_ratio = (handle_y - min_y) / (max_y - min_y) if max_y > min_y else 0
+            self.scroll_y = int(scroll_ratio * self.max_scroll)
+            return True
+        
+        elif event.type == pygame.MOUSEWHEEL and not self.collapsed:
+            # Handle mouse wheel scrolling
+            content_rect = pygame.Rect(self.rect.x, self.rect.y + self.title_height,
+                                     self.rect.width, self.rect.height - self.title_height)
+            mouse_pos = pygame.mouse.get_pos()
+            if content_rect.collidepoint(mouse_pos):
+                scroll_amount = -event.y * 30  # Scroll speed
+                self.scroll_y = max(0, min(self.max_scroll, self.scroll_y + scroll_amount))
+                return True
+        
+        # Handle surface item events if not collapsed
+        if not self.collapsed:
+            # Adjust item positions for scrolling
+            for item in self.surface_items:
+                # Temporarily adjust item position for scrolling
+                original_y = item.rect.y
+                item.rect.y = original_y - self.scroll_y
+                
+                if item.handle_event(event):
+                    item.rect.y = original_y  # Restore position
+                    return True
+                
+                item.rect.y = original_y  # Restore position
+        
+        return False
+    
+    def _get_scrollbar_rect(self):
+        """Get the scrollbar track rectangle"""
+        return pygame.Rect(
+            self.rect.right - self.scrollbar_width,
+            self.rect.y + self.title_height,
+            self.scrollbar_width,
+            self.rect.height - self.title_height
+        )
+    
+    def _get_scrollbar_handle_height(self):
+        """Calculate scrollbar handle height based on content ratio"""
+        if self.max_scroll == 0:
+            return self.rect.height - self.title_height
+        
+        content_ratio = self.max_content_height / (self.max_content_height + self.max_scroll)
+        return max(20, int((self.rect.height - self.title_height) * content_ratio))
+    
+    def _get_scrollbar_handle_rect(self):
+        """Get the scrollbar handle rectangle"""
+        scrollbar_rect = self._get_scrollbar_rect()
+        handle_height = self._get_scrollbar_handle_height()
+        
+        if self.max_scroll == 0:
+            handle_y = scrollbar_rect.y
+        else:
+            scroll_ratio = self.scroll_y / self.max_scroll
+            handle_y = scrollbar_rect.y + int(scroll_ratio * (scrollbar_rect.height - handle_height))
+        
+        return pygame.Rect(
+            scrollbar_rect.x,
+            handle_y,
+            self.scrollbar_width,
+            handle_height
+        )
+    
+    def update(self, dt: float):
+        if not self.collapsed:
+            for item in self.surface_items:
+                item.update(dt)
+    
+    def draw(self, surface: pygame.Surface):
+        if not self.visible:
+            return
+        
+        # Draw background
+        pygame.draw.rect(surface, self.bg_color, self.rect)
+        pygame.draw.rect(surface, self.border_color, self.rect, 1)
+        
+        # Draw title bar
+        title_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.width, self.title_height)
+        pygame.draw.rect(surface, self.title_bg_color, title_rect)
+        pygame.draw.rect(surface, self.border_color, title_rect, 1)
+        
+        # Draw title text with expand/collapse indicator
+        indicator = "+" if self.collapsed else "-"
+        title_text = f"{indicator} {self.title}"
+        text_surface = self.font.render(title_text, True, self.title_text_color)
+        text_rect = text_surface.get_rect(midleft=(title_rect.x + 5, title_rect.centery))
+        surface.blit(text_surface, text_rect)
+        
+        # Draw items if not collapsed
+        if not self.collapsed:
+            # Create clipping rect for content area (excluding scrollbar)
+            content_width = self.rect.width - (self.scrollbar_width if self.needs_scrolling else 0) - 2
+            content_rect = pygame.Rect(self.rect.x + 1, self.rect.y + self.title_height + 1,
+                                     content_width, self.rect.height - self.title_height - 2)
+            clip_rect = surface.get_clip()
+            surface.set_clip(content_rect)
+            
+            # Draw items with scroll offset
+            for item in self.surface_items:
+                # Temporarily adjust item position for scrolling
+                original_y = item.rect.y
+                item.rect.y = original_y - self.scroll_y
+                
+                # Only draw if item is visible in the clipped area
+                if (item.rect.bottom > content_rect.y and 
+                    item.rect.y < content_rect.bottom):
+                    item.draw(surface)
+                
+                # Restore original position
+                item.rect.y = original_y
+            
+            surface.set_clip(clip_rect)
+            
+            # Draw scrollbar if needed
+            if self.needs_scrolling:
+                scrollbar_rect = self._get_scrollbar_rect()
+                handle_rect = self._get_scrollbar_handle_rect()
+                
+                # Draw scrollbar track
+                pygame.draw.rect(surface, self.scrollbar_color, scrollbar_rect)
+                pygame.draw.rect(surface, self.border_color, scrollbar_rect, 1)
+                
+                # Draw scrollbar handle
+                pygame.draw.rect(surface, self.scrollbar_handle_color, handle_rect)
+                pygame.draw.rect(surface, self.border_color, handle_rect, 1)
 
 class LibraryPanel(GUIComponent):
     """A specialized panel for the library with SOUND/MATERIAL tabs"""
@@ -1273,17 +1568,61 @@ class AssetsPanel(GUIComponent):
         self._create_galleries()
     
     def _create_galleries(self):
-        """Create asset galleries"""
-        # Sample room items
-        room_items = [
-            ("assets/adult_male.png", "Room 1"),
-            ("assets/adult_female.png", "Room 2"),
-        ]
+        """Create asset galleries - starts empty"""
+        self.galleries = []
+    
+    def add_stl_surfaces(self, stl_filename: str, surfaces: List[Tuple[str, Tuple[int, int, int], int]]):
+        """Add surfaces from an STL file to the assets panel"""
+        print(f"AssetsPanel.add_stl_surfaces called with {len(surfaces)} surfaces")
         
-        self.room_gallery = ImageGallery(self.rect.x + 5, self.content_y + 5, 
-                                       self.rect.width - 10, "Room 1", room_items, self.on_asset_select)
+        # Clear existing galleries
+        self.galleries.clear()
+        print("Cleared existing galleries")
         
-        self.galleries = [self.room_gallery]
+        # Extract just the filename without path and extension
+        import os
+        stl_name = os.path.splitext(os.path.basename(stl_filename))[0]
+        print(f"STL name: {stl_name}")
+        
+        if not surfaces:
+            print("WARNING: No surfaces provided!")
+            return
+        
+        # Create a surface gallery for this STL file
+        print(f"Creating SurfaceGallery at ({self.rect.x + 5}, {self.content_y + 5}) with width {self.rect.width - 10}")
+        
+        try:
+            surface_gallery = SurfaceGallery(
+                self.rect.x + 5, self.content_y + 5, 
+                self.rect.width - 10, stl_name, 
+                surfaces, 250, self.on_surface_select
+            )
+            
+            self.galleries = [surface_gallery]
+            print(f"Created gallery with {len(surface_gallery.surface_items)} surface items")
+            
+            self._reposition_galleries()
+            print("Repositioned galleries")
+            
+        except Exception as e:
+            print(f"Error creating SurfaceGallery: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def update_surface_color(self, surface_index: int, new_color: Tuple[int, int, int]):
+        """Update the color of a surface in the assets panel"""
+        for gallery in self.galleries:
+            if isinstance(gallery, SurfaceGallery):
+                gallery.update_surface_color(surface_index, new_color)
+    
+    def clear_surfaces(self):
+        """Clear all surface galleries"""
+        self.galleries.clear()
+    
+    def on_surface_select(self, surface_index: int, surface_name: str):
+        """Handle surface selection from the assets panel"""
+        print(f"Selected surface {surface_index}: {surface_name}")
+        # You could add functionality here to highlight the surface in the 3D view
     
     def on_asset_select(self, asset):
         print(f"Asset selected: {asset}")
@@ -1311,9 +1650,16 @@ class AssetsPanel(GUIComponent):
             old_y = gallery.rect.y
             gallery.rect.y = current_y
             
-            # Update image item positions
+            # Update item positions (handle both SurfaceGallery and ImageGallery)
             y_offset = current_y - old_y
-            for item in gallery.image_items:
+            if hasattr(gallery, 'surface_items'):
+                items = gallery.surface_items
+            elif hasattr(gallery, 'image_items'):
+                items = gallery.image_items
+            else:
+                items = []
+            
+            for item in items:
                 item.rect.y += y_offset
             
             current_y += gallery.rect.height + 5
@@ -1472,25 +1818,145 @@ class MainApplication:
         self.init_gui()
     
     def init_3d_renderer(self):
-        """Initialize the 3D renderer"""
+        """Initialize the 3D renderer - starts empty"""
         # Define viewport area (where 3D content will be rendered)
         self.viewport_rect = pygame.Rect(200, 90, self.width - 400, self.height - 220)
         
-        # Load a single specific STL file
-        stl_file = "resources/cube_hollow.stl"
-        
-        if os.path.exists(stl_file):
-            try:
-                # Import Render3 class
-                from render3 import Render3
-                self.renderer = Render3(stl_file, self.viewport_rect, self.height)
-                print(f"Successfully loaded 3D model: {stl_file}")
-            except Exception as e:
-                print(f"Error loading 3D renderer: {e}")
-                self.renderer = None
-        else:
-            print(f"STL file not found: {stl_file}")
+        # Start with no 3D model loaded
+        self.renderer = None
+        print("3D viewport initialized - no model loaded")
+    
+    def load_stl_file(self, filepath: str):
+        """Load an STL file into the 3D renderer"""
+        try:
+            # Clear any existing renderer and assets first
+            print("Clearing previous renderer and assets...")
+            
+            # Clear OpenGL state if we have an existing renderer
+            if self.renderer:
+                print("Previous renderer found, clearing OpenGL state...")
+                try:
+                    from OpenGL.GL import glClear, GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, glLoadIdentity, glMatrixMode, GL_MODELVIEW, GL_PROJECTION
+                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+                    
+                    # Reset matrices
+                    glMatrixMode(GL_PROJECTION)
+                    glLoadIdentity()
+                    glMatrixMode(GL_MODELVIEW)
+                    glLoadIdentity()
+                except Exception as gl_error:
+                    print(f"OpenGL cleanup error (ignoring): {gl_error}")
+            else:
+                print("No previous renderer found")
+            
             self.renderer = None
+            
+            # Clear assets panel
+            for component in self.components:
+                if isinstance(component, AssetsPanel):
+                    component.clear_surfaces()
+                    break
+            
+            # Import Render3 class and create new renderer
+            from render3 import Render3
+            print(f"Loading new 3D model: {filepath}")
+            print(f"Viewport rect: {self.viewport_rect}")
+            print(f"Window height: {self.height}")
+            
+            self.renderer = Render3(filepath, self.viewport_rect, self.height)
+            print(f"Successfully created renderer for: {filepath}")
+            print(f"Renderer model has {len(self.renderer.model.vectors)} triangles")
+            
+            # Extract surface information and populate assets panel
+            self.populate_assets_from_renderer(filepath)
+            
+            return True
+        except Exception as e:
+            print(f"Error loading 3D model {filepath}: {e}")
+            import traceback
+            traceback.print_exc()
+            self.renderer = None
+            return False
+    
+    def populate_assets_from_renderer(self, filepath: str):
+        """Extract surface information from the renderer and populate the assets panel"""
+        if not self.renderer:
+            print("No renderer available for asset population")
+            return
+        
+        try:
+            # Debug: Check if renderer has surface information
+            print(f"Renderer has {len(self.renderer.surface_colors)} surface colors")
+            
+            # Get surface information from the renderer
+            surfaces = []
+            
+            for i, surface_color in enumerate(self.renderer.surface_colors):
+                print(f"Surface {i}: {surface_color}")
+                
+                # Convert from float (0-1) to int (0-255) for display
+                if all(isinstance(c, float) for c in surface_color):
+                    display_color = tuple(int(c * 255) for c in surface_color[:3])  # Take only RGB, ignore alpha if present
+                else:
+                    display_color = tuple(surface_color[:3])  # Take only RGB
+                
+                surface_name = f"Surface {i+1}"
+                surfaces.append((surface_name, display_color, i))
+                print(f"Added surface: {surface_name} with color {display_color}")
+            
+            print(f"Total surfaces to add: {len(surfaces)}")
+            
+            # Find the assets panel and populate it
+            assets_panel = None
+            for component in self.components:
+                if isinstance(component, AssetsPanel):
+                    assets_panel = component
+                    break
+            
+            if assets_panel:
+                print("Found assets panel, adding surfaces...")
+                assets_panel.add_stl_surfaces(filepath, surfaces)
+                print("Surfaces added to assets panel")
+            else:
+                print("ERROR: Assets panel not found!")
+                    
+        except Exception as e:
+            print(f"Error populating assets panel: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def open_stl_file_dialog(self):
+        """Open a file dialog to select an STL file"""
+        try:
+            import tkinter as tk
+            from tkinter import filedialog
+            
+            # Create a temporary root window (hidden)
+            root = tk.Tk()
+            root.withdraw()  # Hide the root window
+            
+            # Open file dialog
+            filepath = filedialog.askopenfilename(
+                title="Open STL File",
+                filetypes=[
+                    ("STL files", "*.stl"),
+                    ("All files", "*.*")
+                ]
+            )
+            
+            # Clean up the temporary window
+            root.destroy()
+            
+            if filepath:
+                return self.load_stl_file(filepath)
+            return False
+            
+        except ImportError:
+            print("tkinter not available - cannot open file dialog")
+            return False
+        except Exception as e:
+            print(f"Error opening file dialog: {e}")
+            return False
     
     def init_gui(self):
         """Initialize all GUI components"""
@@ -1571,9 +2037,9 @@ class MainApplication:
         property_panel = PropertyPanel(right_panel_x, panel_y, 190, property_height)
         self.components.append(property_panel)
         
-        # Assets panel (bottom half) - positioned much lower
+        # Assets panel (bottom half) - expanded downwards
         assets_y = panel_y + property_height + 20  # More spacing between panels
-        assets_height = 180  # Remaining space (reduced to fit properly)
+        assets_height = 280  # Expanded height for more surface visibility
         assets_panel = AssetsPanel(right_panel_x, assets_y, 190, assets_height)
         self.components.append(assets_panel)
         
@@ -1600,8 +2066,25 @@ class MainApplication:
     def on_audio_settings(self): print("Audio Settings")
     def on_keyboard_shortcuts(self): print("Keyboard Shortcuts")
     
-    def on_new_project(self): print("New Project")
-    def on_open_project(self): print("Open Project")
+    def on_new_project(self): 
+        print("New Project")
+        # Clear the current 3D model
+        self.renderer = None
+        
+        # Clear the assets panel
+        for component in self.components:
+            if isinstance(component, AssetsPanel):
+                component.clear_surfaces()
+                break
+        
+        print("Cleared 3D model and assets")
+    
+    def on_open_project(self): 
+        print("Opening STL file...")
+        if self.open_stl_file_dialog():
+            print("STL file loaded successfully")
+        else:
+            print("No file selected or failed to load")
     def on_save_project(self): print("Save Project")
     def on_save_as(self): print("Save As...")
     def on_import(self): print("Import...")
@@ -1641,13 +2124,21 @@ class MainApplication:
             if event.type == pygame.QUIT:
                 self.running = False
             
-            # Check if event is in 3D viewport area
+            # Check if event is in 3D viewport area or is a mouse wheel event
             viewport_event = False
-            if hasattr(event, 'pos') and self.viewport_rect and self.renderer:
-                if self.viewport_rect.collidepoint(event.pos):
-                    viewport_event = True
-                    # Route event to 3D renderer
-                    self.renderer.check_keybinds(event)
+            if self.viewport_rect and self.renderer:
+                # Mouse wheel events don't have 'pos' attribute, so handle them separately
+                if event.type == pygame.MOUSEWHEEL:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if self.viewport_rect.collidepoint(mouse_pos):
+                        viewport_event = True
+                        self.renderer.check_keybinds(event)
+                # Handle other mouse events with position
+                elif hasattr(event, 'pos'):
+                    if self.viewport_rect.collidepoint(event.pos):
+                        viewport_event = True
+                        # Route event to 3D renderer
+                        self.renderer.check_keybinds(event)
             
             # Let GUI components handle events (if not consumed by 3D viewport)
             if not viewport_event:
@@ -1663,6 +2154,39 @@ class MainApplication:
         """Update all components"""
         for component in self.components:
             component.update(dt)
+        
+        # Update surface colors in assets panel if 3D model is loaded
+        self.sync_surface_colors()
+    
+    def sync_surface_colors(self):
+        """Synchronize surface colors between 3D renderer and assets panel"""
+        if not self.renderer:
+            return
+        
+        try:
+            # Find the assets panel
+            assets_panel = None
+            for component in self.components:
+                if isinstance(component, AssetsPanel):
+                    assets_panel = component
+                    break
+            
+            if not assets_panel:
+                return
+            
+            # Update each surface color
+            for i, surface_color in enumerate(self.renderer.surface_colors):
+                # Convert from float (0-1) to int (0-255) for display
+                if all(isinstance(c, float) for c in surface_color):
+                    display_color = tuple(int(c * 255) for c in surface_color[:3])
+                else:
+                    display_color = tuple(surface_color[:3])
+                
+                assets_panel.update_surface_color(i, display_color)
+                
+        except Exception as e:
+            # Silently handle errors to avoid spam in console
+            pass
     
     def draw(self):
         """Draw everything with mixed OpenGL 3D and 2D GUI"""
@@ -1672,10 +2196,12 @@ class MainApplication:
         
         # Render 3D scene first (if renderer is available)
         if self.renderer:
-            self.renderer.draw_scene()
-        else:
-            # Draw placeholder viewport area
-            self.draw_placeholder_viewport()
+            try:
+                self.renderer.draw_scene()
+            except Exception as e:
+                print(f"Error drawing 3D scene: {e}")
+                import traceback
+                traceback.print_exc()
         
         # Switch to 2D rendering for GUI
         self.setup_2d_rendering()
@@ -1683,6 +2209,11 @@ class MainApplication:
         # Create a pygame surface for 2D GUI rendering
         gui_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         gui_surface.fill((0, 0, 0, 0))  # Transparent background
+        
+        # Draw placeholder if no 3D model is loaded
+        if not self.renderer:
+            placeholder_surface = self.draw_placeholder_viewport()
+            gui_surface.blit(placeholder_surface, (self.viewport_rect.x, self.viewport_rect.y))
         
         # Draw all GUI components on the surface (without any dropdowns)
         for component in self.components:
@@ -1707,39 +2238,35 @@ class MainApplication:
     
     def draw_placeholder_viewport(self):
         """Draw a placeholder when 3D renderer is not available"""
-        # Set up 2D rendering temporarily
-        glMatrixMode(GL_PROJECTION)
-        glPushMatrix()
-        glLoadIdentity()
-        glOrtho(0, self.width, self.height, 0, -1, 1)
-        glMatrixMode(GL_MODELVIEW)
-        glPushMatrix()
-        glLoadIdentity()
-        
-        # Draw viewport background
-        glColor3f(0.8, 0.8, 0.8)  # Light gray
-        glBegin(GL_QUADS)
-        glVertex2f(self.viewport_rect.x, self.viewport_rect.y)
-        glVertex2f(self.viewport_rect.right, self.viewport_rect.y)
-        glVertex2f(self.viewport_rect.right, self.viewport_rect.bottom)
-        glVertex2f(self.viewport_rect.x, self.viewport_rect.bottom)
-        glEnd()
+        # Use pygame surface for better text rendering
+        placeholder_surface = pygame.Surface((self.viewport_rect.width, self.viewport_rect.height))
+        placeholder_surface.fill(Colors.LIGHT_GRAY)
         
         # Draw border
-        glColor3f(0.3, 0.3, 0.3)  # Dark gray
-        glLineWidth(2)
-        glBegin(GL_LINE_LOOP)
-        glVertex2f(self.viewport_rect.x, self.viewport_rect.y)
-        glVertex2f(self.viewport_rect.right, self.viewport_rect.y)
-        glVertex2f(self.viewport_rect.right, self.viewport_rect.bottom)
-        glVertex2f(self.viewport_rect.x, self.viewport_rect.bottom)
-        glEnd()
+        pygame.draw.rect(placeholder_surface, Colors.DARK_GRAY, 
+                        pygame.Rect(0, 0, self.viewport_rect.width, self.viewport_rect.height), 2)
         
-        # Restore matrices
-        glPopMatrix()
-        glMatrixMode(GL_PROJECTION)
-        glPopMatrix()
-        glMatrixMode(GL_MODELVIEW)
+        # Draw message text
+        font = pygame.font.Font(None, 24)
+        text_lines = [
+            "No 3D Model Loaded",
+            "",
+            "File → Open Project",
+            "to load an STL file"
+        ]
+        
+        total_text_height = len(text_lines) * 30
+        start_y = (self.viewport_rect.height - total_text_height) // 2
+        
+        for i, line in enumerate(text_lines):
+            if line:  # Skip empty lines
+                text_surface = font.render(line, True, Colors.DARK_GRAY)
+                text_rect = text_surface.get_rect()
+                text_rect.centerx = self.viewport_rect.width // 2
+                text_rect.y = start_y + i * 30
+                placeholder_surface.blit(text_surface, text_rect)
+        
+        return placeholder_surface
     
     def setup_2d_rendering(self):
         """Set up OpenGL for 2D GUI rendering"""
