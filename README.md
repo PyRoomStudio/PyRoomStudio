@@ -1,14 +1,25 @@
+<p align="center">
+  <img width="180" src="assets/logo_v2.png" alt="PyRoomStudio">
+  <p align="center"><b><font size=32px>PyRoomStudio</font></b></p>
+</p>
+
+---
 <!------------------------------------------------------------------->
 
-# 3DARRE (working project name)
+**PyRoomStudio** is an open-source application for rendering and analyzing acoustical properties of 3D spaces via meshes. 
+The project acts as a method to graphically use [pyroomacoustics](https://github.com/LCAV/pyroomacoustics), a library for testing and simulating acoustics algorithms written by Robin Scheibler.
 
-**Authors:**
+> [!NOTE]
+> PyRoomStudio is still under significant development- a lot of fundamental features have not been fleshed out yet. Please make a pull request- or contact Evan and William- if you want to contribute to this project.
 
-William (Zhiwen) Chen (willc@illinois.edu), *project manager*
 
-Evan M. Matthews (evanmm3@illinois.edu), *lead programmer*
 
-**3D** **A**coustic **R**oom **R**endering **E**nvironment (3DARRE) is a graphical application for rendering and analyzing acoustical properties of 3D spaces via meshes. The projects internals function on [pyroomacoustics](https://github.com/LCAV/pyroomacoustics), a library for testing and simulating acoustics algorithms written by Robin Scheibler. 
+## **Authors**
+
+William (Zhiwen) Chen (willc@illinois.edu), *Co-Founder & Designer*
+
+Evan M. Matthews (evanmm3@illinois.edu), *Co-Founder & Progammer*
+
 
 <!------------------------------------------------------------------->
 
@@ -17,7 +28,7 @@ Evan M. Matthews (evanmm3@illinois.edu), *lead programmer*
 1. Clone the repository
 
     ```
-    $ git clone https://github.com/ematth/3DARRE.git
+    $ git clone https://github.com/ematth/PyRoomStudio.git
     ```
 
 2. Setup your virtual environment (venv) and install necessary packages
@@ -30,27 +41,35 @@ Evan M. Matthews (evanmm3@illinois.edu), *lead programmer*
 3. Open the existing rendering GUI:
 
     ```
-    $ python3 panda3D/main.py
+    $ python main_gui.py
     ```
-
-If everything is setup correctly, you will see a spinning rendering of a potted plant 🪴
 
 <!------------------------------------------------------------------->
 
 ## Controls
 
-- **AWSD** control camera movement on the XY-plane.
+- Mouse: **[Left-click]** a surface to enable transparency, **[Right-click]** to set surface color, **[Left-click + hold]** to rotate camera. 
 
-- **Up and Down Arrows** control camera zoom on the object.
+- **[T]**: Set transparency on *all* surfaces of a loaded mesh.
+
+- **[R]**: Reset transparency and color on *all* surfaces.
+
+<!------------------------------------------------------------------->
+
+## Future Plans
+
+- PyRoomStudio's GUI is built with **PyGame**, with rendering done in **PyOpenGL**. This has been feasible for our purposes, but we would like to switch to **PyQT** sometime down the road. 
+
 
 <!------------------------------------------------------------------->
 
 
-## Credits/Licenses
+## Credits
 
-[Pyroomacoustics](https://github.com/LCAV/pyroomacoustics): Copyright (c)2014-2017, EPFL-LCAV
-
-[panda3d](https://github.com/panda3d/panda3d): Copyright (c) 2008, Carnegie Mellon University.
-
+- Big thanks to [Robin Scheibler](https://www.robinscheibler.org) and [Mohamed Boubekri](https://arch.illinois.edu/people/profiles/mohamed-boubekri) for providing initial feedback and collaborating with us.
 
 <!------------------------------------------------------------------->
+
+<p align="center">
+  <img width="700" src="assets/screenshot.png" alt="PyRoomStudio">
+</p>

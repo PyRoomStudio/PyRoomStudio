@@ -11,6 +11,10 @@ import os
 # Initialize pygame
 pygame.init()
 
+# logo image
+logo_image = pygame.image.load("assets/logo_v2.svg")
+pygame.display.set_icon(logo_image)
+
 # Color constants
 class Colors:
     WHITE = (255, 255, 255)
