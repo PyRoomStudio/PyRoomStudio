@@ -4,7 +4,7 @@
 </p> -->
 
 <p align="center">
-  <img width="400" src="assets/logo_v3_w_text.svg" alt="PyRoomStudio">
+  <img width="400" src="assets/logo_v3_color.svg" alt="PyRoomStudio">
 </p>
 
 ---
