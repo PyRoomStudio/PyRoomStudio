@@ -27,6 +27,16 @@ Evan M. Matthews (evanmm3@illinois.edu), *Co-Founder & Progammer*
 
 <!------------------------------------------------------------------->
 
+## Mission Statement
+
+PyRoomStudio has two missions:
+
+1. Make room acoustics design accessible and intuitive for designers via open-source software.
+2. Connect people passionate about designing for the auditory sense, from both the technical and the creative sides.
+
+By accomplishing these missions, we hope to increase the usage of acoustic tools in the design community and make light of sound as a necessary consideration for future spaces.
+
+
 ## Setup
 
 1. Clone the repository
@@ -62,7 +72,9 @@ Evan M. Matthews (evanmm3@illinois.edu), *Co-Founder & Progammer*
 
 ## Future Plans
 
-- PyRoomStudio's GUI is built with **PyGame**, with rendering done in **PyOpenGL**. This has been feasible for our purposes, but we would like to switch to **PyQT** sometime down the road. 
+- PyRoomStudio's GUI is built with **PyGame**, with rendering done in **PyOpenGL**. This has been feasible for our purposes, but we would like to switch to **PyQT** sometime down the road.
+
+- Current features to be implemented can be found in the Issues tab.
 
 
 <!------------------------------------------------------------------->
@@ -70,7 +82,7 @@ Evan M. Matthews (evanmm3@illinois.edu), *Co-Founder & Progammer*
 
 ## Credits
 
-- Big thanks to [Robin Scheibler](https://www.robinscheibler.org) and [Mohamed Boubekri](https://arch.illinois.edu/people/profiles/mohamed-boubekri) for providing initial feedback and collaborating with us.
+- Big thanks to [Robin Scheibler](https://www.robinscheibler.org), Zachary Belanger, [Mohamed Boubekri](https://arch.illinois.edu/people/profiles/mohamed-boubekri), and Paris Smaragdis for providing initial feedback and collaborating with us.
 
 <!------------------------------------------------------------------->
 

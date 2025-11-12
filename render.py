@@ -11,7 +11,7 @@ import collections
 import random
 from PIL import Image
 
-class Render3:
+class Render:
     def __init__(self, filename, view_rect, window_height):
         self.view_rect = view_rect
         self.window_height = window_height
@@ -24,19 +24,26 @@ class Render3:
         glEnable(GL_TEXTURE_2D)  # Enable texturing
         glClearColor(1.0, 1.0, 1.0, 1.0) # This will be cleared over by the GUI background
 
-        glMatrixMode(GL_PROJECTION)
-        gluPerspective(45, (self.width/self.height), 0.1, 100.0)
-        glMatrixMode(GL_MODELVIEW)
-
         self.model = mesh.Mesh.from_file(filename)
         self.center, self.size = self.compute_center_and_size()
-        self.camera_distance = 2.5 * self.size
-        self.min_distance = 0.2 * self.size
-        self.max_distance = 5 * self.size
+        
+        # Scale factor for model (1.0 = original size)
+        self.model_scale_factor = 1.0
+        self.original_size = self.size  # Store unscaled size
+        self.original_center = self.center.copy()
+        
+        # Auto-normalize the model to realistic room size
+        self.auto_normalize_scale()
+        
+        # Set up projection with dynamic clipping planes based on scaled model size
+        self.update_projection()
+        
+        # Note: camera distances are set by auto_normalize_scale via set_scale_factor
         self.camera_heading = 35.0  # degrees
         self.camera_pitch = 35.0    # degrees
         self.mouse_down = False
         self.last_mouse_pos = None
+        self.mouse_down_pos = None  # Track where mouse was pressed
         self.transparent_mode = False  # Track transparency state
 
         # The following is no longer needed since GUI now controls the main loop
@@ -271,9 +278,84 @@ class Render3:
             return t
         return None
 
+    def draw_measurement_grid(self):
+        """
+        Draw a measurement grid on the floor to show scale.
+        Grid spacing is 1 meter in scaled space.
+        """
+        glPushMatrix()
+        self.update_camera()
+        
+        # Apply same scaling as model
+        glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
+        
+        # Apply same translation as model to align the grid
+        glTranslatef(-self.center[0], -self.center[1], -self.center[2])
+        
+        # Get model bounds to position grid appropriately
+        min_ = np.min(self.model.vectors.reshape(-1, 3), axis=0)
+        max_ = np.max(self.model.vectors.reshape(-1, 3), axis=0)
+        
+        # Position grid exactly at the bottom of the model (min Z)
+        grid_z = min_[2]
+        
+        # Center the grid at the horizontal center of the model
+        grid_center_x = (min_[0] + max_[0]) / 2
+        grid_center_y = (min_[1] + max_[1]) / 2
+        
+        # Calculate grid extent - make it 1.5x the model size for better visibility
+        model_extent_x = max_[0] - min_[0]
+        model_extent_y = max_[1] - min_[1]
+        grid_size = max(model_extent_x, model_extent_y) * 0.75
+        
+        # Grid spacing in original model units (will be scaled)
+        # Since we want 1 meter spacing in real world, and model is scaled,
+        # we need to calculate spacing in original units
+        meter_in_original_units = 1.0 / self.model_scale_factor
+        minor_spacing = meter_in_original_units  # 1 meter
+        major_spacing = minor_spacing * 5  # 5 meters
+        
+        # Number of grid lines
+        num_lines = int(grid_size / minor_spacing) + 1
+        
+        glDisable(GL_LIGHTING)
+        glDisable(GL_TEXTURE_2D)
+        
+        # Draw grid lines
+        for i in range(-num_lines, num_lines + 1):
+            offset = i * minor_spacing
+            
+            # Determine if this is a major or minor line
+            is_major = (i % 5 == 0)
+            
+            if is_major:
+                glColor4f(0.4, 0.4, 0.4, 0.8)  # Darker for major lines
+                glLineWidth(2)
+            else:
+                glColor4f(0.7, 0.7, 0.7, 0.5)  # Lighter for minor lines
+                glLineWidth(1)
+            
+            # Lines parallel to X axis
+            glBegin(GL_LINES)
+            glVertex3f(grid_center_x - grid_size, grid_center_y + offset, grid_z)
+            glVertex3f(grid_center_x + grid_size, grid_center_y + offset, grid_z)
+            glEnd()
+            
+            # Lines parallel to Y axis
+            glBegin(GL_LINES)
+            glVertex3f(grid_center_x + offset, grid_center_y - grid_size, grid_z)
+            glVertex3f(grid_center_x + offset, grid_center_y + grid_size, grid_z)
+            glEnd()
+        
+        glPopMatrix()
+    
     def draw_model(self):
         glPushMatrix()
         self.update_camera()
+        
+        # Apply model scaling
+        glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
+        
         glTranslatef(-self.center[0], -self.center[1], -self.center[2])
         triangles = self.model.vectors
         normals = self.model.normals
@@ -373,31 +455,15 @@ class Render3:
         if event.type == pygame.QUIT:
             self.running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:  # Left click - apply texture
+            if event.button == 1:  # Left click - start drag or prepare for texture application
                 self.mouse_down = True
                 self.last_mouse_pos = event.pos
+                self.mouse_down_pos = event.pos  # Remember where we pressed
+            elif event.button == 3:  # Right click - change color immediately
                 # Ensure OpenGL matrices are up-to-date for ray picking
                 glPushMatrix()
                 self.update_camera()
-                glTranslatef(-self.center[0], -self.center[1], -self.center[2])
-                ray_origin, ray_dir = self.get_ray_from_mouse(self.last_mouse_pos)
-                glPopMatrix()
-                triangles = self.model.vectors
-                min_t = float('inf')
-                hit_tri = None
-                for tri_idx, triangle in enumerate(triangles):
-                    t = self.ray_triangle_intersect(ray_origin, ray_dir, triangle)
-                    if t is not None and t < min_t:
-                        min_t = t
-                        hit_tri = tri_idx
-                if hit_tri is not None:
-                    surf_idx = self.triangle_to_surface[hit_tri]
-                    self.surface_materials[surf_idx] = True  # Apply texture
-                    print(f"Applied texture to surface {surf_idx} (texture_id: {self.texture_id})")
-            elif event.button == 3:  # Right click - change color
-                # Ensure OpenGL matrices are up-to-date for ray picking
-                glPushMatrix()
-                self.update_camera()
+                glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
                 glTranslatef(-self.center[0], -self.center[1], -self.center[2])
                 ray_origin, ray_dir = self.get_ray_from_mouse(event.pos)
                 glPopMatrix()
@@ -417,6 +483,35 @@ class Render3:
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 self.mouse_down = False
+                # Only apply texture if this was a click (not a drag)
+                if self.mouse_down_pos is not None:
+                    dx = event.pos[0] - self.mouse_down_pos[0]
+                    dy = event.pos[1] - self.mouse_down_pos[1]
+                    drag_distance = (dx*dx + dy*dy) ** 0.5
+                    
+                    # If mouse moved less than 5 pixels, treat as a click
+                    if drag_distance < 5:
+                        # Ensure OpenGL matrices are up-to-date for ray picking
+                        glPushMatrix()
+                        self.update_camera()
+                        glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
+                        glTranslatef(-self.center[0], -self.center[1], -self.center[2])
+                        ray_origin, ray_dir = self.get_ray_from_mouse(event.pos)
+                        glPopMatrix()
+                        triangles = self.model.vectors
+                        min_t = float('inf')
+                        hit_tri = None
+                        for tri_idx, triangle in enumerate(triangles):
+                            t = self.ray_triangle_intersect(ray_origin, ray_dir, triangle)
+                            if t is not None and t < min_t:
+                                min_t = t
+                                hit_tri = tri_idx
+                        if hit_tri is not None:
+                            surf_idx = self.triangle_to_surface[hit_tri]
+                            self.surface_materials[surf_idx] = True  # Apply texture
+                            print(f"Applied texture to surface {surf_idx} (texture_id: {self.texture_id})")
+                
+                self.mouse_down_pos = None  # Reset
         elif event.type == pygame.MOUSEMOTION:
             if self.mouse_down and self.last_mouse_pos:
                 x, y = event.pos
@@ -453,6 +548,11 @@ class Render3:
         
         # This method will be called by the GUI class to render the 3D model
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        
+        # Draw measurement grid first (behind the model)
+        self.draw_measurement_grid()
+        
+        # Draw the 3D model
         self.draw_model()
         
         glDisable(GL_SCISSOR_TEST)
@@ -474,4 +574,118 @@ class Render3:
         #     pygame.display.flip()
         #     clock.tick(60)
         # pygame.quit()
+    
+    def get_walls_for_acoustic(self):
+        """
+        Return wall information for acoustic simulation.
+        Returns a list of dictionaries, each containing triangle indices for a surface.
+        """
+        walls = []
+        for surface in self.surfaces:
+            walls.append({
+                'triangles': list(surface)
+            })
+        return walls
+    
+    def get_room_center(self):
+        """Return the center point of the 3D model"""
+        return self.center.copy()
+    
+    def get_model_vertices(self):
+        """
+        Return flattened vertex array for acoustic simulation.
+        Returns vertices in the format expected by acoustic simulation.
+        """
+        # self.model.vectors is shape (n_triangles, 3, 3)
+        # Flatten to (n_triangles * 3, 3) for vertex-by-vertex access
+        return self.model.vectors.reshape(-1, 3)
+    
+    def update_projection(self):
+        """
+        Update the projection matrix with appropriate clipping planes
+        based on the current model scale.
+        """
+        scaled_size = self.original_size * self.model_scale_factor
+        
+        # Calculate clipping planes based on scaled size
+        # Near plane: close enough to see details
+        near_plane = 0.1
+        # Far plane: far enough to see the entire model at max distance
+        # Use 10x the max camera distance to ensure model never clips
+        far_plane = max(100.0, self.max_distance * 10)
+        
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        gluPerspective(45, (self.width/self.height), near_plane, far_plane)
+        glMatrixMode(GL_MODELVIEW)
+        
+        print(f"Updated projection: near={near_plane}, far={far_plane:.1f}")
+    
+    def set_scale_factor(self, factor):
+        """
+        Set the scale factor for the model.
+        Updates camera distances to match the new scaled size.
+        
+        Args:
+            factor: Scale multiplier (1.0 = original size)
+        """
+        self.model_scale_factor = factor
+        scaled_size = self.original_size * factor
+        
+        # Update camera distances based on scaled size
+        self.camera_distance = 2.5 * scaled_size
+        self.min_distance = 0.2 * scaled_size
+        self.max_distance = 5 * scaled_size
+        
+        # Update projection clipping planes for the new scale
+        self.update_projection()
+        
+        print(f"Scale factor set to {factor:.2f}x (model size: {scaled_size:.2f} units)")
+    
+    def get_real_world_dimensions(self):
+        """
+        Get the real-world dimensions of the model in meters.
+        Returns (width, height, depth) tuple.
+        """
+        min_ = np.min(self.model.vectors.reshape(-1, 3), axis=0)
+        max_ = np.max(self.model.vectors.reshape(-1, 3), axis=0)
+        dimensions = (max_ - min_) * self.model_scale_factor
+        return dimensions
+    
+    def get_real_world_size(self):
+        """
+        Get the diagonal size of the model in scaled units.
+        Returns the size as a single float value.
+        """
+        return self.original_size * self.model_scale_factor
+    
+    def auto_normalize_scale(self):
+        """
+        Automatically calculate and apply a scale factor to normalize the model
+        to realistic room dimensions (typically 2-10 meters).
+        
+        Returns:
+            float: The calculated scale factor
+        """
+        # Target size range for typical rooms (in meters)
+        TARGET_SIZE = 6.0  # meters (diagonal)
+        
+        # If the original size is very large (>1000 units), assume it's in mm or similar
+        # and scale it down. This matches the SIZE_REDUCTION_FACTOR used in acoustic.py
+        if self.original_size > 1000:
+            # Scale down by dividing by 700 to get realistic room size
+            scale_factor = 1.0 / 700.0
+        elif self.original_size < 1.0:
+            # If model is very small, scale it up
+            scale_factor = TARGET_SIZE / self.original_size
+        else:
+            # Model is already in a reasonable range, just normalize to target
+            scale_factor = TARGET_SIZE / self.original_size
+        
+        # Apply the calculated scale factor
+        self.set_scale_factor(scale_factor)
+        
+        print(f"Auto-normalized model: {self.original_size:.2f} -> {self.get_real_world_size():.2f} units")
+        
+        return scale_factor
     

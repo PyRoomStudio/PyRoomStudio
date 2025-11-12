@@ -1,7 +1,3 @@
-# Don't commit/push obj files anymore!
-resources/
-sounds/
-
 # extras
 room_tutorial.ipynb
 

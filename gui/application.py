@@ -24,7 +24,7 @@ class MainApplication:
         pygame.display.gl_set_attribute(pygame.GL_DEPTH_SIZE, 24)
         
         self.screen = pygame.display.set_mode((width, height), pygame.OPENGL | pygame.DOUBLEBUF)
-        pygame.display.set_caption("3D Architecture GUI")
+        pygame.display.set_caption("PyRoomStudio")
         
         # Basic OpenGL setup - will be configured properly by Render3 class
         # Don't set up OpenGL state here to avoid conflicts
@@ -79,15 +79,18 @@ class MainApplication:
                     component.clear_surfaces()
                     break
             
-            # Import Render3 class and create new renderer
-            from render3 import Render3
+            # Import Render class and create new renderer
+            from render import Render
             print(f"Loading new 3D model: {filepath}")
             print(f"Viewport rect: {self.viewport_rect}")
             print(f"Window height: {self.height}")
             
-            self.renderer = Render3(filepath, self.viewport_rect, self.height)
+            self.renderer = Render(filepath, self.viewport_rect, self.height)
             print(f"Successfully created renderer for: {filepath}")
             print(f"Renderer model has {len(self.renderer.model.vectors)} triangles")
+            
+            # Connect renderer to PropertyPanel for scale control
+            self.connect_renderer_to_property_panel()
             
             # Extract surface information and populate assets panel
             self.populate_assets_from_renderer(filepath)
@@ -99,6 +102,25 @@ class MainApplication:
             traceback.print_exc()
             self.renderer = None
             return False
+    
+    def connect_renderer_to_property_panel(self):
+        """Connect the renderer to the property panel for scale control"""
+        if not self.renderer:
+            return
+        
+        # Find the property panel
+        property_panel = None
+        for component in self.components:
+            if isinstance(component, PropertyPanel):
+                property_panel = component
+                break
+        
+        if property_panel:
+            # Set the renderer reference in the property panel
+            property_panel.set_renderer(self.renderer)
+            print(f"Connected renderer to property panel (scale: {self.renderer.model_scale_factor:.2f}x)")
+        else:
+            print("Warning: Property panel not found")
     
     def populate_assets_from_renderer(self, filepath: str):
         """Extract surface information from the renderer and populate the assets panel"""
@@ -338,7 +360,79 @@ class MainApplication:
     def on_import_room(self): print("Import room")
     def on_place_sound(self): print("Place sound")
     def on_place_listener(self): print("Place listener")
-    def on_render(self): print("Render")
+    
+    def on_render(self):
+        """Trigger acoustic simulation using the loaded 3D model"""
+        print("=" * 60)
+        print("Starting Acoustic Simulation...")
+        print("=" * 60)
+        
+        # Check if 3D model is loaded
+        if not self.renderer:
+            print("ERROR: No 3D model loaded. Please load an STL file first.")
+            print("Use File → Open Project to load a model.")
+            return
+        
+        try:
+            # Update window title to show simulation in progress
+            pygame.display.set_caption("PyRoomStudio - Simulating...")
+            
+            # Extract necessary data from the renderer
+            print("Extracting geometry data from 3D model...")
+            walls = self.renderer.get_walls_for_acoustic()
+            room_center = self.renderer.get_room_center()
+            model_vertices = self.renderer.get_model_vertices()
+            
+            print(f"  - Found {len(walls)} surfaces")
+            print(f"  - Room center: {room_center}")
+            print(f"  - Total vertices: {len(model_vertices)}")
+            
+            # Import and create acoustic simulator
+            from acoustic import Acoustic
+            print("\nInitializing acoustic simulator...")
+            acoustic = Acoustic()
+            
+            # Get the current scale factor from the renderer
+            scale_factor = self.renderer.model_scale_factor
+            print(f"Using scale factor from renderer: {scale_factor:.4f}x")
+            
+            # Run the simulation
+            print("Running PyRoomAcoustics simulation...")
+            print("(This may take a few moments...)")
+            output_file = acoustic.simulate(walls, room_center, model_vertices, scale_factor)
+            
+            # Restore window title
+            pygame.display.set_caption("PyRoomStudio")
+            
+            # Print success message
+            print("\n" + "=" * 60)
+            print("SIMULATION COMPLETE!")
+            print("=" * 60)
+            print(f"Output saved to: {output_file}")
+            print("You can now play this file to hear the simulated acoustics.")
+            print("=" * 60)
+            
+        except FileNotFoundError as e:
+            print(f"\nERROR: File not found - {e}")
+            print("Make sure the sound source file exists in the sounds/sources/ directory.")
+            pygame.display.set_caption("PyRoomStudio")
+            
+        except ValueError as e:
+            print(f"\nERROR: Invalid input - {e}")
+            print("The 3D model geometry may be invalid for acoustic simulation.")
+            pygame.display.set_caption("PyRoomStudio")
+            
+        except RuntimeError as e:
+            print(f"\nERROR: Simulation error - {e}")
+            print("The acoustic simulation encountered an error.")
+            pygame.display.set_caption("PyRoomStudio")
+            
+        except Exception as e:
+            print(f"\nERROR: Unexpected error - {e}")
+            import traceback
+            traceback.print_exc()
+            pygame.display.set_caption("PyRoomStudio")
+            print("Please check the error message above for details.")
     
     def handle_events(self):
         """Handle all pygame events"""

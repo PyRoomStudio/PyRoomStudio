@@ -307,6 +307,9 @@ class PropertyPanel(GUIComponent):
         self.content_y = self.rect.y + self.header_height
         self.content_height = self.rect.height - self.header_height
         
+        # Reference to the renderer (set by application)
+        self.renderer = None
+        
         # Create GUI elements
         self._create_elements()
     
@@ -314,11 +317,15 @@ class PropertyPanel(GUIComponent):
         """Create all the property elements"""
         current_y = self.content_y + 10
         
-        # Slider
-        self.slider_label = TextButton(self.rect.x + 10, current_y, 60, 20, "Slider", 14)
+        # Room Scale Slider
+        self.scale_label = TextButton(self.rect.x + 10, current_y, 100, 20, "Room Scale", 14)
         current_y += 25
-        self.slider_value_label = TextButton(self.rect.x + self.rect.width - 30, current_y - 25, 20, 20, "1.2", 14)
-        self.slider = Slider(self.rect.x + 10, current_y, self.rect.width - 60, 20, 0.0, 2.0, 1.2, self.on_slider_change)
+        self.scale_value_label = TextButton(self.rect.x + self.rect.width - 50, current_y - 25, 45, 20, "1.0x", 14)
+        self.scale_slider = Slider(self.rect.x + 10, current_y, self.rect.width - 60, 20, 0.1, 10.0, 1.0, self.on_scale_change)
+        current_y += 25
+        
+        # Dimension display label
+        self.dimension_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 20, "Size: -- m", 12)
         current_y += 35
         
         # Single options (radio buttons)
@@ -352,16 +359,26 @@ class PropertyPanel(GUIComponent):
         
         # Store all components for easy handling
         self.components = [
-            self.slider_label, self.slider_value_label, self.slider,
+            self.scale_label, self.scale_value_label, self.scale_slider, self.dimension_label,
             self.single_options_label, self.radio_group,
             self.dropdown_label, self.dropdown,
             self.toggle_off_label, self.toggle_off_checkbox,
             self.toggle_on_label, self.toggle_on_checkbox
         ]
     
-    def on_slider_change(self, value):
-        self.slider_value_label.text = f"{value:.1f}"
-        print(f"Slider value: {value:.2f}")
+    def on_scale_change(self, value):
+        """Handle scale slider changes"""
+        self.scale_value_label.text = f"{value:.1f}x"
+        
+        # Update renderer if available
+        if self.renderer:
+            self.renderer.set_scale_factor(value)
+            # Update dimension display
+            dimensions = self.renderer.get_real_world_dimensions()
+            dim_text = f"Size: {dimensions[0]:.1f}x{dimensions[1]:.1f}x{dimensions[2]:.1f}m"
+            self.dimension_label.text = dim_text
+        
+        print(f"Scale factor: {value:.2f}x")
     
     def on_radio_select(self, option):
         print(f"Radio selected: {option}")
@@ -374,6 +391,18 @@ class PropertyPanel(GUIComponent):
     
     def on_toggle_on(self, state):
         print(f"Toggle ON: {state}")
+    
+    def set_renderer(self, renderer):
+        """Set the renderer reference for scale control"""
+        self.renderer = renderer
+        if renderer:
+            # Update slider to reflect current scale
+            self.scale_slider.value = renderer.model_scale_factor
+            self.scale_value_label.text = f"{renderer.model_scale_factor:.1f}x"
+            # Update dimension display
+            dimensions = renderer.get_real_world_dimensions()
+            dim_text = f"Size: {dimensions[0]:.1f}x{dimensions[1]:.1f}x{dimensions[2]:.1f}m"
+            self.dimension_label.text = dim_text
     
     def handle_event(self, event: pygame.event.Event) -> bool:
         if not self.visible or not self.enabled:
