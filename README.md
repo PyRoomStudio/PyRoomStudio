@@ -37,7 +37,7 @@ PyRoomStudio has two missions:
 By accomplishing these missions, we hope to increase the usage of acoustic tools in the design community and make light of sound as a necessary consideration for future spaces.
 
 <p align="center">
-  <img width="500" src="assets/readme-image.png" alt="">
+  <img width="600" src="assets/readme-image.png" alt="">
 </p>
 
 
@@ -82,7 +82,6 @@ By accomplishing these missions, we hope to increase the usage of acoustic tools
 
 
 <!------------------------------------------------------------------->
-
 
 ## Credits
 
