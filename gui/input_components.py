@@ -12,8 +12,9 @@ class DropdownMenu(GUIComponent):
     
     def __init__(self, x: int, y: int, width: int, height: int, 
                  options: List[str], font_size: int = 16, 
-                 callback: Optional[Callable[[str], None]] = None):
-        super().__init__(x, y, width, height)
+                 callback: Optional[Callable[[str], None]] = None,
+                 tooltip: Optional[str] = None):
+        super().__init__(x, y, width, height, tooltip)
         self.options = options
         self.selected_index = 0
         self.expanded = False
@@ -67,14 +68,24 @@ class DropdownMenu(GUIComponent):
         if not self.visible:
             return
         
+        # Choose colors based on enabled state
+        if self.enabled:
+            bg_color = self.bg_color
+            border_color = self.border_color
+            text_color = self.text_color
+        else:
+            bg_color = Colors.LIGHT_GRAY
+            border_color = Colors.GRAY
+            text_color = Colors.GRAY
+        
         # Draw main button
-        pygame.draw.rect(surface, self.bg_color, self.rect)
-        pygame.draw.rect(surface, self.border_color, self.rect, 2)
+        pygame.draw.rect(surface, bg_color, self.rect)
+        pygame.draw.rect(surface, border_color, self.rect, 2)
         
         # Draw selected text
         if self.options:
             text = self.options[self.selected_index]
-            text_surface = self.font.render(text, True, self.text_color)
+            text_surface = self.font.render(text, True, text_color)
             text_rect = text_surface.get_rect(midleft=(self.rect.x + 5, self.rect.centery))
             surface.blit(text_surface, text_rect)
         
@@ -84,7 +95,7 @@ class DropdownMenu(GUIComponent):
             (self.rect.right - 5, self.rect.centery - 3),
             (self.rect.right - 10, self.rect.centery + 3)
         ]
-        pygame.draw.polygon(surface, self.text_color, arrow_points)
+        pygame.draw.polygon(surface, text_color, arrow_points)
     
     def draw_dropdowns(self, surface: pygame.Surface):
         """Draw only the expanded dropdown options (on top of everything)"""
@@ -198,8 +209,9 @@ class RadioButton(GUIComponent):
     """A single radio button"""
     
     def __init__(self, x: int, y: int, width: int, height: int, text: str, 
-                 group_id: str, selected: bool = False, callback: Optional[Callable[[str, bool], None]] = None):
-        super().__init__(x, y, width, height)
+                 group_id: str, selected: bool = False, callback: Optional[Callable[[str, bool], None]] = None,
+                 tooltip: Optional[str] = None):
+        super().__init__(x, y, width, height, tooltip)
         self.text = text
         self.group_id = group_id
         self.selected = selected
@@ -221,20 +233,30 @@ class RadioButton(GUIComponent):
         if not self.visible:
             return
         
+        # Choose colors based on enabled state
+        if self.enabled:
+            border_color = self.border_color
+            selected_color = self.selected_color
+            text_color = self.text_color
+        else:
+            border_color = Colors.GRAY
+            selected_color = Colors.GRAY
+            text_color = Colors.GRAY
+        
         # Draw radio circle
         circle_x = self.rect.x + 10
         circle_y = self.rect.centery
         
         # Outer circle
         pygame.draw.circle(surface, Colors.WHITE, (circle_x, circle_y), self.circle_size // 2)
-        pygame.draw.circle(surface, self.border_color, (circle_x, circle_y), self.circle_size // 2, 2)
+        pygame.draw.circle(surface, border_color, (circle_x, circle_y), self.circle_size // 2, 2)
         
         # Inner circle if selected
         if self.selected:
-            pygame.draw.circle(surface, self.selected_color, (circle_x, circle_y), self.circle_size // 2 - 4)
+            pygame.draw.circle(surface, selected_color, (circle_x, circle_y), self.circle_size // 2 - 4)
         
         # Text
-        text_surface = self.font.render(self.text, True, self.text_color)
+        text_surface = self.font.render(self.text, True, text_color)
         text_rect = text_surface.get_rect(midleft=(circle_x + self.circle_size, circle_y))
         surface.blit(text_surface, text_rect)
 
@@ -243,9 +265,10 @@ class RadioButtonGroup(GUIComponent):
     """A group of mutually exclusive radio buttons"""
     
     def __init__(self, x: int, y: int, width: int, options: List[str], 
-                 selected_index: int = 0, callback: Optional[Callable[[str], None]] = None):
+                 selected_index: int = 0, callback: Optional[Callable[[str], None]] = None,
+                 tooltip: Optional[str] = None):
         height = len(options) * 25
-        super().__init__(x, y, width, height)
+        super().__init__(x, y, width, height, tooltip)
         
         self.options = options
         self.selected_index = selected_index
@@ -256,7 +279,7 @@ class RadioButtonGroup(GUIComponent):
         for i, option in enumerate(options):
             button_y = y + i * 25
             radio = RadioButton(x, button_y, width, 25, option, "radio_group", 
-                              i == selected_index, self._on_radio_click)
+                              i == selected_index, self._on_radio_click, tooltip)
             self.radio_buttons.append(radio)
     
     def _on_radio_click(self, group_id: str, selected: bool):
@@ -282,7 +305,17 @@ class RadioButtonGroup(GUIComponent):
                 self.callback(self.options[self.selected_index])
     
     def handle_event(self, event: pygame.event.Event) -> bool:
-        if not self.visible or not self.enabled:
+        if not self.visible:
+            return False
+        
+        # Propagate enabled state to radio buttons
+        for radio in self.radio_buttons:
+            radio.enabled = self.enabled
+        
+        if not self.enabled:
+            # Still handle hover for tooltips
+            for radio in self.radio_buttons:
+                radio.handle_event(event)
             return False
         
         # Handle mouse clicks on radio buttons
@@ -321,8 +354,9 @@ class CheckBox(GUIComponent):
     """A checkbox toggle button"""
     
     def __init__(self, x: int, y: int, width: int, height: int, text: str, 
-                 checked: bool = False, callback: Optional[Callable[[bool], None]] = None):
-        super().__init__(x, y, width, height)
+                 checked: bool = False, callback: Optional[Callable[[bool], None]] = None,
+                 tooltip: Optional[str] = None):
+        super().__init__(x, y, width, height, tooltip)
         self.text = text
         self.checked = checked
         self.callback = callback
@@ -344,6 +378,16 @@ class CheckBox(GUIComponent):
         if not self.visible:
             return
         
+        # Choose colors based on enabled state
+        if self.enabled:
+            border_color = self.border_color
+            checked_color = self.checked_color
+            text_color = self.text_color
+        else:
+            border_color = Colors.GRAY
+            checked_color = Colors.GRAY
+            text_color = Colors.GRAY
+        
         # Draw checkbox square
         box_x = self.rect.x + 10
         box_y = self.rect.centery - self.box_size // 2
@@ -351,7 +395,7 @@ class CheckBox(GUIComponent):
         
         # Background
         pygame.draw.rect(surface, Colors.WHITE, box_rect)
-        pygame.draw.rect(surface, self.border_color, box_rect, 2)
+        pygame.draw.rect(surface, border_color, box_rect, 2)
         
         # Checkmark if checked
         if self.checked:
@@ -361,9 +405,9 @@ class CheckBox(GUIComponent):
                 (box_x + 5, box_y + 8),
                 (box_x + 9, box_y + 4)
             ]
-            pygame.draw.lines(surface, self.checked_color, False, check_points, 2)
+            pygame.draw.lines(surface, checked_color, False, check_points, 2)
         
         # Text
-        text_surface = self.font.render(self.text, True, self.text_color)
+        text_surface = self.font.render(self.text, True, text_color)
         text_rect = text_surface.get_rect(midleft=(box_x + self.box_size + 8, self.rect.centery))
         surface.blit(text_surface, text_rect)

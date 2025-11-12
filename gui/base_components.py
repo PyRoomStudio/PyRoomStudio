@@ -9,22 +9,29 @@ from .constants import Colors
 class GUIComponent:
     """Base class for all GUI components"""
     
-    def __init__(self, x: int, y: int, width: int, height: int):
+    def __init__(self, x: int, y: int, width: int, height: int, tooltip: Optional[str] = None):
         self.rect = pygame.Rect(x, y, width, height)
         self.visible = True
         self.enabled = True
         self.hover = False
         self.clicked = False
+        self.tooltip = tooltip
+        self.tooltip_font = pygame.font.Font(None, 14)
         
     def handle_event(self, event: pygame.event.Event) -> bool:
         """Handle pygame events. Returns True if event was consumed."""
-        if not self.visible or not self.enabled:
+        if not self.visible:
             return False
-            
+        
+        # Always track hover for tooltips, even when disabled
         if event.type == pygame.MOUSEMOTION:
             self.hover = self.rect.collidepoint(event.pos)
             
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+        # Block interaction when disabled
+        if not self.enabled:
+            return False
+            
+        if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1 and self.rect.collidepoint(event.pos):
                 self.clicked = True
                 return True
@@ -37,6 +44,44 @@ class GUIComponent:
                     return True
                     
         return False
+    
+    def draw_tooltip(self, surface: pygame.Surface):
+        """Draw tooltip if hovering over disabled component"""
+        if not self.visible or not self.hover or not self.tooltip or self.enabled:
+            return
+        
+        # Get mouse position
+        mouse_pos = pygame.mouse.get_pos()
+        
+        # Render tooltip text
+        text_surface = self.tooltip_font.render(self.tooltip, True, Colors.BLACK)
+        text_rect = text_surface.get_rect()
+        
+        # Create tooltip background with padding
+        padding = 6
+        tooltip_width = text_rect.width + padding * 2
+        tooltip_height = text_rect.height + padding * 2
+        
+        # Position tooltip near mouse (offset to avoid cursor)
+        tooltip_x = mouse_pos[0] + 10
+        tooltip_y = mouse_pos[1] + 10
+        
+        # Keep tooltip on screen
+        if tooltip_x + tooltip_width > surface.get_width():
+            tooltip_x = mouse_pos[0] - tooltip_width - 10
+        if tooltip_y + tooltip_height > surface.get_height():
+            tooltip_y = mouse_pos[1] - tooltip_height - 10
+        
+        tooltip_rect = pygame.Rect(tooltip_x, tooltip_y, tooltip_width, tooltip_height)
+        
+        # Draw tooltip background (solid white)
+        pygame.draw.rect(surface, Colors.WHITE, tooltip_rect)
+        # Draw tooltip border (thicker for better visibility)
+        pygame.draw.rect(surface, Colors.BLACK, tooltip_rect, 2)
+        
+        # Draw tooltip text
+        text_rect.center = tooltip_rect.center
+        surface.blit(text_surface, text_rect)
     
     def on_click(self):
         """Override in subclasses to handle click events"""
@@ -55,8 +100,9 @@ class TextButton(GUIComponent):
     """A clickable text button with hover effects"""
     
     def __init__(self, x: int, y: int, width: int, height: int, text: str, 
-                 font_size: int = 16, callback: Optional[Callable] = None):
-        super().__init__(x, y, width, height)
+                 font_size: int = 16, callback: Optional[Callable] = None, 
+                 tooltip: Optional[str] = None):
+        super().__init__(x, y, width, height, tooltip)
         self.text = text
         self.callback = callback
         self.font = pygame.font.Font(None, font_size)
@@ -74,18 +120,26 @@ class TextButton(GUIComponent):
     def draw(self, surface: pygame.Surface):
         if not self.visible:
             return
-            
+        
         # Choose background color based on state
-        bg_color = self.hover_color if self.hover else self.bg_color
-        if self.clicked:
-            bg_color = tuple(max(0, c - 30) for c in bg_color)
+        if self.enabled:
+            bg_color = self.hover_color if self.hover else self.bg_color
+            if self.clicked:
+                bg_color = tuple(max(0, c - 30) for c in bg_color)
+            text_color = self.text_color
+            border_color = self.border_color
+        else:
+            # Grayed out appearance when disabled
+            bg_color = Colors.LIGHT_GRAY
+            text_color = Colors.GRAY
+            border_color = Colors.GRAY
         
         # Draw button background
         pygame.draw.rect(surface, bg_color, self.rect)
-        pygame.draw.rect(surface, self.border_color, self.rect, 2)
+        pygame.draw.rect(surface, border_color, self.rect, 2)
         
         # Draw text
-        text_surface = self.font.render(self.text, True, self.text_color)
+        text_surface = self.font.render(self.text, True, text_color)
         text_rect = text_surface.get_rect(center=self.rect.center)
         surface.blit(text_surface, text_rect)
 
@@ -94,8 +148,9 @@ class ImageButton(GUIComponent):
     """A clickable button with an image"""
     
     def __init__(self, x: int, y: int, width: int, height: int, 
-                 image_path: str, callback: Optional[Callable] = None):
-        super().__init__(x, y, width, height)
+                 image_path: str, callback: Optional[Callable] = None,
+                 tooltip: Optional[str] = None):
+        super().__init__(x, y, width, height, tooltip)
         self.callback = callback
         
         try:
@@ -116,17 +171,32 @@ class ImageButton(GUIComponent):
     def draw(self, surface: pygame.Surface):
         if not self.visible:
             return
+        
+        # Choose colors based on enabled state
+        if self.enabled:
+            hover_bg = self.hover_color if self.hover else None
+            border_color = self.border_color
+        else:
+            hover_bg = None
+            border_color = Colors.GRAY
             
         # Draw background with hover effect
-        if self.hover:
-            pygame.draw.rect(surface, self.hover_color, self.rect)
+        if hover_bg:
+            pygame.draw.rect(surface, hover_bg, self.rect)
         
         # Draw border
-        pygame.draw.rect(surface, self.border_color, self.rect, 2)
+        pygame.draw.rect(surface, border_color, self.rect, 2)
         
         # Draw image
         image_rect = self.image.get_rect(center=self.rect.center)
-        surface.blit(self.image, image_rect)
+        
+        if self.enabled:
+            surface.blit(self.image, image_rect)
+        else:
+            # Create a grayed-out version of the image
+            grayed_image = self.image.copy()
+            grayed_image.set_alpha(100)  # Semi-transparent
+            surface.blit(grayed_image, image_rect)
 
 
 class ToggleButton(GUIComponent):

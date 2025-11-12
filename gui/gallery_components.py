@@ -11,8 +11,9 @@ class ImageItem(GUIComponent):
     """An image item with a label for galleries"""
     
     def __init__(self, x: int, y: int, width: int, height: int, 
-                 image_path: str, label: str, callback: Optional[Callable] = None):
-        super().__init__(x, y, width, height)
+                 image_path: str, label: str, callback: Optional[Callable] = None,
+                 tooltip: Optional[str] = None):
+        super().__init__(x, y, width, height, tooltip)
         self.label = label
         self.callback = callback
         self.font = pygame.font.Font(None, 12)
@@ -43,19 +44,35 @@ class ImageItem(GUIComponent):
         if not self.visible:
             return
         
+        # Choose colors based on enabled state
+        if self.enabled:
+            bg_color = self.hover_color if self.hover else self.bg_color
+            border_color = self.border_color
+            text_color = self.text_color
+        else:
+            bg_color = self.bg_color
+            border_color = Colors.GRAY
+            text_color = Colors.GRAY
+        
         # Background
-        bg_color = self.hover_color if self.hover else self.bg_color
         pygame.draw.rect(surface, bg_color, self.rect)
-        pygame.draw.rect(surface, self.border_color, self.rect, 1)
+        pygame.draw.rect(surface, border_color, self.rect, 1)
         
         # Image
         image_rect = self.image.get_rect()
         image_rect.centerx = self.rect.centerx
         image_rect.y = self.rect.y + 2
-        surface.blit(self.image, image_rect)
+        
+        if self.enabled:
+            surface.blit(self.image, image_rect)
+        else:
+            # Create a grayed-out version of the image
+            grayed_image = self.image.copy()
+            grayed_image.set_alpha(100)  # Semi-transparent
+            surface.blit(grayed_image, image_rect)
         
         # Label
-        text_surface = self.font.render(self.label, True, self.text_color)
+        text_surface = self.font.render(self.label, True, text_color)
         text_rect = text_surface.get_rect(center=(self.rect.centerx, self.rect.bottom - 10))
         surface.blit(text_surface, text_rect)
 
@@ -120,7 +137,8 @@ class ImageGallery(GUIComponent):
     """A collapsible gallery of image items"""
     
     def __init__(self, x: int, y: int, width: int, title: str, 
-                 items: List[Tuple[str, str]], callback: Optional[Callable[[str], None]] = None):
+                 items: List[Tuple[str, str]], callback: Optional[Callable[[str], None]] = None,
+                 tooltip: Optional[str] = None):
         # Calculate height based on number of items
         self.title_height = 25
         self.item_width = 75
@@ -129,7 +147,7 @@ class ImageGallery(GUIComponent):
         self.rows = (len(items) + self.items_per_row - 1) // self.items_per_row
         content_height = self.rows * self.item_height + 10
         
-        super().__init__(x, y, width, self.title_height + content_height)
+        super().__init__(x, y, width, self.title_height + content_height, tooltip)
         
         self.title = title
         self.collapsed = False
@@ -144,13 +162,13 @@ class ImageGallery(GUIComponent):
         self.title_text_color = Colors.BLACK
         
         # Create image items
-        self._create_image_items(items)
+        self._create_image_items(items, tooltip)
         
         # Update rect for collapsed state
         self.expanded_height = self.rect.height
         self.collapsed_height = self.title_height
     
-    def _create_image_items(self, items: List[Tuple[str, str]]):
+    def _create_image_items(self, items: List[Tuple[str, str]], tooltip: Optional[str] = None):
         """Create image items from list of (image_path, label) tuples"""
         self.image_items.clear()
         
@@ -162,14 +180,18 @@ class ImageGallery(GUIComponent):
             item_y = self.rect.y + self.title_height + 5 + row * self.item_height
             
             item = ImageItem(item_x, item_y, self.item_width - 5, self.item_height - 5,
-                           image_path, label, self.callback)
+                           image_path, label, self.callback, tooltip)
             self.image_items.append(item)
     
     def handle_event(self, event: pygame.event.Event) -> bool:
-        if not self.visible or not self.enabled:
+        if not self.visible:
             return False
         
-        # Handle title click for collapse/expand
+        # Propagate enabled state to image items
+        for item in self.image_items:
+            item.enabled = self.enabled
+        
+        # Handle title click for collapse/expand (always enabled)
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             title_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.width, self.title_height)
             if title_rect.collidepoint(event.pos):
@@ -177,7 +199,7 @@ class ImageGallery(GUIComponent):
                 self.rect.height = self.collapsed_height if self.collapsed else self.expanded_height
                 return True
         
-        # Handle image item events if not collapsed
+        # Handle image item events if not collapsed (they will check their own enabled state)
         if not self.collapsed:
             for item in self.image_items:
                 if item.handle_event(event):

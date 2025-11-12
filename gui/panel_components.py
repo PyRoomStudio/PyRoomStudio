@@ -147,7 +147,9 @@ class LibraryPanel(GUIComponent):
         ]
         
         voices_gallery = ImageGallery(self.rect.x + 5, self.content_y + 5, 
-                                    self.rect.width - 10, "Voices", voices_items)
+                                    self.rect.width - 10, "Voices", voices_items,
+                                    tooltip="Future feature!")
+        voices_gallery.enabled = False  # Disable individual items
         self.sound_galleries.append(voices_gallery)
         
         # Material galleries  
@@ -168,15 +170,21 @@ class LibraryPanel(GUIComponent):
         
         # Create galleries at initial positions (will be repositioned dynamically)
         hvac_gallery = ImageGallery(self.rect.x + 5, self.content_y + 5, 
-                                  self.rect.width - 10, "HVAC", hvac_items)
+                                  self.rect.width - 10, "HVAC", hvac_items,
+                                  tooltip="Future feature!")
+        hvac_gallery.enabled = False  # Disable individual items
         self.material_galleries.append(hvac_gallery)
         
         electronics_gallery = ImageGallery(self.rect.x + 5, self.content_y + 5, 
-                                         self.rect.width - 10, "Electronics", electronics_items)
+                                         self.rect.width - 10, "Electronics", electronics_items,
+                                         tooltip="Future feature!")
+        electronics_gallery.enabled = False  # Disable individual items
         self.material_galleries.append(electronics_gallery)
         
         custom_gallery = ImageGallery(self.rect.x + 5, self.content_y + 5, 
-                                    self.rect.width - 10, "Custom", custom_items)
+                                    self.rect.width - 10, "Custom", custom_items,
+                                    tooltip="Future feature!")
+        custom_gallery.enabled = False  # Disable individual items
         self.material_galleries.append(custom_gallery)
         
         # Initial positioning
@@ -328,34 +336,41 @@ class PropertyPanel(GUIComponent):
         self.dimension_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 20, "Size: -- m", 12)
         current_y += 35
         
-        # Single options (radio buttons)
+        # Single options (radio buttons) - DISABLED
         self.single_options_label = TextButton(self.rect.x + 10, current_y, 100, 20, "Single options", 14)
         current_y += 25
         
         options = ["Option 1", "Option 2", "Option 3"]
         self.radio_group = RadioButtonGroup(self.rect.x + 10, current_y, self.rect.width - 20, 
-                                          options, 0, self.on_radio_select)
+                                          options, 0, self.on_radio_select, tooltip="Future feature!")
+        self.radio_group.enabled = False
         current_y += len(options) * 25 + 10
         
-        # Dropdown
+        # Dropdown - DISABLED
         self.dropdown_label = TextButton(self.rect.x + 10, current_y, 80, 20, "Drop-down", 14)
         current_y += 25
         self.dropdown = DropdownMenu(self.rect.x + 10, current_y, self.rect.width - 20, 25, 
-                                   ["Text", "Option A", "Option B"], callback=self.on_dropdown_select)
+                                   ["Text", "Option A", "Option B"], callback=self.on_dropdown_select,
+                                   tooltip="Future feature!")
+        self.dropdown.enabled = False
         current_y += 35
         
-        # Toggle (OFF)
+        # Toggle (OFF) - DISABLED
         self.toggle_off_label = TextButton(self.rect.x + 10, current_y, 80, 20, "Toggle (OFF)", 14)
         current_y += 25
         self.toggle_off_checkbox = CheckBox(self.rect.x + 10, current_y, self.rect.width - 20, 25, 
-                                          "Option 1", False, callback=self.on_toggle_off)
+                                          "Option 1", False, callback=self.on_toggle_off,
+                                          tooltip="Future feature!")
+        self.toggle_off_checkbox.enabled = False
         current_y += 35
         
-        # Toggle (ON)
+        # Toggle (ON) - DISABLED
         self.toggle_on_label = TextButton(self.rect.x + 10, current_y, 80, 20, "Toggle (ON)", 14)
         current_y += 25
         self.toggle_on_checkbox = CheckBox(self.rect.x + 10, current_y, self.rect.width - 20, 25, 
-                                         "Option 1", True, callback=self.on_toggle_on)
+                                         "Option 1", True, callback=self.on_toggle_on,
+                                         tooltip="Future feature!")
+        self.toggle_on_checkbox.enabled = False
         
         # Store all components for easy handling
         self.components = [

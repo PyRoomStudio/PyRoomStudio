@@ -211,36 +211,36 @@ class MainApplication:
         
         # Add Settings menu
         settings_menu = [
-            ("Preferences", self.on_preferences),
-            ("Display Settings", self.on_display_settings),
-            ("Audio Settings", self.on_audio_settings),
-            ("Keyboard Shortcuts", self.on_keyboard_shortcuts),
+            ("Preferences", self.on_preferences, "Future feature!", False),
+            ("Display Settings", self.on_display_settings, "Future feature!", False),
+            ("Audio Settings", self.on_audio_settings, "Future feature!", False),
+            ("Keyboard Shortcuts", self.on_keyboard_shortcuts, "Future feature!", False),
         ]
         self.menu_bar.add_menu("Settings", settings_menu)
         
         # Add File menu
         file_menu = [
-            ("New Project", self.on_new_project),
-            ("Open Project", self.on_open_project),
-            ("Save Project", self.on_save_project),
-            ("Save As...", self.on_save_as),
-            ("Import...", self.on_import),
-            ("Export...", self.on_export),
-            ("Recent Projects", self.on_recent_projects),
-            ("Exit", self.on_exit),
+            ("New Project", self.on_new_project, None, True),  # Enabled
+            ("Open Project", self.on_open_project, None, True),  # Enabled
+            ("Save Project", self.on_save_project, "Future feature!", False),
+            ("Save As...", self.on_save_as, "Future feature!", False),
+            ("Import...", self.on_import, "Future feature!", False),
+            ("Export...", self.on_export, "Future feature!", False),
+            ("Recent Projects", self.on_recent_projects, "Future feature!", False),
+            ("Exit", self.on_exit, None, True),  # Enabled
         ]
         self.menu_bar.add_menu("File", file_menu)
         
         # Add Edit menu
         edit_menu = [
-            ("Undo", self.on_undo),
-            ("Redo", self.on_redo),
-            ("Cut", self.on_cut),
-            ("Copy", self.on_copy),
-            ("Paste", self.on_paste),
-            ("Delete", self.on_delete),
-            ("Select All", self.on_select_all),
-            ("Find", self.on_find),
+            ("Undo", self.on_undo, "Future feature!", False),
+            ("Redo", self.on_redo, "Future feature!", False),
+            ("Cut", self.on_cut, "Future feature!", False),
+            ("Copy", self.on_copy, "Future feature!", False),
+            ("Paste", self.on_paste, "Future feature!", False),
+            ("Delete", self.on_delete, "Future feature!", False),
+            ("Select All", self.on_select_all, "Future feature!", False),
+            ("Find", self.on_find, "Future feature!", False),
         ]
         self.menu_bar.add_menu("Edit", edit_menu)
         
@@ -265,7 +265,8 @@ class MainApplication:
         
         for i, (name, image_path, callback) in enumerate(toolbar_buttons):
             x = start_x + i * (button_width + button_spacing)
-            button = ImageButton(x, toolbar_y, button_width, button_height, image_path, callback)
+            button = ImageButton(x, toolbar_y, button_width, button_height, image_path, callback, tooltip="Future feature!")
+            button.enabled = False  # Disable all toolbar buttons
             self.components.append(button)
         
         # Left panel - Library (using new LibraryPanel)
@@ -289,19 +290,20 @@ class MainApplication:
         
         # Bottom toolbar
         bottom_buttons = [
-            ("Import Room", self.on_import_room),
-            ("Place Sound", self.on_place_sound),
-            ("Place Listener", self.on_place_listener),
-            ("Render", self.on_render)
+            ("Import Room", self.on_import_room, "Future feature!", False),
+            ("Place Sound", self.on_place_sound, "Future feature!", False),
+            ("Place Listener", self.on_place_listener, "Future feature!", False),
+            ("Render", self.on_render, None, True)  # Enabled
         ]
         
         button_width = 100
         total_width = len(bottom_buttons) * button_width + (len(bottom_buttons) - 1) * 10
         start_x = (self.width - total_width) // 2
         
-        for i, (text, callback) in enumerate(bottom_buttons):
+        for i, (text, callback, tooltip, enabled) in enumerate(bottom_buttons):
             x = start_x + i * (button_width + 10)
-            button = TextButton(x, self.height - 40, button_width, 30, text, callback=callback)
+            button = TextButton(x, self.height - 40, button_width, 30, text, callback=callback, tooltip=tooltip)
+            button.enabled = enabled
             self.components.append(button)
     
     # Menu callback methods
@@ -547,10 +549,59 @@ class MainApplication:
             elif isinstance(component, PropertyPanel):
                 component.draw_dropdowns(gui_surface)
         
+        # Draw all tooltips last (on top of everything including dropdowns)
+        self.draw_all_tooltips(gui_surface)
+        
         # Blit the GUI surface to OpenGL
         self.blit_surface_to_opengl(gui_surface)
         
         pygame.display.flip()
+    
+    def draw_all_tooltips(self, surface: pygame.Surface):
+        """Draw tooltips for all components, ensuring they render on top of everything"""
+        for component in self.components:
+            self._draw_component_tooltips(component, surface)
+    
+    def _draw_component_tooltips(self, component, surface: pygame.Surface):
+        """Recursively draw tooltips for a component and its children"""
+        # Draw tooltip for this component
+        if hasattr(component, 'draw_tooltip'):
+            component.draw_tooltip(surface)
+        
+        # Draw tooltips for child components
+        if hasattr(component, 'components'):
+            for child in component.components:
+                self._draw_component_tooltips(child, surface)
+        
+        # Special handling for panels with galleries
+        if isinstance(component, LibraryPanel):
+            galleries = component.sound_galleries if component.active_tab == "SOUND" else component.material_galleries
+            for gallery in galleries:
+                self._draw_component_tooltips(gallery, surface)
+        
+        if isinstance(component, AssetsPanel):
+            for gallery in component.galleries:
+                self._draw_component_tooltips(gallery, surface)
+        
+        # Handle gallery image items
+        if hasattr(component, 'image_items'):
+            for item in component.image_items:
+                self._draw_component_tooltips(item, surface)
+        
+        # Handle gallery surface items
+        if hasattr(component, 'surface_items'):
+            for item in component.surface_items:
+                self._draw_component_tooltips(item, surface)
+        
+        # Handle radio button groups
+        if hasattr(component, 'radio_buttons'):
+            for radio in component.radio_buttons:
+                self._draw_component_tooltips(radio, surface)
+        
+        # Handle menu bar dropdown items
+        if isinstance(component, MenuBar) and hasattr(component, 'dropdown_items'):
+            for item in component.dropdown_items:
+                self._draw_component_tooltips(item, surface)
     
     def draw_placeholder_viewport(self):
         """Draw a placeholder when 3D renderer is not available"""

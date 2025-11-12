@@ -2,7 +2,7 @@
 Menu GUI components: MenuItem, MenuButton, MenuBar
 """
 import pygame
-from typing import List, Tuple, Callable, Optional
+from typing import List, Tuple, Callable, Optional, Union
 from .constants import Colors
 from .base_components import GUIComponent
 
@@ -11,8 +11,9 @@ class MenuItem(GUIComponent):
     """A single item in a dropdown menu"""
     
     def __init__(self, x: int, y: int, width: int, height: int, text: str,
-                 callback: Optional[Callable] = None, font_size: int = 14):
-        super().__init__(x, y, width, height)
+                 callback: Optional[Callable] = None, font_size: int = 14,
+                 tooltip: Optional[str] = None):
+        super().__init__(x, y, width, height, tooltip)
         self.text = text
         self.callback = callback
         self.font = pygame.font.Font(None, font_size)
@@ -32,12 +33,19 @@ class MenuItem(GUIComponent):
             return
         
         # Background
-        bg_color = self.hover_color if self.hover else self.bg_color
+        if self.enabled:
+            bg_color = self.hover_color if self.hover else self.bg_color
+            text_color = self.text_color
+        else:
+            # Grayed out appearance when disabled
+            bg_color = self.bg_color
+            text_color = Colors.GRAY
+        
         pygame.draw.rect(surface, bg_color, self.rect)
         pygame.draw.rect(surface, self.border_color, self.rect, 1)
         
         # Text
-        text_surface = self.font.render(self.text, True, self.text_color)
+        text_surface = self.font.render(self.text, True, text_color)
         text_rect = text_surface.get_rect(midleft=(self.rect.x + 8, self.rect.centery))
         surface.blit(text_surface, text_rect)
 
@@ -62,7 +70,7 @@ class MenuBar(GUIComponent):
     
     def __init__(self, x: int, y: int, width: int, height: int = 25):
         super().__init__(x, y, width, height)
-        self.menus: List[Tuple[str, List[Tuple[str, Callable]]]] = []
+        self.menus: List[Tuple[str, List[Union[Tuple[str, Callable], Tuple[str, Callable, Optional[str], bool]]]]] = []
         self.menu_buttons: List[MenuButton] = []
         self.active_menu_index = -1
         self.dropdown_items: List[MenuItem] = []
@@ -76,8 +84,8 @@ class MenuBar(GUIComponent):
         self.menu_item_height = 25
         self.dropdown_width = 150
     
-    def add_menu(self, title: str, items: List[Tuple[str, Callable]]):
-        """Add a menu with title and list of (item_name, callback) tuples"""
+    def add_menu(self, title: str, items: List[Union[Tuple[str, Callable], Tuple[str, Callable, Optional[str], bool]]]):
+        """Add a menu with title and list of (item_name, callback) or (item_name, callback, tooltip, enabled) tuples"""
         self.menus.append((title, items))
         self._rebuild_menu_buttons()
     
@@ -112,7 +120,15 @@ class MenuBar(GUIComponent):
             
             start_y = self.rect.bottom
             
-            for i, (item_text, callback) in enumerate(items):
+            for i, item_data in enumerate(items):
+                # Support both old format (2 values) and new format (4 values)
+                if len(item_data) == 2:
+                    item_text, callback = item_data
+                    tooltip = None
+                    enabled = True
+                else:
+                    item_text, callback, tooltip, enabled = item_data
+                
                 item_y = start_y + i * self.menu_item_height
                 
                 def item_callback(cb=callback):
@@ -121,7 +137,8 @@ class MenuBar(GUIComponent):
                     self.dropdown_items.clear()
                 
                 menu_item = MenuItem(button.rect.x, item_y, self.dropdown_width, 
-                                   self.menu_item_height, item_text, item_callback)
+                                   self.menu_item_height, item_text, item_callback, tooltip=tooltip)
+                menu_item.enabled = enabled
                 self.dropdown_items.append(menu_item)
     
     def handle_event(self, event: pygame.event.Event) -> bool:
