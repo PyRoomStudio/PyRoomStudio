@@ -9,14 +9,12 @@ We highly suggest supporting PRA and contributing to them as well. Their updates
   <img width="600" src="assets/contributing-image.png" alt="">
 </p>
 
-
 ## Developing
 
 ### Issues
 
 The Issues tab on GitHub contains a running list of features to implement, as well as any bugs or problems that arise from development.
-
-
+For further details and discussions, please join our Discord server.
 
 ### Development Environment
 

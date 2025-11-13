@@ -14,11 +14,15 @@
 The project acts as a method to graphically use [pyroomacoustics](https://github.com/LCAV/pyroomacoustics), a library for testing and simulating acoustics algorithms written by Robin Scheibler.
 
 > [!NOTE]
-> PyRoomStudio is still under significant development- a lot of fundamental features have not been fleshed out yet. Please make a pull request- or contact Evan and William- if you want to contribute to this project.
+> PyRoomStudio is still under significant development- a lot of fundamental features have not been fleshed out yet. Please join the [Discord](https://discord.gg/Q9ZtTcZZvH) server and make pull requests if you wish to contribute!
 
 
 
-## **Authors**
+## **Get Involved!**
+
+#### [Discord](https://discord.gg/Q9ZtTcZZvH)
+
+#### Contacts:
 
 William (Zhiwen) Chen (willc@illinois.edu), *Co-Founder & Designer*
 
@@ -42,6 +46,8 @@ By accomplishing these missions, we hope to increase the usage of acoustic tools
 
 
 ## Setup
+
+PyRoomStudio is currently running on Python 3.9+. Make sure to have one of these versions installed before downloading and running the application.
 
 1. Clone the repository
 
@@ -74,18 +80,9 @@ By accomplishing these missions, we hope to increase the usage of acoustic tools
 
 <!------------------------------------------------------------------->
 
-## Future Plans
-
-- PyRoomStudio's GUI is built with **PyGame**, with rendering done in **PyOpenGL**. This has been feasible for our purposes, but we would like to switch to **PyQT** sometime down the road.
-
-- Current features to be implemented can be found in the Issues tab.
-
-
-<!------------------------------------------------------------------->
-
 ## Credits
 
-- Big thanks to [Robin Scheibler](https://www.robinscheibler.org), Zachary Belanger, [Mohamed Boubekri](https://arch.illinois.edu/people/profiles/mohamed-boubekri), and Paris Smaragdis for providing initial feedback and collaborating with us.
+- Big thanks to [Robin Scheibler](https://www.robinscheibler.org), [Zackery Belanger](https://empac.rpi.edu/program/people/researchers/zackery-belanger), [Mohamed Boubekri](https://arch.illinois.edu/people/profiles/mohamed-boubekri), and [Paris Smaragdis](https://www.mit.edu/~paris) for providing initial feedback and collaborating with us.
 
 <!------------------------------------------------------------------->
 
