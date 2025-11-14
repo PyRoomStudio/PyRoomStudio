@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyRoomStudio - Open-Source Room Acoustics Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            height: 60px;
+        }
+
+        nav a {
+            color: #333;
+            text-decoration: none;
+            margin-left: 30px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #76cbff;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #76cbff 0%, #ffb55c 100%) !important;
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 35px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+            font-size: 1.1rem;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #76cbff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: #76cbff;
+        }
+
+        /* Note Banner */
+        .note-banner {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 40px 0;
+            border-radius: 5px;
+        }
+
+        .note-banner strong {
+            color: #856404;
+        }
+
+        /* Section Styles */
+        section {
+            padding: 80px 0;
+        }
+
+        section:nth-child(even):not(.hero) {
+            background: white;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            margin: 30px 0 15px 0;
+            color: #34495e;
+        }
+
+        .section-intro {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 50px auto;
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        /* Mission Statement */
+        .mission-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        .mission-text ol {
+            font-size: 1.2rem;
+            line-height: 2;
+            padding-left: 20px;
+        }
+
+        .mission-text li {
+            margin-bottom: 15px;
+        }
+
+        .mission-image {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* Setup Section */
+        .setup-steps {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .setup-step {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .setup-step h3 {
+            margin-top: 0;
+            color: #76cbff;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+        }
+
+        .code-block code {
+            display: block;
+            white-space: pre;
+        }
+
+        /* Controls Section */
+        .controls-list {
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+
+        .controls-list li {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            list-style: none;
+        }
+
+        .controls-list strong {
+            color: #ffb55c;
+        }
+
+        /* Screenshot Section */
+        .screenshot-container {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .screenshot {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        /* Contributing Section */
+        .contributing-content {
+            max-width: 900px;
+            margin: 0 auto;
+            margin-top: 40px;
+        }
+
+        .contributing-image {
+            width: 100%;
+            max-width: 700px;
+            display: block;
+            margin: 0 auto 40px auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .contributing-text {
+            font-size: 1.1rem;
+        }
+
+        .contributing-text h3 {
+            color: #76cbff;
+            margin-top: 30px;
+        }
+
+        /* Credits Section */
+        .credits-content {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: #2c3e50;
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .contacts {
+            margin: 20px 0;
+        }
+
+        .contacts p {
+            margin: 10px 0;
+        }
+
+        footer a {
+            color: #76cbff;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .mission-content {
+                grid-template-columns: 1fr;
+            }
+
+            nav a {
+                display: block;
+                margin: 10px 0;
+            }
+
+            .header-content {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <img src="assets/Logo_v3_color.svg" alt="PyRoomStudio Logo" class="logo">
+                <nav>
+                    <a href="#home">Home</a>
+                    <a href="https://github.com/ematth/PyRoomStudio" target="_blank">GitHub</a>
+                    <a href="https://discord.gg/Q9ZtTcZZvH" target="_blank">Discord</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h1>PyRoomStudio</h1>
+            <p>An open-source application for rendering and analyzing acoustical properties of 3D spaces via meshes</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/ematth/PyRoomStudio" class="btn btn-primary" target="_blank">View on GitHub</a>
+                <a href="https://discord.gg/Q9ZtTcZZvH" class="btn btn-secondary" target="_blank">Join Discord</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section>
+        <div class="container">
+            <p class="section-intro">
+                PyRoomStudio is a GUI application for rendering and analyzing acoustical properties of 3D spaces via STL meshes. 
+                It is built on top of the <a href="https://github.com/LCAV/pyroomacoustics" target="_blank">PyRoomAcoustics</a>, a library for simulating acoustics algorithms.
+            </p>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section id="mission">
+        <div class="container">
+            <h2>Mission Statement</h2>
+            <div class="mission-content">
+                <div class="mission-text">
+                    <p style="font-size: 1.1rem; margin-bottom: 20px;">PyRoomStudio has two missions:</p>
+                    <ol>
+                        <li>Make room acoustics design accessible and intuitive for designers via open-source software.</li>
+                        <li>Connect people passionate about designing for the auditory sense, from both the technical and the creative sides.</li>
+                    </ol>
+                    <p style="font-size: 1.1rem; margin-top: 30px;">By accomplishing these missions, we hope to increase the usage of acoustic tools in the design community and make light of sound as a necessary consideration for future spaces.</p>
+                </div>
+                <img src="assets/readme-image.png" alt="PyRoomStudio Mission" class="mission-image">
+            </div>
+        </div>
+    </section>
+
+    <!-- Setup Section -->
+    <section id="setup">
+        <div class="container">
+            <h2>Setup</h2>
+            <p class="section-intro">PyRoomStudio is currently running on Python 3.9+. Make sure to have one of these versions installed before downloading and running the application.</p>
+            
+            <div class="setup-steps">
+                <div class="setup-step">
+                    <h3>1. Clone the repository</h3>
+                    <div class="code-block">
+                        <code>$ git clone https://github.com/ematth/PyRoomStudio.git</code>
+                    </div>
+                </div>
+
+                <div class="setup-step">
+                    <h3>2. Setup your virtual environment (venv) and install necessary packages</h3>
+                    <div class="code-block">
+                        <code>$ python3 -m venv venv
+$ source venv/bin/activate
+(venv) $ pip install -r requirements.txt</code>
+                    </div>
+                </div>
+
+                <div class="setup-step">
+                    <h3>3. Open the existing rendering GUI</h3>
+                    <div class="code-block">
+                        <code>$ python main_gui.py</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshot Section -->
+    <section>
+        <div class="container">
+            <div class="screenshot-container">
+                <img src="assets/screenshot.png" alt="PyRoomStudio Screenshot" class="screenshot">
+            </div>
+        </div>
+    </section>
+
+    <!-- Contributing Section -->
+    <section id="contributing">
+        <div class="container">
+            <h2>Get Involved & Contributing</h2>
+            <div class="contributing-content">
+                <img src="assets/contributing-image.png" alt="Contributing to PyRoomStudio" class="contributing-image">
+                <div class="contributing-text">
+                    <p>We are always accepting external contributions! We're looking for users who are interested in contributing code (GUI and app functionality) and/or material coefficients (for a public database).</p>
+                    
+                    <h3>Issues</h3>
+                    <p>The Issues tab on GitHub contains a running list of features to implement, as well as any bugs or problems that arise from development. For further details and discussions, please join our Discord server.</p>
+                    
+                    <h3>Development Environment</h3>
+                    <p>Environment libraries are provided in <code>requirements.txt</code> and consist of minimal tools needed to build the running simulation: PyGame, PyOpenGL, PyRoomAcoustics, and their required libraries.</p>
+                    
+                    <h3>Materials Database</h3>
+                    <p>We're also looking to expand our project into an open-source database of material coefficients. In the future, we want users to be able to drag-and-drop materials on different surfaces to improve the simulation process.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <h3>Contacts</h3>
+            <div class="contacts">
+                <p><strong>William (Zhiwen) Chen</strong> - <a href="mailto:willc@illinois.edu">willc@illinois.edu</a><br><em>Co-Founder & Designer</em></p>
+                <p><strong>Evan M. Matthews</strong> - <a href="mailto:evanmm3@illinois.edu">evanmm3@illinois.edu</a><br><em>Co-Founder & Programmer</em></p>
+            </div>
+            <p style="margin-top: 30px;">
+                <a href="https://github.com/ematth/PyRoomStudio" target="_blank">GitHub</a> | 
+                <a href="https://discord.gg/Q9ZtTcZZvH" target="_blank">Discord</a>
+            </p>
+            <p style="margin-top: 20px; color: #95a5a6;">&copy; 2025 PyRoomStudio. Open-source under the MIT License.</p>
+        </div>
+    </footer>
+</body>
+</html>
