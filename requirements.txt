@@ -10,7 +10,6 @@ numpy-stl==3.2.0
 packaging==25.0
 pillow==11.3.0
 pybind11==3.0.0
-pygame==2.6.1
 pygame-ce==2.5.5
 pygame_gui==0.6.14
 pyglet==1.5.31
