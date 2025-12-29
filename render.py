@@ -10,6 +10,21 @@ from acoustic import Acoustic
 import collections
 import random
 from PIL import Image
+from dataclasses import dataclass, field
+from typing import List, Optional, Tuple
+
+
+@dataclass
+class PlacedPoint:
+    """Represents a 3D point placed on or near a mesh surface"""
+    surface_point: np.ndarray  # Intersection point on surface
+    normal: np.ndarray         # Surface normal (unit vector)
+    distance: float = 0.0      # Perpendicular offset from surface
+    color: Tuple[float, float, float] = (0.2, 0.8, 0.2)  # RGB marker color (green default)
+    
+    def get_position(self) -> np.ndarray:
+        """Get the actual 3D position (surface point + normal * distance)"""
+        return self.surface_point + self.normal * self.distance
 
 class Render:
     def __init__(self, filename, view_rect, window_height):
@@ -65,6 +80,20 @@ class Render:
         for surf_idx, surf in enumerate(self.surfaces):
             for tri_idx in surf:
                 self.triangle_to_surface[tri_idx] = surf_idx
+        
+        # 3D Point placement system
+        self.placed_points: List[PlacedPoint] = []
+        self.active_point_index: Optional[int] = None  # Index of currently selected point
+        self.placement_mode = False  # Whether point placement mode is active
+        self.point_colors = [
+            (0.2, 0.8, 0.2),   # Green
+            (0.8, 0.2, 0.2),   # Red
+            (0.2, 0.2, 0.8),   # Blue
+            (0.8, 0.8, 0.2),   # Yellow
+            (0.8, 0.2, 0.8),   # Magenta
+            (0.2, 0.8, 0.8),   # Cyan
+        ]
+        self.next_point_color_index = 0
 
     def load_texture(self, filename):
         """Load a texture from file and return the OpenGL texture ID"""
@@ -278,6 +307,53 @@ class Render:
             return t
         return None
 
+    def get_intersection_point(self, mouse_pos) -> Optional[Tuple[np.ndarray, np.ndarray, int]]:
+        """
+        Cast a ray from mouse position and find intersection with mesh.
+        
+        Returns:
+            Tuple of (intersection_point, surface_normal, triangle_index) or None if no hit
+        """
+        # Set up OpenGL matrices for ray picking
+        glPushMatrix()
+        self.update_camera()
+        glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
+        glTranslatef(-self.center[0], -self.center[1], -self.center[2])
+        
+        ray_origin, ray_dir = self.get_ray_from_mouse(mouse_pos)
+        glPopMatrix()
+        
+        triangles = self.model.vectors
+        normals = self.model.normals
+        
+        min_t = float('inf')
+        hit_tri_idx = None
+        
+        for tri_idx, triangle in enumerate(triangles):
+            t = self.ray_triangle_intersect(ray_origin, ray_dir, triangle)
+            if t is not None and t < min_t:
+                min_t = t
+                hit_tri_idx = tri_idx
+        
+        if hit_tri_idx is None:
+            return None
+        
+        # Calculate the actual intersection point
+        intersection_point = ray_origin + ray_dir * min_t
+        
+        # Get the surface normal for this triangle
+        normal = normals[hit_tri_idx].copy()
+        # Normalize the normal vector
+        normal = normal / np.linalg.norm(normal)
+        
+        # Ensure normal points towards the camera (outward from surface)
+        # Check if normal is pointing away from ray origin
+        to_camera = ray_origin - intersection_point
+        if np.dot(normal, to_camera) < 0:
+            normal = -normal
+        
+        return (intersection_point, normal, hit_tri_idx)
+
     def draw_measurement_grid(self):
         """
         Draw a measurement grid on the floor to show scale.
@@ -480,6 +556,9 @@ class Render:
                     self.surface_colors[surf_idx] = self.random_color()
                     self.surface_materials[surf_idx] = None  # Remove texture when changing color
                     print(f"Changed color of surface {surf_idx}")
+            elif event.button == 2:  # Middle click - place point (when placement mode is active)
+                if self.placement_mode:
+                    self.add_point_at_mouse(event.pos)
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 self.mouse_down = False
@@ -523,10 +602,21 @@ class Render:
                 self.camera_pitch = max(-89, min(89, self.camera_pitch))
                 self.last_mouse_pos = (x, y)
         elif event.type == pygame.MOUSEWHEEL:
-            if event.y > 0:
-                self.camera_distance = max(self.min_distance, self.camera_distance - 0.1 * self.size)
+            # Check if we should adjust point distance or camera zoom
+            if self.placement_mode and self.active_point_index is not None:
+                # Adjust active point's perpendicular distance
+                # Scroll step: 0.1 meters per scroll unit
+                scroll_step = 0.1
+                if event.y > 0:
+                    self.adjust_active_point_distance(scroll_step)
+                else:
+                    self.adjust_active_point_distance(-scroll_step)
             else:
-                self.camera_distance = min(self.max_distance, self.camera_distance + 0.1 * self.size)
+                # Normal camera zoom
+                if event.y > 0:
+                    self.camera_distance = max(self.min_distance, self.camera_distance - 0.1 * self.size)
+                else:
+                    self.camera_distance = min(self.max_distance, self.camera_distance + 0.1 * self.size)
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_t:
                 self.transparent_mode = not self.transparent_mode
@@ -536,6 +626,221 @@ class Render:
                 self.surface_colors = [self.default_surface_color[:] for _ in self.surfaces]
                 self.surface_materials = [None for _ in self.surfaces]
                 print("Reset all surfaces to default")
+            elif event.key == pygame.K_p:
+                # Toggle placement mode
+                self.set_placement_mode(not self.placement_mode)
+            elif event.key == pygame.K_DELETE or event.key == pygame.K_BACKSPACE:
+                # Delete active point
+                if self.active_point_index is not None:
+                    self.remove_active_point()
+            elif event.key == pygame.K_c:
+                # Clear all placed points
+                self.clear_placed_points()
+
+    # ============ Point Placement Methods ============
+    
+    def set_placement_mode(self, enabled: bool):
+        """Enable or disable point placement mode"""
+        self.placement_mode = enabled
+        if enabled:
+            print("Point placement mode: ON (Middle-click to place points, scroll to adjust distance)")
+        else:
+            print("Point placement mode: OFF")
+    
+    def add_point_at_mouse(self, mouse_pos) -> Optional[PlacedPoint]:
+        """
+        Add a new placed point at the mouse position.
+        Returns the created PlacedPoint or None if no surface was hit.
+        """
+        result = self.get_intersection_point(mouse_pos)
+        if result is None:
+            print("No surface hit - cannot place point")
+            return None
+        
+        intersection_point, normal, tri_idx = result
+        
+        # Get next color
+        color = self.get_next_point_color()
+        
+        # Create new placed point
+        point = PlacedPoint(
+            surface_point=intersection_point.copy(),
+            normal=normal.copy(),
+            distance=0.0,
+            color=color
+        )
+        
+        self.placed_points.append(point)
+        self.active_point_index = len(self.placed_points) - 1
+        
+        print(f"Placed point {self.active_point_index} at {intersection_point} (surface {self.triangle_to_surface.get(tri_idx, '?')})")
+        return point
+    
+    def get_next_point_color(self) -> Tuple[float, float, float]:
+        """Get the next color for a new point"""
+        color = self.point_colors[self.next_point_color_index % len(self.point_colors)]
+        self.next_point_color_index += 1
+        return color
+    
+    def update_active_point_distance(self, distance: float):
+        """Update the perpendicular distance of the active point"""
+        if self.active_point_index is not None and 0 <= self.active_point_index < len(self.placed_points):
+            self.placed_points[self.active_point_index].distance = distance
+    
+    def adjust_active_point_distance(self, delta: float):
+        """Adjust the active point's distance by a delta amount"""
+        if self.active_point_index is not None and 0 <= self.active_point_index < len(self.placed_points):
+            point = self.placed_points[self.active_point_index]
+            point.distance += delta
+            print(f"Point {self.active_point_index} distance: {point.distance:.2f}m")
+    
+    def get_active_point_distance(self) -> float:
+        """Get the current distance of the active point"""
+        if self.active_point_index is not None and 0 <= self.active_point_index < len(self.placed_points):
+            return self.placed_points[self.active_point_index].distance
+        return 0.0
+    
+    def select_point(self, index: int):
+        """Select a point by index"""
+        if 0 <= index < len(self.placed_points):
+            self.active_point_index = index
+            print(f"Selected point {index}")
+    
+    def remove_active_point(self):
+        """Remove the currently active point"""
+        if self.active_point_index is not None and 0 <= self.active_point_index < len(self.placed_points):
+            removed_idx = self.active_point_index
+            self.placed_points.pop(self.active_point_index)
+            print(f"Removed point {removed_idx}")
+            
+            # Update active index
+            if len(self.placed_points) == 0:
+                self.active_point_index = None
+            elif self.active_point_index >= len(self.placed_points):
+                self.active_point_index = len(self.placed_points) - 1
+    
+    def clear_placed_points(self):
+        """Clear all placed points"""
+        count = len(self.placed_points)
+        self.placed_points.clear()
+        self.active_point_index = None
+        self.next_point_color_index = 0
+        print(f"Cleared {count} placed points")
+    
+    def get_placed_points_info(self) -> List[dict]:
+        """Get information about all placed points for display"""
+        info = []
+        for i, point in enumerate(self.placed_points):
+            pos = point.get_position()
+            info.append({
+                'index': i,
+                'position': pos,
+                'distance': point.distance,
+                'color': point.color,
+                'active': i == self.active_point_index
+            })
+        return info
+
+    def draw_point_markers(self):
+        """Draw all placed points as colored spheres"""
+        if not self.placed_points:
+            return
+        
+        glPushMatrix()
+        self.update_camera()
+        
+        # Apply same scaling as model
+        glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
+        
+        # Apply same translation as model
+        glTranslatef(-self.center[0], -self.center[1], -self.center[2])
+        
+        glDisable(GL_TEXTURE_2D)
+        
+        # Sphere parameters
+        # Radius in original model units (scales with model)
+        base_radius = 0.1 / self.model_scale_factor  # ~0.1 meters in world space
+        slices = 16
+        stacks = 16
+        
+        for i, point in enumerate(self.placed_points):
+            position = point.get_position()
+            is_active = (i == self.active_point_index)
+            
+            glPushMatrix()
+            glTranslatef(position[0], position[1], position[2])
+            
+            # Draw the sphere
+            if is_active:
+                # Active point: brighter, with outline
+                glColor4f(point.color[0], point.color[1], point.color[2], 1.0)
+                radius = base_radius * 1.2  # Slightly larger
+            else:
+                # Inactive point: semi-transparent
+                glColor4f(point.color[0], point.color[1], point.color[2], 0.7)
+                radius = base_radius
+            
+            # Draw solid sphere using triangle fans and strips
+            self._draw_sphere(radius, slices, stacks)
+            
+            # Draw outline for active point
+            if is_active:
+                glColor4f(1.0, 1.0, 1.0, 1.0)  # White outline
+                glLineWidth(2)
+                self._draw_sphere_wireframe(radius * 1.05, slices // 2, stacks // 2)
+            
+            glPopMatrix()
+        
+        glPopMatrix()
+    
+    def _draw_sphere(self, radius: float, slices: int, stacks: int):
+        """Draw a solid sphere using OpenGL primitives"""
+        for i in range(stacks):
+            lat0 = math.pi * (-0.5 + float(i) / stacks)
+            z0 = radius * math.sin(lat0)
+            zr0 = radius * math.cos(lat0)
+            
+            lat1 = math.pi * (-0.5 + float(i + 1) / stacks)
+            z1 = radius * math.sin(lat1)
+            zr1 = radius * math.cos(lat1)
+            
+            glBegin(GL_QUAD_STRIP)
+            for j in range(slices + 1):
+                lng = 2 * math.pi * float(j) / slices
+                x = math.cos(lng)
+                y = math.sin(lng)
+                
+                glVertex3f(x * zr0, y * zr0, z0)
+                glVertex3f(x * zr1, y * zr1, z1)
+            glEnd()
+    
+    def _draw_sphere_wireframe(self, radius: float, slices: int, stacks: int):
+        """Draw a wireframe sphere"""
+        # Latitude lines
+        for i in range(stacks + 1):
+            lat = math.pi * (-0.5 + float(i) / stacks)
+            z = radius * math.sin(lat)
+            zr = radius * math.cos(lat)
+            
+            glBegin(GL_LINE_LOOP)
+            for j in range(slices):
+                lng = 2 * math.pi * float(j) / slices
+                x = math.cos(lng) * zr
+                y = math.sin(lng) * zr
+                glVertex3f(x, y, z)
+            glEnd()
+        
+        # Longitude lines
+        for j in range(slices):
+            lng = 2 * math.pi * float(j) / slices
+            glBegin(GL_LINE_STRIP)
+            for i in range(stacks + 1):
+                lat = math.pi * (-0.5 + float(i) / stacks)
+                x = math.cos(lng) * radius * math.cos(lat)
+                y = math.sin(lng) * radius * math.cos(lat)
+                z = radius * math.sin(lat)
+                glVertex3f(x, y, z)
+            glEnd()
 
     def draw_scene(self):
         # Save current OpenGL state to avoid interfering with pygame_gui rendering
@@ -554,6 +859,9 @@ class Render:
         
         # Draw the 3D model
         self.draw_model()
+        
+        # Draw placed point markers (on top of model)
+        self.draw_point_markers()
         
         glDisable(GL_SCISSOR_TEST)
         

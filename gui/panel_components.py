@@ -336,6 +336,17 @@ class PropertyPanel(GUIComponent):
         self.dimension_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 20, "Size: -- m", 12)
         current_y += 35
         
+        # Point Distance Slider (for 3D point placement)
+        self.point_distance_label = TextButton(self.rect.x + 10, current_y, 100, 20, "Point Distance", 14)
+        current_y += 25
+        self.point_distance_value_label = TextButton(self.rect.x + self.rect.width - 55, current_y - 25, 50, 20, "0.0m", 14)
+        self.point_distance_slider = Slider(self.rect.x + 10, current_y, self.rect.width - 60, 20, -5.0, 5.0, 0.0, self.on_point_distance_change)
+        current_y += 25
+        
+        # Placement mode indicator
+        self.placement_mode_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 16, "Placement: OFF", 12)
+        current_y += 30
+        
         # Single options (radio buttons) - DISABLED
         self.single_options_label = TextButton(self.rect.x + 10, current_y, 100, 20, "Single options", 14)
         current_y += 25
@@ -375,6 +386,8 @@ class PropertyPanel(GUIComponent):
         # Store all components for easy handling
         self.components = [
             self.scale_label, self.scale_value_label, self.scale_slider, self.dimension_label,
+            self.point_distance_label, self.point_distance_value_label, self.point_distance_slider,
+            self.placement_mode_label,
             self.single_options_label, self.radio_group,
             self.dropdown_label, self.dropdown,
             self.toggle_off_label, self.toggle_off_checkbox,
@@ -394,6 +407,14 @@ class PropertyPanel(GUIComponent):
             self.dimension_label.text = dim_text
         
         print(f"Scale factor: {value:.2f}x")
+    
+    def on_point_distance_change(self, value):
+        """Handle point distance slider changes"""
+        self.point_distance_value_label.text = f"{value:.1f}m"
+        
+        # Update renderer's active point distance
+        if self.renderer:
+            self.renderer.update_active_point_distance(value)
     
     def on_radio_select(self, option):
         print(f"Radio selected: {option}")
@@ -431,6 +452,22 @@ class PropertyPanel(GUIComponent):
     def update(self, dt: float):
         for component in self.components:
             component.update(dt)
+        
+        # Sync point distance slider with renderer's active point
+        if self.renderer:
+            # Update placement mode label
+            if self.renderer.placement_mode:
+                self.placement_mode_label.text = "Placement: ON (MMB)"
+            else:
+                self.placement_mode_label.text = "Placement: OFF (P)"
+            
+            # Sync slider with active point's distance
+            if self.renderer.active_point_index is not None:
+                current_distance = self.renderer.get_active_point_distance()
+                # Only update if significantly different (avoid feedback loop)
+                if abs(self.point_distance_slider.value - current_distance) > 0.01:
+                    self.point_distance_slider.value = current_distance
+                    self.point_distance_value_label.text = f"{current_distance:.1f}m"
     
     def draw(self, surface: pygame.Surface):
         """Draw both the panel and dropdowns"""

@@ -308,7 +308,7 @@ class MainApplication:
         bottom_buttons = [
             ("Import Room", self.on_import_room, None, True),  # Enabled - same as File -> Open Project
             ("Import Sound", self.on_import_sound, None, True),  # Enabled
-            ("Place Listener", self.on_place_listener, "Future feature!", False),
+            ("Place Point", self.on_place_point, "Toggle point placement mode (P key or Middle-click)", True),  # Enabled
             ("Render", self.on_render, None, True)  # Enabled
         ]
         
@@ -316,11 +316,14 @@ class MainApplication:
         total_width = len(bottom_buttons) * button_width + (len(bottom_buttons) - 1) * 10
         start_x = (self.width - total_width) // 2
         
+        self.place_point_button = None  # Store reference for dynamic text update
         for i, (text, callback, tooltip, enabled) in enumerate(bottom_buttons):
             x = start_x + i * (button_width + 10)
             button = TextButton(x, self.height - 40, button_width, 30, text, callback=callback, tooltip=tooltip)
             button.enabled = enabled
             self.components.append(button)
+            if text == "Place Point":
+                self.place_point_button = button
     
     # Menu callback methods
     def on_preferences(self): print("Preferences")
@@ -426,7 +429,25 @@ class MainApplication:
             print(f"Error opening sound file dialog: {e}")
             return False
     
-    def on_place_listener(self): print("Place listener")
+    def on_place_listener(self): 
+        """Legacy callback - now redirects to on_place_point"""
+        self.on_place_point()
+    
+    def on_place_point(self):
+        """Toggle 3D point placement mode"""
+        if not self.renderer:
+            print("No 3D model loaded - cannot place points")
+            return
+        
+        # Toggle placement mode
+        self.renderer.set_placement_mode(not self.renderer.placement_mode)
+        
+        # Update button text
+        if self.place_point_button:
+            if self.renderer.placement_mode:
+                self.place_point_button.text = "Stop Placing"
+            else:
+                self.place_point_button.text = "Place Point"
     
     def on_render(self):
         """Trigger acoustic simulation using the loaded 3D model"""
@@ -548,6 +569,9 @@ class MainApplication:
         
         # Update surface colors in assets panel if 3D model is loaded
         self.sync_surface_colors()
+        
+        # Sync place point button text with renderer state
+        self.sync_place_point_button()
     
     def sync_surface_colors(self):
         """Synchronize surface colors between 3D renderer and assets panel"""
@@ -578,6 +602,16 @@ class MainApplication:
         except Exception as e:
             # Silently handle errors to avoid spam in console
             pass
+    
+    def sync_place_point_button(self):
+        """Sync place point button text with renderer's placement mode"""
+        if not self.place_point_button:
+            return
+        
+        if self.renderer and self.renderer.placement_mode:
+            self.place_point_button.text = "Stop Placing"
+        else:
+            self.place_point_button.text = "Place Point"
     
     def draw(self):
         """Draw everything with mixed OpenGL 3D and 2D GUI"""
