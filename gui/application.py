@@ -5,6 +5,7 @@ import pygame
 from typing import List
 from OpenGL.GL import *
 from OpenGL.GLU import *
+import numpy as np
 
 from .constants import Colors
 from .base_components import GUIComponent, TextButton, ImageButton
@@ -39,6 +40,13 @@ class MainApplication:
         
         # Sound source file for acoustic simulation
         self.sound_source_file = None  # Will use default if None
+        
+        # Initialize scene manager for listeners and sound sources
+        from scene_manager import SceneManager
+        self.scene_manager = SceneManager()
+        
+        # Listener placement mode
+        self.place_listener_mode = False
         
         # Initialize GUI components
         self.init_gui()
@@ -295,7 +303,7 @@ class MainApplication:
         bottom_buttons = [
             ("Import Room", self.on_import_room, None, True),  # Enabled - same as File -> Open Project
             ("Import Sound", self.on_import_sound, None, True),  # Enabled
-            ("Place Listener", self.on_place_listener, "Future feature!", False),
+            ("Place Listener", self.on_place_listener, None, True),  # Enabled
             ("Render", self.on_render, None, True)  # Enabled
         ]
         
@@ -413,7 +421,15 @@ class MainApplication:
             print(f"Error opening sound file dialog: {e}")
             return False
     
-    def on_place_listener(self): print("Place listener")
+    def on_place_listener(self):
+        """Toggle listener placement mode"""
+        self.place_listener_mode = not self.place_listener_mode
+        if self.place_listener_mode:
+            print("Listener placement mode ENABLED - Click on a surface to place listener")
+            pygame.display.set_caption("PyRoomStudio - Place Listener Mode (Click on surface)")
+        else:
+            print("Listener placement mode DISABLED")
+            pygame.display.set_caption("PyRoomStudio")
     
     def on_render(self):
         """Trigger acoustic simulation using the loaded 3D model"""
@@ -426,6 +442,25 @@ class MainApplication:
             print("ERROR: No 3D model loaded. Please load an STL file first.")
             print("Use File → Open Project to load a model.")
             return
+        
+        # Check if we have listeners
+        if not self.scene_manager.listeners:
+            print("WARNING: No listeners placed. Using default listener at room center.")
+            # Add a default listener at room center
+            room_center = self.renderer.get_room_center()
+            self.scene_manager.add_listener(room_center, name="Default Listener")
+        
+        # Check if we have sound sources
+        if not self.scene_manager.sound_sources:
+            # Add a default sound source at room center if we have a sound file
+            if self.sound_source_file:
+                print("WARNING: No sound sources placed. Using default source at room center.")
+                room_center = self.renderer.get_room_center()
+                self.scene_manager.add_sound_source(room_center, self.sound_source_file, name="Default Source")
+            else:
+                print("ERROR: No sound source selected and no default sound source.")
+                print("Please use 'Import Sound' to select an audio file first.")
+                return
         
         try:
             # Update window title to show simulation in progress
@@ -442,22 +477,32 @@ class MainApplication:
             print(f"  - Total vertices: {len(model_vertices)}")
             
             # Import and create acoustic simulator
-            from acoustic import Acoustic
+            from acoustic_simulator import AcousticSimulator
             print("\nInitializing acoustic simulator...")
-            acoustic = Acoustic()
+            acoustic_simulator = AcousticSimulator()
             
             # Get the current scale factor from the renderer
             scale_factor = self.renderer.model_scale_factor
             print(f"Using scale factor from renderer: {scale_factor:.4f}x")
             
-            # Run the simulation with custom sound source if loaded
+            # Run the simulation with the scene manager
             print("Running PyRoomAcoustics simulation...")
-            if self.sound_source_file:
-                print(f"Using custom sound source: {self.sound_source_file}")
-            else:
-                print("Using default sound source")
+            print(f"  - {len(self.scene_manager.sound_sources)} sound source(s)")
+            print(f"  - {len(self.scene_manager.listeners)} listener(s)")
             print("(This may take a few moments...)")
-            output_file = acoustic.simulate(walls, room_center, model_vertices, scale_factor, self.sound_source_file)
+            
+            # The AcousticSimulator expects scale_factor as 1/SIZE_REDUCTION_FACTOR format
+            # So we pass it directly as the model_scale_factor
+            output_dir = acoustic_simulator.simulate_scene(
+                self.scene_manager,
+                walls,
+                room_center,
+                model_vertices,
+                max_order=3,
+                n_rays=10000,
+                energy_absorption=0.2,
+                scattering=0.1
+            )
             
             # Restore window title (keep sound name if loaded)
             if self.sound_source_file:
@@ -470,8 +515,9 @@ class MainApplication:
             print("\n" + "=" * 60)
             print("SIMULATION COMPLETE!")
             print("=" * 60)
-            print(f"Output saved to: {output_file}")
-            print("You can now play this file to hear the simulated acoustics.")
+            if output_dir:
+                print(f"Output saved to: {output_dir}")
+                print("You can now play the output files to hear the simulated acoustics.")
             print("=" * 60)
             
         except FileNotFoundError as e:
@@ -496,6 +542,111 @@ class MainApplication:
             pygame.display.set_caption("PyRoomStudio")
             print("Please check the error message above for details.")
     
+    def place_listener_at_click(self, mouse_pos):
+        """Place a new listener at the clicked position on a surface"""
+        if not self.renderer:
+            print("No 3D model loaded - cannot place listener")
+            return
+        
+        # Get ray from mouse position
+        glPushMatrix()
+        self.renderer.update_camera()
+        glScalef(self.renderer.model_scale_factor, self.renderer.model_scale_factor, self.renderer.model_scale_factor)
+        glTranslatef(-self.renderer.center[0], -self.renderer.center[1], -self.renderer.center[2])
+        ray_origin, ray_dir = self.renderer.get_ray_from_mouse(mouse_pos)
+        glPopMatrix()
+        
+        # Find intersection with model
+        triangles = self.renderer.model.vectors
+        min_t = float('inf')
+        hit_point = None
+        
+        for tri_idx, triangle in enumerate(triangles):
+            t = self.renderer.ray_triangle_intersect(ray_origin, ray_dir, triangle)
+            if t is not None and t < min_t:
+                min_t = t
+                hit_point = ray_origin + t * ray_dir
+        
+        if hit_point is not None:
+            # Add listener at the hit point
+            listener = self.scene_manager.add_listener(hit_point)
+            print(f"Placed listener at position: {hit_point}")
+            
+            # Exit placement mode
+            self.place_listener_mode = False
+            pygame.display.set_caption("PyRoomStudio")
+        else:
+            print("No surface hit - try clicking on the model")
+    
+    def select_listener_at_click(self, mouse_pos):
+        """Select a listener by clicking on it"""
+        if not self.renderer or not self.scene_manager.listeners:
+            return
+        
+        # Get ray from mouse position
+        glPushMatrix()
+        self.renderer.update_camera()
+        glScalef(self.renderer.model_scale_factor, self.renderer.model_scale_factor, self.renderer.model_scale_factor)
+        glTranslatef(-self.renderer.center[0], -self.renderer.center[1], -self.renderer.center[2])
+        ray_origin, ray_dir = self.renderer.get_ray_from_mouse(mouse_pos)
+        glPopMatrix()
+        
+        # Check if clicking on a listener
+        sphere_radius = self.renderer.original_size * 0.02
+        min_dist = float('inf')
+        selected_idx = None
+        
+        for idx, listener in enumerate(self.scene_manager.listeners):
+            # Calculate distance from ray to listener position
+            to_listener = listener.position - ray_origin
+            proj_length = np.dot(to_listener, ray_dir)
+            
+            if proj_length > 0:  # Listener is in front of camera
+                closest_point = ray_origin + proj_length * ray_dir
+                dist = np.linalg.norm(listener.position - closest_point)
+                
+                if dist < sphere_radius and proj_length < min_dist:
+                    min_dist = proj_length
+                    selected_idx = idx
+        
+        if selected_idx is not None:
+            self.scene_manager.select_listener(selected_idx)
+            print(f"Selected listener {selected_idx} at {self.scene_manager.listeners[selected_idx].position}")
+        else:
+            # Deselect if clicking elsewhere
+            self.scene_manager.select_listener(None)
+    
+    def handle_listener_movement(self, event):
+        """Handle keyboard input to move the selected listener"""
+        if self.scene_manager.selected_listener_index is None:
+            return
+        
+        listener = self.scene_manager.listeners[self.scene_manager.selected_listener_index]
+        move_amount = self.renderer.original_size * 0.05  # 5% of model size per keypress
+        
+        if event.key == pygame.K_LEFT:
+            listener.position[0] -= move_amount
+            print(f"Moved listener left to {listener.position}")
+        elif event.key == pygame.K_RIGHT:
+            listener.position[0] += move_amount
+            print(f"Moved listener right to {listener.position}")
+        elif event.key == pygame.K_UP:
+            listener.position[1] += move_amount
+            print(f"Moved listener forward to {listener.position}")
+        elif event.key == pygame.K_DOWN:
+            listener.position[1] -= move_amount
+            print(f"Moved listener backward to {listener.position}")
+        elif event.key == pygame.K_PAGEUP:
+            listener.position[2] += move_amount
+            print(f"Moved listener up to {listener.position}")
+        elif event.key == pygame.K_PAGEDOWN:
+            listener.position[2] -= move_amount
+            print(f"Moved listener down to {listener.position}")
+        elif event.key == pygame.K_DELETE or event.key == pygame.K_BACKSPACE:
+            # Delete selected listener
+            self.scene_manager.delete_selected()
+            print("Deleted selected listener")
+    
     def handle_events(self):
         """Handle all pygame events"""
         for event in pygame.event.get():
@@ -515,8 +666,23 @@ class MainApplication:
                 elif hasattr(event, 'pos'):
                     if self.viewport_rect.collidepoint(event.pos):
                         viewport_event = True
-                        # Route event to 3D renderer
-                        self.renderer.check_keybinds(event)
+                        
+                        # Handle listener placement mode
+                        if self.place_listener_mode and event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                            self.place_listener_at_click(event.pos)
+                        # Handle listener selection and movement
+                        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                            self.select_listener_at_click(event.pos)
+                        else:
+                            # Route event to 3D renderer
+                            self.renderer.check_keybinds(event)
+            
+            # Handle keyboard events for moving selected listener
+            if event.type == pygame.KEYDOWN:
+                if self.scene_manager.selected_listener_index is not None:
+                    self.handle_listener_movement(event)
+                elif self.renderer:
+                    self.renderer.check_keybinds(event)
             
             # Let GUI components handle events (if not consumed by 3D viewport)
             if not viewport_event:
@@ -575,7 +741,7 @@ class MainApplication:
         # Render 3D scene first (if renderer is available)
         if self.renderer:
             try:
-                self.renderer.draw_scene()
+                self.renderer.draw_scene(self.scene_manager)
             except Exception as e:
                 print(f"Error drawing 3D scene: {e}")
                 import traceback

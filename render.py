@@ -537,7 +537,65 @@ class Render:
                 self.surface_materials = [None for _ in self.surfaces]
                 print("Reset all surfaces to default")
 
-    def draw_scene(self):
+    def draw_sphere(self, position, radius, color, selected=False):
+        """Draw a sphere at the specified position with the given color."""
+        glPushMatrix()
+        self.update_camera()
+        
+        # Apply model scaling
+        glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
+        glTranslatef(-self.center[0], -self.center[1], -self.center[2])
+        
+        # Move to the sphere position
+        glTranslatef(position[0], position[1], position[2])
+        
+        # Disable texturing for spheres
+        glDisable(GL_TEXTURE_2D)
+        
+        # Draw selected outline if needed
+        if selected:
+            glColor4f(1.0, 1.0, 0.0, 1.0)  # Yellow outline
+            quadric = gluNewQuadric()
+            gluSphere(quadric, radius * 1.2, 20, 20)
+            gluDeleteQuadric(quadric)
+        
+        # Draw the sphere
+        glColor4f(color[0], color[1], color[2], 0.8)
+        quadric = gluNewQuadric()
+        gluSphere(quadric, radius, 20, 20)
+        gluDeleteQuadric(quadric)
+        
+        glPopMatrix()
+    
+    def draw_listeners(self, scene_manager):
+        """Draw all listeners from the scene manager."""
+        if not scene_manager:
+            return
+        
+        # Calculate sphere radius based on model size
+        sphere_radius = self.original_size * 0.02  # 2% of model size
+        
+        for idx, listener in enumerate(scene_manager.listeners):
+            # Blue color for listeners
+            color = [listener.marker_color[i] / 255.0 for i in range(3)]
+            selected = (scene_manager.selected_listener_index == idx)
+            self.draw_sphere(listener.position, sphere_radius, color, selected)
+    
+    def draw_sound_sources(self, scene_manager):
+        """Draw all sound sources from the scene manager."""
+        if not scene_manager:
+            return
+        
+        # Calculate sphere radius based on model size
+        sphere_radius = self.original_size * 0.02  # 2% of model size
+        
+        for idx, source in enumerate(scene_manager.sound_sources):
+            # Red color for sound sources
+            color = [source.marker_color[i] / 255.0 for i in range(3)]
+            selected = (scene_manager.selected_source_index == idx)
+            self.draw_sphere(source.position, sphere_radius, color, selected)
+    
+    def draw_scene(self, scene_manager=None):
         # Save current OpenGL state to avoid interfering with pygame_gui rendering
         glPushAttrib(GL_VIEWPORT_BIT | GL_SCISSOR_BIT)
         
@@ -554,6 +612,11 @@ class Render:
         
         # Draw the 3D model
         self.draw_model()
+        
+        # Draw listeners and sound sources
+        if scene_manager:
+            self.draw_listeners(scene_manager)
+            self.draw_sound_sources(scene_manager)
         
         glDisable(GL_SCISSOR_TEST)
         
