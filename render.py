@@ -556,13 +556,10 @@ class Render:
                     self.surface_colors[surf_idx] = self.random_color()
                     self.surface_materials[surf_idx] = None  # Remove texture when changing color
                     print(f"Changed color of surface {surf_idx}")
-            elif event.button == 2:  # Middle click - place point (when placement mode is active)
-                if self.placement_mode:
-                    self.add_point_at_mouse(event.pos)
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 self.mouse_down = False
-                # Only apply texture if this was a click (not a drag)
+                # Only process click if this was a click (not a drag)
                 if self.mouse_down_pos is not None:
                     dx = event.pos[0] - self.mouse_down_pos[0]
                     dy = event.pos[1] - self.mouse_down_pos[1]
@@ -570,25 +567,29 @@ class Render:
                     
                     # If mouse moved less than 5 pixels, treat as a click
                     if drag_distance < 5:
-                        # Ensure OpenGL matrices are up-to-date for ray picking
-                        glPushMatrix()
-                        self.update_camera()
-                        glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
-                        glTranslatef(-self.center[0], -self.center[1], -self.center[2])
-                        ray_origin, ray_dir = self.get_ray_from_mouse(event.pos)
-                        glPopMatrix()
-                        triangles = self.model.vectors
-                        min_t = float('inf')
-                        hit_tri = None
-                        for tri_idx, triangle in enumerate(triangles):
-                            t = self.ray_triangle_intersect(ray_origin, ray_dir, triangle)
-                            if t is not None and t < min_t:
-                                min_t = t
-                                hit_tri = tri_idx
-                        if hit_tri is not None:
-                            surf_idx = self.triangle_to_surface[hit_tri]
-                            self.surface_materials[surf_idx] = True  # Apply texture
-                            print(f"Applied texture to surface {surf_idx} (texture_id: {self.texture_id})")
+                        if self.placement_mode:
+                            # In placement mode: left-click places a point
+                            self.add_point_at_mouse(event.pos)
+                        else:
+                            # Normal mode: left-click applies texture
+                            glPushMatrix()
+                            self.update_camera()
+                            glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
+                            glTranslatef(-self.center[0], -self.center[1], -self.center[2])
+                            ray_origin, ray_dir = self.get_ray_from_mouse(event.pos)
+                            glPopMatrix()
+                            triangles = self.model.vectors
+                            min_t = float('inf')
+                            hit_tri = None
+                            for tri_idx, triangle in enumerate(triangles):
+                                t = self.ray_triangle_intersect(ray_origin, ray_dir, triangle)
+                                if t is not None and t < min_t:
+                                    min_t = t
+                                    hit_tri = tri_idx
+                            if hit_tri is not None:
+                                surf_idx = self.triangle_to_surface[hit_tri]
+                                self.surface_materials[surf_idx] = True  # Apply texture
+                                print(f"Applied texture to surface {surf_idx} (texture_id: {self.texture_id})")
                 
                 self.mouse_down_pos = None  # Reset
         elif event.type == pygame.MOUSEMOTION:
@@ -643,7 +644,7 @@ class Render:
         """Enable or disable point placement mode"""
         self.placement_mode = enabled
         if enabled:
-            print("Point placement mode: ON (Middle-click to place points, scroll to adjust distance)")
+            print("Point placement mode: ON (Left-click to place points, scroll to adjust distance)")
         else:
             print("Point placement mode: OFF")
     
@@ -742,7 +743,7 @@ class Render:
         return info
 
     def draw_point_markers(self):
-        """Draw all placed points as colored spheres"""
+        """Draw all placed points as 2D billboard dots facing the camera"""
         if not self.placed_points:
             return
         
@@ -757,11 +758,15 @@ class Render:
         
         glDisable(GL_TEXTURE_2D)
         
-        # Sphere parameters
-        # Radius in original model units (scales with model)
-        base_radius = 0.1 / self.model_scale_factor  # ~0.1 meters in world space
-        slices = 16
-        stacks = 16
+        # In transparency mode, disable depth test so points are visible through surfaces
+        if self.transparent_mode:
+            glDisable(GL_DEPTH_TEST)
+        
+        # Billboard size in original model units (scales with model)
+        base_size = 0.15 / self.model_scale_factor  # ~0.15 meters in world space
+        
+        # Get the modelview matrix to extract camera orientation for billboarding
+        modelview = glGetFloatv(GL_MODELVIEW_MATRIX)
         
         for i, point in enumerate(self.placed_points):
             position = point.get_position()
@@ -770,77 +775,72 @@ class Render:
             glPushMatrix()
             glTranslatef(position[0], position[1], position[2])
             
-            # Draw the sphere
+            # Create billboard by extracting and inverting camera rotation
+            # This makes the quad always face the camera
+            self._apply_billboard_rotation(modelview)
+            
+            # Set size and color
             if is_active:
-                # Active point: brighter, with outline
-                glColor4f(point.color[0], point.color[1], point.color[2], 1.0)
-                radius = base_radius * 1.2  # Slightly larger
+                size = base_size * 1.3  # Slightly larger for active
+                alpha = 1.0
             else:
-                # Inactive point: semi-transparent
-                glColor4f(point.color[0], point.color[1], point.color[2], 0.7)
-                radius = base_radius
+                size = base_size
+                alpha = 0.8
             
-            # Draw solid sphere using triangle fans and strips
-            self._draw_sphere(radius, slices, stacks)
-            
-            # Draw outline for active point
-            if is_active:
-                glColor4f(1.0, 1.0, 1.0, 1.0)  # White outline
-                glLineWidth(2)
-                self._draw_sphere_wireframe(radius * 1.05, slices // 2, stacks // 2)
+            # Draw filled circle (dot) as a polygon
+            self._draw_billboard_dot(size, point.color, alpha, is_active)
             
             glPopMatrix()
         
+        # Re-enable depth test if it was disabled
+        if self.transparent_mode:
+            glEnable(GL_DEPTH_TEST)
+        
         glPopMatrix()
     
-    def _draw_sphere(self, radius: float, slices: int, stacks: int):
-        """Draw a solid sphere using OpenGL primitives"""
-        for i in range(stacks):
-            lat0 = math.pi * (-0.5 + float(i) / stacks)
-            z0 = radius * math.sin(lat0)
-            zr0 = radius * math.cos(lat0)
-            
-            lat1 = math.pi * (-0.5 + float(i + 1) / stacks)
-            z1 = radius * math.sin(lat1)
-            zr1 = radius * math.cos(lat1)
-            
-            glBegin(GL_QUAD_STRIP)
-            for j in range(slices + 1):
-                lng = 2 * math.pi * float(j) / slices
-                x = math.cos(lng)
-                y = math.sin(lng)
-                
-                glVertex3f(x * zr0, y * zr0, z0)
-                glVertex3f(x * zr1, y * zr1, z1)
-            glEnd()
+    def _apply_billboard_rotation(self, modelview):
+        """Apply inverse rotation to make object face the camera (billboard effect)"""
+        # Extract the 3x3 rotation part of the modelview matrix and transpose it
+        # This effectively cancels out the camera rotation
+        glMultMatrixf([
+            modelview[0][0], modelview[1][0], modelview[2][0], 0,
+            modelview[0][1], modelview[1][1], modelview[2][1], 0,
+            modelview[0][2], modelview[1][2], modelview[2][2], 0,
+            0, 0, 0, 1
+        ])
     
-    def _draw_sphere_wireframe(self, radius: float, slices: int, stacks: int):
-        """Draw a wireframe sphere"""
-        # Latitude lines
-        for i in range(stacks + 1):
-            lat = math.pi * (-0.5 + float(i) / stacks)
-            z = radius * math.sin(lat)
-            zr = radius * math.cos(lat)
-            
-            glBegin(GL_LINE_LOOP)
-            for j in range(slices):
-                lng = 2 * math.pi * float(j) / slices
-                x = math.cos(lng) * zr
-                y = math.sin(lng) * zr
-                glVertex3f(x, y, z)
-            glEnd()
+    def _draw_billboard_dot(self, size: float, color: tuple, alpha: float, is_active: bool):
+        """Draw a 2D dot as a filled circle polygon facing the camera"""
+        num_segments = 24
         
-        # Longitude lines
-        for j in range(slices):
-            lng = 2 * math.pi * float(j) / slices
-            glBegin(GL_LINE_STRIP)
-            for i in range(stacks + 1):
-                lat = math.pi * (-0.5 + float(i) / stacks)
-                x = math.cos(lng) * radius * math.cos(lat)
-                y = math.sin(lng) * radius * math.cos(lat)
-                z = radius * math.sin(lat)
-                glVertex3f(x, y, z)
-            glEnd()
+        # Draw filled circle
+        glColor4f(color[0], color[1], color[2], alpha)
+        glBegin(GL_TRIANGLE_FAN)
+        glVertex3f(0, 0, 0)  # Center
+        for i in range(num_segments + 1):
+            angle = 2 * math.pi * i / num_segments
+            x = size * math.cos(angle)
+            y = size * math.sin(angle)
+            glVertex3f(x, y, 0)
+        glEnd()
+        
+        # Draw outline
+        if is_active:
+            # White outline for active point
+            glColor4f(1.0, 1.0, 1.0, 1.0)
+            glLineWidth(3)
+        else:
+            # Darker outline for inactive points
+            glColor4f(color[0] * 0.5, color[1] * 0.5, color[2] * 0.5, alpha)
+            glLineWidth(2)
+        
+        glBegin(GL_LINE_LOOP)
+        for i in range(num_segments):
+            angle = 2 * math.pi * i / num_segments
+            x = size * math.cos(angle)
+            y = size * math.sin(angle)
+            glVertex3f(x, y, 0)
+        glEnd()
 
     def draw_scene(self):
         # Save current OpenGL state to avoid interfering with pygame_gui rendering

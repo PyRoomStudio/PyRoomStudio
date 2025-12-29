@@ -457,7 +457,7 @@ class PropertyPanel(GUIComponent):
         if self.renderer:
             # Update placement mode label
             if self.renderer.placement_mode:
-                self.placement_mode_label.text = "Placement: ON (MMB)"
+                self.placement_mode_label.text = "Placement: ON (LMB)"
             else:
                 self.placement_mode_label.text = "Placement: OFF (P)"
             

@@ -308,7 +308,7 @@ class MainApplication:
         bottom_buttons = [
             ("Import Room", self.on_import_room, None, True),  # Enabled - same as File -> Open Project
             ("Import Sound", self.on_import_sound, None, True),  # Enabled
-            ("Place Point", self.on_place_point, "Toggle point placement mode (P key or Middle-click)", True),  # Enabled
+            ("Place Point", self.on_place_point, "Toggle point placement mode (P key, Left-click to place)", True),  # Enabled
             ("Render", self.on_render, None, True)  # Enabled
         ]
         
