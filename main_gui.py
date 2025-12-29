@@ -4,6 +4,8 @@ Main entry point for the application.
 """
 import pygame
 import os
+import platform
+import sys
 
 # Initialize pygame
 pygame.init()

@@ -2,6 +2,7 @@
 Main application class for the 3D Architecture GUI
 """
 import pygame
+import sys
 from typing import List
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -181,6 +182,18 @@ class MainApplication:
             # Create a temporary root window (hidden)
             root = tk.Tk()
             root.withdraw()  # Hide the root window
+            root.update()  # Ensure window is initialized
+            
+            # Platform-specific fixes to ensure dialog appears
+            try:
+                if sys.platform == 'darwin':  # macOS
+                    root.lift()
+                    root.attributes('-topmost', True)
+                elif sys.platform.startswith('linux'):  # Linux
+                    root.focus_force()
+            except Exception as e:
+                # If platform-specific attributes fail, continue anyway
+                print(f"Warning: Platform-specific dialog fix failed: {e}")
             
             # Open file dialog
             filepath = filedialog.askopenfilename(
