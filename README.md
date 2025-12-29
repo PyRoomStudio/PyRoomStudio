@@ -45,6 +45,17 @@ By accomplishing these missions, we hope to increase the usage of acoustic tools
 </p>
 
 
+## Features
+
+- **3D Model Import**: Load STL files to visualize architectural spaces
+- **Interactive Camera**: Rotate, zoom, and navigate around your 3D model
+- **Surface Customization**: Change colors and apply textures to surfaces
+- **Listener Placement**: Click to place listeners anywhere on surfaces for acoustic analysis
+- **Listener Control**: Move listeners in 3D space using keyboard controls
+- **Multi-Source/Multi-Listener**: Support for multiple sound sources and listeners
+- **Acoustic Simulation**: Powered by [pyroomacoustics](https://github.com/LCAV/pyroomacoustics) for realistic sound propagation
+- **Audio Output**: Generate spatially-accurate audio files for each listener position
+
 ## Setup
 
 PyRoomStudio is currently running on Python 3.9+. Make sure to have one of these versions installed before downloading and running the application.
@@ -72,11 +83,22 @@ PyRoomStudio is currently running on Python 3.9+. Make sure to have one of these
 
 ## Controls
 
+### 3D Viewport
 - Mouse: **[Left-click]** a surface to enable transparency, **[Right-click]** to set surface color, **[Left-click + hold]** to rotate camera. 
 
 - **[T]**: Set transparency on *all* surfaces of a loaded mesh.
 
 - **[R]**: Reset transparency and color on *all* surfaces.
+
+### Listener Placement (New!)
+- Click **"Place Listener"** button to enter placement mode
+- **[Left-click]** on a surface to place a listener at that location
+- **[Left-click]** on a listener sphere to select it
+- Use **Arrow Keys** to move selected listener horizontally
+- Use **Page Up/Down** to move selected listener vertically
+- Press **Delete** to remove selected listener
+
+See [LISTENER_FEATURE_GUIDE.md](LISTENER_FEATURE_GUIDE.md) for detailed instructions.
 
 <!------------------------------------------------------------------->
 
