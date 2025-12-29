@@ -16,6 +16,9 @@ from .panel_components import LibraryPanel, PropertyPanel, AssetsPanel
 class MainApplication:
     """Main application class that demonstrates all GUI components"""
     
+    # Configuration constants
+    LISTENER_MOVE_AMOUNT = 0.05  # Move listener by 5% of model size per keypress
+    
     def __init__(self, width: int = 1200, height: int = 800):
         self.width = width
         self.height = height
@@ -491,8 +494,8 @@ class MainApplication:
             print(f"  - {len(self.scene_manager.listeners)} listener(s)")
             print("(This may take a few moments...)")
             
-            # The AcousticSimulator expects scale_factor as 1/SIZE_REDUCTION_FACTOR format
-            # So we pass it directly as the model_scale_factor
+            # Run the acoustic simulation
+            # Note: AcousticSimulator handles scaling internally using SIZE_REDUCTION_FACTOR
             output_dir = acoustic_simulator.simulate_scene(
                 self.scene_manager,
                 walls,
@@ -542,21 +545,30 @@ class MainApplication:
             pygame.display.set_caption("PyRoomStudio")
             print("Please check the error message above for details.")
     
-    def place_listener_at_click(self, mouse_pos):
-        """Place a new listener at the clicked position on a surface"""
-        if not self.renderer:
-            print("No 3D model loaded - cannot place listener")
-            return
-        
-        # Get ray from mouse position
+    def get_ray_from_mouse_in_scene(self, mouse_pos):
+        """
+        Helper method to get ray from mouse position in scene coordinates.
+        Returns (ray_origin, ray_dir) tuple.
+        """
         glPushMatrix()
         self.renderer.update_camera()
         glScalef(self.renderer.model_scale_factor, self.renderer.model_scale_factor, self.renderer.model_scale_factor)
         glTranslatef(-self.renderer.center[0], -self.renderer.center[1], -self.renderer.center[2])
         ray_origin, ray_dir = self.renderer.get_ray_from_mouse(mouse_pos)
         glPopMatrix()
+        return ray_origin, ray_dir
+    
+    def place_listener_at_click(self, mouse_pos):
+        """Place a new listener at the clicked position on a surface"""
+        if not self.renderer:
+            print("No 3D model loaded - cannot place listener")
+            return
+        
+        # Get ray from mouse position using helper method
+        ray_origin, ray_dir = self.get_ray_from_mouse_in_scene(mouse_pos)
         
         # Find intersection with model
+        # Note: For large models, this could be optimized with spatial partitioning (BVH/octree)
         triangles = self.renderer.model.vectors
         min_t = float('inf')
         hit_point = None
@@ -583,13 +595,8 @@ class MainApplication:
         if not self.renderer or not self.scene_manager.listeners:
             return
         
-        # Get ray from mouse position
-        glPushMatrix()
-        self.renderer.update_camera()
-        glScalef(self.renderer.model_scale_factor, self.renderer.model_scale_factor, self.renderer.model_scale_factor)
-        glTranslatef(-self.renderer.center[0], -self.renderer.center[1], -self.renderer.center[2])
-        ray_origin, ray_dir = self.renderer.get_ray_from_mouse(mouse_pos)
-        glPopMatrix()
+        # Get ray from mouse position using helper method
+        ray_origin, ray_dir = self.get_ray_from_mouse_in_scene(mouse_pos)
         
         # Check if clicking on a listener
         sphere_radius = self.renderer.original_size * 0.02
@@ -622,7 +629,7 @@ class MainApplication:
             return
         
         listener = self.scene_manager.listeners[self.scene_manager.selected_listener_index]
-        move_amount = self.renderer.original_size * 0.05  # 5% of model size per keypress
+        move_amount = self.renderer.original_size * self.LISTENER_MOVE_AMOUNT
         
         if event.key == pygame.K_LEFT:
             listener.position[0] -= move_amount

@@ -539,6 +539,7 @@ class Render:
 
     def draw_sphere(self, position, radius, color, selected=False):
         """Draw a sphere at the specified position with the given color."""
+        glPushAttrib(GL_TEXTURE_BIT | GL_CURRENT_BIT)
         glPushMatrix()
         self.update_camera()
         
@@ -566,6 +567,7 @@ class Render:
         gluDeleteQuadric(quadric)
         
         glPopMatrix()
+        glPopAttrib()
     
     def draw_listeners(self, scene_manager):
         """Draw all listeners from the scene manager."""
