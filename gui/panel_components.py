@@ -389,30 +389,21 @@ class PropertyPanel(GUIComponent):
         self.point_distance_slider = Slider(self.rect.x + 10, current_y, self.rect.width - 60, 20, -5.0, 5.0, 0.0, self.on_point_distance_change)
         current_y += 25
         
-        # Placement mode indicator
-        self.placement_mode_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 16, "Placement: OFF", 12)
-        current_y += 25
-        
         # ============ Selected Point Section ============
-        # This section is shown when a point is selected
-        
-        # Section header
-        self.selected_point_header = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 20, "── Selected Point ──", 14)
-        current_y += 22
-        
-        # Point index/name
-        self.point_index_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 18, "Point: None", 12)
+        # Point type label
+        self.point_type_label = TextButton(self.rect.x + 10, current_y, 60, 18, "Type:", 11)
         current_y += 20
         
-        # Point position labels
-        self.point_pos_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 18, "Position:", 12)
-        current_y += 18
-        self.point_pos_x_label = TextButton(self.rect.x + 15, current_y, self.rect.width - 25, 16, "X: --", 11)
-        current_y += 16
-        self.point_pos_y_label = TextButton(self.rect.x + 15, current_y, self.rect.width - 25, 16, "Y: --", 11)
-        current_y += 16
-        self.point_pos_z_label = TextButton(self.rect.x + 15, current_y, self.rect.width - 25, 16, "Z: --", 11)
-        current_y += 22
+        # Point type buttons (Source / Listener)
+        button_width = 70
+        self.point_type_source_btn = TextButton(self.rect.x + 10, current_y, button_width, 24, "Source", 11,
+                                                callback=self.on_set_point_source)
+        self.point_type_source_btn.enabled = False
+        
+        self.point_type_listener_btn = TextButton(self.rect.x + 15 + button_width, current_y, button_width, 24, "Listener", 11,
+                                                  callback=self.on_set_point_listener)
+        self.point_type_listener_btn.enabled = False
+        current_y += 28
         
         # Delete Point button
         self.delete_point_button = TextButton(self.rect.x + 10, current_y, 80, 24, "Delete", 12, 
@@ -425,26 +416,10 @@ class PropertyPanel(GUIComponent):
         self.deselect_point_button.enabled = False
         current_y += 28
         
-        # Point count label
-        self.point_count_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 16, "Total Points: 0", 11)
-        current_y += 22
-        
         # ============ Selected Surface Section ============
-        # This section is shown when a surface is selected
-        
-        # Section header
-        self.selected_surface_header = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 20, "── Selected Surface ──", 14)
-        current_y += 22
-        
-        # Surface index/name
-        self.surface_index_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 18, "Surface: None", 12)
-        current_y += 20
-        
-        # Surface info labels
-        self.surface_triangles_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 16, "Triangles: --", 11)
-        current_y += 16
-        self.surface_area_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 16, "Area: -- m²", 11)
-        current_y += 20
+        # # Surface area label
+        # self.surface_area_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 16, "Area: -- m²", 11)
+        # current_y += 20
         
         # Toggle Texture button
         self.toggle_texture_button = TextButton(self.rect.x + 10, current_y, 80, 24, "Texture", 12,
@@ -460,13 +435,8 @@ class PropertyPanel(GUIComponent):
         self.components = [
             self.scale_label, self.scale_value_label, self.scale_slider, self.dimension_label,
             self.point_distance_label, self.point_distance_value_label, self.point_distance_slider,
-            self.placement_mode_label,
-            self.selected_point_header, self.point_index_label,
-            self.point_pos_label, self.point_pos_x_label, self.point_pos_y_label, self.point_pos_z_label,
+            self.point_type_label, self.point_type_source_btn, self.point_type_listener_btn,
             self.delete_point_button, self.deselect_point_button,
-            self.point_count_label,
-            self.selected_surface_header, self.surface_index_label,
-            self.surface_triangles_label, self.surface_area_label,
             self.toggle_texture_button, self.deselect_surface_button
         ]
     
@@ -501,6 +471,16 @@ class PropertyPanel(GUIComponent):
         """Deselect the currently selected point"""
         if self.renderer:
             self.renderer.deselect_point()
+    
+    def on_set_point_source(self):
+        """Set the selected point as a sound source"""
+        if self.renderer and self.renderer.active_point_index is not None:
+            self.renderer.set_active_point_type("source")
+    
+    def on_set_point_listener(self):
+        """Set the selected point as a listener"""
+        if self.renderer and self.renderer.active_point_index is not None:
+            self.renderer.set_active_point_type("listener")
     
     def on_toggle_texture(self):
         """Toggle texture on the selected surface"""
@@ -539,31 +519,30 @@ class PropertyPanel(GUIComponent):
         
         # Sync with renderer state
         if self.renderer:
-            # Update placement mode label
-            if self.renderer.placement_mode:
-                self.placement_mode_label.text = "Placement: ON (LMB)"
-            else:
-                self.placement_mode_label.text = "Placement: OFF (P)"
-            
-            # Update point count
-            point_count = len(self.renderer.placed_points)
-            self.point_count_label.text = f"Total Points: {point_count}"
-            
             # Check if a point is selected
             if self.renderer.active_point_index is not None:
                 point_idx = self.renderer.active_point_index
                 point = self.renderer.placed_points[point_idx]
-                position = point.get_position()
-                
-                # Update point info labels
-                self.point_index_label.text = f"Point: {point_idx + 1}"
-                self.point_pos_x_label.text = f"X: {position[0]:.2f}m"
-                self.point_pos_y_label.text = f"Y: {position[1]:.2f}m"
-                self.point_pos_z_label.text = f"Z: {position[2]:.2f}m"
                 
                 # Enable point action buttons
                 self.delete_point_button.enabled = True
                 self.deselect_point_button.enabled = True
+                
+                # Enable and update point type buttons
+                self.point_type_source_btn.enabled = True
+                self.point_type_listener_btn.enabled = True
+                
+                # Highlight the active type button
+                current_type = point.point_type
+                if current_type == "source":
+                    self.point_type_source_btn.text = "● Source"
+                    self.point_type_listener_btn.text = "Listener"
+                elif current_type == "listener":
+                    self.point_type_source_btn.text = "Source"
+                    self.point_type_listener_btn.text = "● Listener"
+                else:
+                    self.point_type_source_btn.text = "Source"
+                    self.point_type_listener_btn.text = "Listener"
                 
                 # Sync distance slider with active point's distance
                 current_distance = point.distance
@@ -571,24 +550,23 @@ class PropertyPanel(GUIComponent):
                     self.point_distance_slider.value = current_distance
                     self.point_distance_value_label.text = f"{current_distance:.1f}m"
             else:
-                # No point selected - show placeholder values
-                self.point_index_label.text = "Point: None"
-                self.point_pos_x_label.text = "X: --"
-                self.point_pos_y_label.text = "Y: --"
-                self.point_pos_z_label.text = "Z: --"
                 
                 # Disable point action buttons
                 self.delete_point_button.enabled = False
                 self.deselect_point_button.enabled = False
+                
+                # Disable and reset type buttons
+                self.point_type_source_btn.enabled = False
+                self.point_type_listener_btn.enabled = False
+                self.point_type_source_btn.text = "Source"
+                self.point_type_listener_btn.text = "Listener"
             
             # Check if a surface is selected
             if self.renderer.selected_surface_index is not None:
                 surface_info = self.renderer.get_selected_surface_info()
                 if surface_info:
                     # Update surface info labels
-                    self.surface_index_label.text = f"Surface: {surface_info['index'] + 1}"
-                    self.surface_triangles_label.text = f"Triangles: {surface_info['triangle_count']}"
-                    self.surface_area_label.text = f"Area: {surface_info['area']:.2f} m²"
+                    #self.surface_area_label.text = f"Area: {surface_info['area']:.2f} m²"
                     
                     # Update texture button text based on current state
                     if surface_info['has_texture']:
@@ -601,9 +579,7 @@ class PropertyPanel(GUIComponent):
                     self.deselect_surface_button.enabled = True
             else:
                 # No surface selected - show placeholder values
-                self.surface_index_label.text = "Surface: None"
-                self.surface_triangles_label.text = "Triangles: --"
-                self.surface_area_label.text = "Area: -- m²"
+                #self.surface_area_label.text = "Area: -- m²"
                 self.toggle_texture_button.text = "Texture"
                 
                 # Disable surface action buttons

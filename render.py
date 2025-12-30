@@ -14,6 +14,12 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
 
+# Point type constants
+POINT_TYPE_NONE = "none"
+POINT_TYPE_SOURCE = "source"
+POINT_TYPE_LISTENER = "listener"
+
+
 @dataclass
 class PlacedPoint:
     """Represents a 3D point placed on or near a mesh surface"""
@@ -21,6 +27,7 @@ class PlacedPoint:
     normal: np.ndarray         # Surface normal (unit vector)
     distance: float = 0.0      # Perpendicular offset from surface
     color: Tuple[float, float, float] = (0.2, 0.8, 0.2)  # RGB marker color (green default)
+    point_type: str = POINT_TYPE_NONE  # "none", "source", or "listener"
     
     def get_position(self) -> np.ndarray:
         """Get the actual 3D position (surface point + normal * distance)"""
@@ -66,6 +73,10 @@ class Render:
 
         # Load texture
         self.texture_id = self.load_texture("cat.png")
+        
+        # Load point type icons
+        self.source_icon_texture = self.load_texture_with_alpha("assets/sound_source.png")
+        self.listener_icon_texture = self.load_texture_with_alpha("assets/listener.png")
 
         # Build edge map for feature/boundary edge detection
         self.feature_edges = self.compute_feature_edges(angle_threshold_degrees=10)
@@ -129,6 +140,41 @@ class Render:
             glGenerateMipmap(GL_TEXTURE_2D)
             
             print(f"Successfully loaded texture: {filename} ({image.width}x{image.height})")
+            return texture_id
+        except Exception as e:
+            print(f"Error loading texture {filename}: {e}")
+            return None
+    
+    def load_texture_with_alpha(self, filename):
+        """Load a texture with alpha channel from file and return the OpenGL texture ID"""
+        try:
+            image = Image.open(filename)
+            image = image.transpose(Image.FLIP_TOP_BOTTOM)  # OpenGL expects bottom-left origin
+            
+            # Convert to RGBA for alpha support
+            if image.mode != 'RGBA':
+                image = image.convert('RGBA')
+            
+            # Ensure power-of-2 dimensions for better compatibility
+            width, height = image.size
+            if not (width & (width - 1) == 0) or not (height & (height - 1) == 0):
+                # Resize to nearest power of 2
+                new_width = 2 ** (width - 1).bit_length()
+                new_height = 2 ** (height - 1).bit_length()
+                image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                print(f"Resized texture to {new_width}x{new_height} for better compatibility")
+            
+            image_data = image.tobytes()
+            
+            texture_id = glGenTextures(1)
+            glBindTexture(GL_TEXTURE_2D, texture_id)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+            
+            print(f"Successfully loaded texture with alpha: {filename} ({image.width}x{image.height})")
             return texture_id
         except Exception as e:
             print(f"Error loading texture {filename}: {e}")
@@ -582,7 +628,9 @@ class Render:
                             self.selected_surface_index = None
                         else:
                             # PRIORITY 3: Normal mode - left-click selects a surface
-                            self.try_select_surface_at_mouse(event.pos)
+                            if not self.try_select_surface_at_mouse(event.pos):
+                                # Clicked on empty space - deselect any selected point
+                                self.deselect_point()
                 
                 self.mouse_down_pos = None  # Reset
         elif event.type == pygame.MOUSEMOTION:
@@ -694,6 +742,19 @@ class Render:
         if self.active_point_index is not None and 0 <= self.active_point_index < len(self.placed_points):
             return self.placed_points[self.active_point_index].distance
         return 0.0
+    
+    def set_active_point_type(self, point_type: str):
+        """Set the type of the active point (source, listener, or none)"""
+        if self.active_point_index is not None and 0 <= self.active_point_index < len(self.placed_points):
+            if point_type in [POINT_TYPE_NONE, POINT_TYPE_SOURCE, POINT_TYPE_LISTENER]:
+                self.placed_points[self.active_point_index].point_type = point_type
+                print(f"Point {self.active_point_index} type set to: {point_type}")
+    
+    def get_active_point_type(self) -> str:
+        """Get the type of the active point"""
+        if self.active_point_index is not None and 0 <= self.active_point_index < len(self.placed_points):
+            return self.placed_points[self.active_point_index].point_type
+        return POINT_TYPE_NONE
     
     def select_point(self, index: int):
         """Select a point by index. Ensures mutual exclusivity with surfaces."""
@@ -961,8 +1022,14 @@ class Render:
                 size = base_size
                 alpha = 0.8
             
-            # Draw filled circle (dot) as a polygon
-            self._draw_billboard_dot(size, point.color, alpha, is_active)
+            # Draw based on point type
+            if point.point_type == POINT_TYPE_SOURCE and self.source_icon_texture:
+                self._draw_billboard_icon(size * 1.5, self.source_icon_texture, alpha, is_active)
+            elif point.point_type == POINT_TYPE_LISTENER and self.listener_icon_texture:
+                self._draw_billboard_icon(size * 1.5, self.listener_icon_texture, alpha, is_active)
+            else:
+                # Default: draw colored dot
+                self._draw_billboard_dot(size, point.color, alpha, is_active)
             
             glPopMatrix()
         
@@ -1015,6 +1082,40 @@ class Render:
             y = size * math.sin(angle)
             glVertex3f(x, y, 0)
         glEnd()
+    
+    def _draw_billboard_icon(self, size: float, texture_id: int, alpha: float, is_active: bool):
+        """Draw a textured icon as a billboard quad facing the camera"""
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D, texture_id)
+        
+        # Set color to white with alpha for proper texture display
+        glColor4f(1.0, 1.0, 1.0, alpha)
+        
+        # Draw textured quad
+        half_size = size
+        glBegin(GL_QUADS)
+        glTexCoord2f(0, 0)
+        glVertex3f(-half_size, -half_size, 0)
+        glTexCoord2f(1, 0)
+        glVertex3f(half_size, -half_size, 0)
+        glTexCoord2f(1, 1)
+        glVertex3f(half_size, half_size, 0)
+        glTexCoord2f(0, 1)
+        glVertex3f(-half_size, half_size, 0)
+        glEnd()
+        
+        glDisable(GL_TEXTURE_2D)
+        
+        # Draw outline for active point
+        if is_active:
+            glColor4f(1.0, 1.0, 1.0, 1.0)
+            glLineWidth(3)
+            glBegin(GL_LINE_LOOP)
+            glVertex3f(-half_size, -half_size, 0)
+            glVertex3f(half_size, -half_size, 0)
+            glVertex3f(half_size, half_size, 0)
+            glVertex3f(-half_size, half_size, 0)
+            glEnd()
     
     def draw_selected_surface_outline(self):
         """Draw a white outline around the selected surface"""
