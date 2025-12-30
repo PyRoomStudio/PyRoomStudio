@@ -3,6 +3,8 @@ Main application class for the 3D Architecture GUI
 """
 import pygame
 import sys
+import subprocess
+import json
 from typing import List
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -173,50 +175,124 @@ class MainApplication:
             import traceback
             traceback.print_exc()
     
-    def open_stl_file_dialog(self):
-        """Open a file dialog to select an STL file"""
+    def _run_file_dialog_subprocess(self, title: str, filetypes: list, initialdir: str = None) -> str:
+        """Run a file dialog in a subprocess (required for macOS due to SDL/tkinter conflict)"""
+        # Build the Python code to run in subprocess
+        dialog_code = '''
+import tkinter as tk
+from tkinter import filedialog
+import json
+import sys
+
+root = tk.Tk()
+root.withdraw()
+root.update()
+
+# Bring to front on macOS
+if sys.platform == 'darwin':
+    root.lift()
+    root.attributes('-topmost', True)
+    root.focus_force()
+    # Additional macOS focus tricks
+    root.after(100, lambda: root.focus_force())
+
+filetypes = json.loads(sys.argv[1])
+title = sys.argv[2]
+initialdir = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] != "None" else None
+
+filepath = filedialog.askopenfilename(
+    title=title,
+    filetypes=filetypes,
+    initialdir=initialdir
+)
+
+root.destroy()
+print(filepath if filepath else "")
+'''
+        try:
+            # Serialize filetypes for subprocess
+            filetypes_json = json.dumps(filetypes)
+            initialdir_str = str(initialdir) if initialdir else "None"
+            
+            # Run the dialog in a separate Python process
+            result = subprocess.run(
+                [sys.executable, '-c', dialog_code, filetypes_json, title, initialdir_str],
+                capture_output=True,
+                text=True,
+                timeout=120  # 2 minute timeout for user to select file
+            )
+            
+            filepath = result.stdout.strip()
+            if result.returncode != 0:
+                print(f"File dialog subprocess error: {result.stderr}")
+                return None
+            
+            return filepath if filepath else None
+            
+        except subprocess.TimeoutExpired:
+            print("File dialog timed out")
+            return None
+        except Exception as e:
+            print(f"Error running file dialog subprocess: {e}")
+            return None
+    
+    def _run_file_dialog_native(self, title: str, filetypes: list, initialdir: str = None) -> str:
+        """Run a file dialog using native tkinter (for Windows/Linux)"""
         try:
             import tkinter as tk
             from tkinter import filedialog
             
             # Create a temporary root window (hidden)
             root = tk.Tk()
-            root.withdraw()  # Hide the root window
-            root.update()  # Ensure window is initialized
+            root.withdraw()
+            root.update()
             
             # Platform-specific fixes to ensure dialog appears
-            try:
-                if sys.platform == 'darwin':  # macOS
-                    root.lift()
-                    root.attributes('-topmost', True)
-                elif sys.platform.startswith('linux'):  # Linux
-                    root.focus_force()
-            except Exception as e:
-                # If platform-specific attributes fail, continue anyway
-                print(f"Warning: Platform-specific dialog fix failed: {e}")
+            if sys.platform.startswith('linux'):
+                root.focus_force()
             
             # Open file dialog
             filepath = filedialog.askopenfilename(
-                title="Open STL File",
-                filetypes=[
-                    ("STL files", "*.stl"),
-                    ("All files", "*.*")
-                ]
+                title=title,
+                filetypes=filetypes,
+                initialdir=initialdir
             )
             
-            # Clean up the temporary window
             root.destroy()
-            
-            if filepath:
-                return self.load_stl_file(filepath)
-            return False
+            return filepath if filepath else None
             
         except ImportError:
             print("tkinter not available - cannot open file dialog")
-            return False
+            return None
         except Exception as e:
             print(f"Error opening file dialog: {e}")
-            return False
+            return None
+    
+    def open_file_dialog(self, title: str, filetypes: list, initialdir: str = None) -> str:
+        """Open a cross-platform file dialog
+        
+        On macOS, runs in a subprocess to avoid SDL/tkinter conflict.
+        On Windows/Linux, runs natively.
+        """
+        if sys.platform == 'darwin':
+            # macOS: Must use subprocess due to SDL/tkinter conflict
+            return self._run_file_dialog_subprocess(title, filetypes, initialdir)
+        else:
+            # Windows/Linux: Use native tkinter
+            return self._run_file_dialog_native(title, filetypes, initialdir)
+    
+    def open_stl_file_dialog(self):
+        """Open a file dialog to select an STL file"""
+        filetypes = [
+            ("STL files", "*.stl"),
+            ("All files", "*.*")
+        ]
+        
+        filepath = self.open_file_dialog("Open STL File", filetypes)
+        
+        if filepath:
+            return self.load_stl_file(filepath)
+        return False
     
     def init_gui(self):
         """Initialize all GUI components"""
@@ -389,44 +465,23 @@ class MainApplication:
     
     def on_import_sound(self):
         """Open a file dialog to select a sound source for acoustic simulation"""
-        try:
-            import tkinter as tk
-            from tkinter import filedialog
-            
-            # Create a temporary root window (hidden)
-            root = tk.Tk()
-            root.withdraw()  # Hide the root window
-            
-            # Open file dialog for audio files
-            filepath = filedialog.askopenfilename(
-                title="Select Sound Source File",
-                filetypes=[
-                    ("Audio files", "*.wav *.mp3 *.flac *.ogg"),
-                    ("WAV files", "*.wav"),
-                    ("All files", "*.*")
-                ],
-                initialdir="sounds/sources"
-            )
-            
-            # Clean up the temporary window
-            root.destroy()
-            
-            if filepath:
-                self.sound_source_file = filepath
-                print(f"Sound source selected: {filepath}")
-                # Update window title to show loaded sound
-                sound_name = filepath.split('/')[-1].split('\\')[-1]
-                pygame.display.set_caption(f"PyRoomStudio - Sound: {sound_name}")
-                return True
-            else:
-                print("No sound file selected")
-                return False
-            
-        except ImportError:
-            print("tkinter not available - cannot open file dialog")
-            return False
-        except Exception as e:
-            print(f"Error opening sound file dialog: {e}")
+        filetypes = [
+            ("Audio files", "*.wav *.mp3 *.flac *.ogg"),
+            ("WAV files", "*.wav"),
+            ("All files", "*.*")
+        ]
+        
+        filepath = self.open_file_dialog("Select Sound Source File", filetypes, "sounds/sources")
+        
+        if filepath:
+            self.sound_source_file = filepath
+            print(f"Sound source selected: {filepath}")
+            # Update window title to show loaded sound
+            sound_name = filepath.split('/')[-1].split('\\')[-1]
+            pygame.display.set_caption(f"PyRoomStudio - Sound: {sound_name}")
+            return True
+        else:
+            print("No sound file selected")
             return False
     
     def on_place_listener(self): 
