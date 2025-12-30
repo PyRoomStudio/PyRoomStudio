@@ -348,13 +348,23 @@ class MainApplication:
         start_x = 50
         
         # Create toolbar buttons using the asset images
+        try:
+            from ..utils import resource_path
+        except ImportError:
+            # Fallback for when running as script (not as package)
+            import sys
+            import os
+            parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            if parent_dir not in sys.path:
+                sys.path.insert(0, parent_dir)
+            from utils import resource_path
         toolbar_buttons = [
-            ("Move", "assets/button_move.png", self.on_move_click),
-            ("Copy", "assets/button_copy.png", self.on_copy_click),
-            ("Cut", "assets/button_cut.png", self.on_cut_click),
-            ("Paste", "assets/button_paste.png", self.on_paste_click),
-            ("Delete", "assets/button_delete.png", self.on_delete_click),
-            ("Measure", "assets/button_measure.png", self.on_measure_click),
+            ("Move", resource_path("assets/button_move.png"), self.on_move_click),
+            ("Copy", resource_path("assets/button_copy.png"), self.on_copy_click),
+            ("Cut", resource_path("assets/button_cut.png"), self.on_cut_click),
+            ("Paste", resource_path("assets/button_paste.png"), self.on_paste_click),
+            ("Delete", resource_path("assets/button_delete.png"), self.on_delete_click),
+            ("Measure", resource_path("assets/button_measure.png"), self.on_measure_click),
         ]
         
         for i, (name, image_path, callback) in enumerate(toolbar_buttons):

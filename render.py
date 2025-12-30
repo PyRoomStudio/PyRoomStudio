@@ -12,6 +12,7 @@ import random
 from PIL import Image
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
+from utils import resource_path
 
 
 # Point type constants
@@ -75,8 +76,8 @@ class Render:
         self.texture_id = self.load_texture("cat.png")
         
         # Load point type icons
-        self.source_icon_texture = self.load_texture_with_alpha("assets/sound_source.png")
-        self.listener_icon_texture = self.load_texture_with_alpha("assets/listener.png")
+        self.source_icon_texture = self.load_texture_with_alpha(resource_path("assets/sound_source.png"))
+        self.listener_icon_texture = self.load_texture_with_alpha(resource_path("assets/listener.png"))
 
         # Build edge map for feature/boundary edge detection
         self.feature_edges = self.compute_feature_edges(angle_threshold_degrees=10)
@@ -112,6 +113,9 @@ class Render:
     def load_texture(self, filename):
         """Load a texture from file and return the OpenGL texture ID"""
         try:
+            # Use resource_path if filename is a relative path to assets
+            if filename.startswith("assets/"):
+                filename = resource_path(filename)
             image = Image.open(filename)
             image = image.transpose(Image.FLIP_TOP_BOTTOM)  # OpenGL expects bottom-left origin
             
@@ -148,6 +152,9 @@ class Render:
     def load_texture_with_alpha(self, filename):
         """Load a texture with alpha channel from file and return the OpenGL texture ID"""
         try:
+            # Use resource_path if filename is a relative path to assets
+            if filename.startswith("assets/"):
+                filename = resource_path(filename)
             image = Image.open(filename)
             image = image.transpose(Image.FLIP_TOP_BOTTOM)  # OpenGL expects bottom-left origin
             

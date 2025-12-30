@@ -4,6 +4,20 @@ Base GUI components: GUIComponent, TextButton, ImageButton, ToggleButton
 import pygame
 from typing import Optional, Callable
 from .constants import Colors
+try:
+    # Try relative import first (when used as package)
+    from ..utils import resource_path
+except ImportError:
+    try:
+        # Try absolute import (when running as script)
+        import sys
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from utils import resource_path
+    except ImportError:
+        # Fallback if utils is not available (shouldn't happen in normal usage)
+        def resource_path(path):
+            return path
 
 
 class GUIComponent:
@@ -154,6 +168,9 @@ class ImageButton(GUIComponent):
         self.callback = callback
         
         try:
+            # Use resource_path if image_path is a relative path to assets
+            if image_path.startswith("assets/"):
+                image_path = resource_path(image_path)
             self.image = pygame.image.load(image_path)
             self.image = pygame.transform.scale(self.image, (width - 4, height - 4))
         except pygame.error:

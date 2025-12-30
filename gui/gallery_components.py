@@ -6,6 +6,20 @@ import random
 from typing import List, Tuple, Optional, Callable, Dict, Any
 from .constants import Colors
 from .base_components import GUIComponent
+try:
+    # Try relative import first (when used as package)
+    from ..utils import resource_path
+except ImportError:
+    try:
+        # Try absolute import (when running as script)
+        import sys
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from utils import resource_path
+    except ImportError:
+        # Fallback if utils is not available (shouldn't happen in normal usage)
+        def resource_path(path):
+            return path
 
 
 class ImageItem(GUIComponent):
@@ -21,6 +35,9 @@ class ImageItem(GUIComponent):
         
         # Load image or create placeholder
         try:
+            # Use resource_path if image_path is a relative path to assets
+            if image_path.startswith("assets/"):
+                image_path = resource_path(image_path)
             self.image = pygame.image.load(image_path)
             # Scale image to fit within the item, leaving space for label
             image_height = height - 20  # Leave 20px for label

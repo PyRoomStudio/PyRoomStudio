@@ -4,6 +4,8 @@ room_tutorial.ipynb
 .claude/
 *.pyc
 sounds/simulations/
+build/
+dist/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

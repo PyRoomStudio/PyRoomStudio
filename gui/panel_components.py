@@ -186,12 +186,22 @@ class LibraryPanel(GUIComponent):
     
     def _create_sample_galleries(self):
         """Create sample galleries with placeholder data"""
+        try:
+            from ..utils import resource_path
+        except ImportError:
+            # Fallback for when running as script (not as package)
+            import sys
+            import os
+            parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            if parent_dir not in sys.path:
+                sys.path.insert(0, parent_dir)
+            from utils import resource_path
         # Sound galleries
         voices_items = [
-            ("assets/adult_male.png", "Adult Male"),
-            ("assets/adult_female.png", "Adult Female"),
-            ("assets/adult_male.png", "Young boy"),
-            ("assets/adult_female.png", "Young girl"),
+            (resource_path("assets/adult_male.png"), "Adult Male"),
+            (resource_path("assets/adult_female.png"), "Adult Female"),
+            (resource_path("assets/adult_male.png"), "Young boy"),
+            (resource_path("assets/adult_female.png"), "Young girl"),
         ]
         
         voices_gallery = ImageGallery(self.rect.x + 5, self.content_y + 5, 

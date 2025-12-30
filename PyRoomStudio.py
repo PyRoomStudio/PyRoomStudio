@@ -3,15 +3,13 @@ PyRoomStudio - 3D Acoustic Simulation GUI
 Main entry point for the application.
 """
 import pygame
-import os
-import platform
-import sys
+from utils import resource_path
 
 # Initialize pygame
 pygame.init()
 
 # Set window icon
-logo_image = pygame.image.load("assets/logo.png")
+logo_image = pygame.image.load(resource_path("logo.ico"))
 pygame.display.set_icon(logo_image)
 
 # Import and run the application
