@@ -211,7 +211,7 @@ class MaterialGallery(GUIComponent):
         super().__init__(x, y, width, self.title_height + content_height)
         
         self.title = title
-        self.collapsed = False
+        self.collapsed = True
         self.callback = callback
         self.font = pygame.font.Font(None, 14)
         self.material_items: List[MaterialItem] = []
@@ -228,6 +228,9 @@ class MaterialGallery(GUIComponent):
         # Update rect for collapsed state
         self.expanded_height = self.rect.height
         self.collapsed_height = self.title_height
+        # Set initial height based on collapsed state
+        if self.collapsed:
+            self.rect.height = self.collapsed_height
     
     def _create_material_items(self, materials: List[Tuple[str, Tuple[int, int, int], float]]):
         """Create material items from list of (name, color, absorption) tuples"""
@@ -324,7 +327,7 @@ class ImageGallery(GUIComponent):
         super().__init__(x, y, width, self.title_height + content_height, tooltip)
         
         self.title = title
-        self.collapsed = False
+        self.collapsed = True
         self.callback = callback
         self.font = pygame.font.Font(None, 14)
         self.image_items: List[ImageItem] = []
@@ -341,6 +344,9 @@ class ImageGallery(GUIComponent):
         # Update rect for collapsed state
         self.expanded_height = self.rect.height
         self.collapsed_height = self.title_height
+        # Set initial height based on collapsed state
+        if self.collapsed:
+            self.rect.height = self.collapsed_height
     
     def _create_image_items(self, items: List[Tuple[str, str]], tooltip: Optional[str] = None):
         """Create image items from list of (image_path, label) tuples"""
@@ -447,7 +453,7 @@ class SurfaceGallery(GUIComponent):
         super().__init__(x, y, width, actual_height)
         
         self.title = title
-        self.collapsed = False
+        self.collapsed = True
         self.callback = callback
         self.font = pygame.font.Font(None, 14)
         self.surface_items: List[SurfaceItem] = []
@@ -473,6 +479,9 @@ class SurfaceGallery(GUIComponent):
         # Update rect for collapsed state
         self.expanded_height = self.rect.height
         self.collapsed_height = self.title_height
+        # Set initial height based on collapsed state
+        if self.collapsed:
+            self.rect.height = self.collapsed_height
     
     def _create_surface_items(self, surfaces: List[Tuple[str, Tuple[int, int, int], int]]):
         """Create surface items from list of (name, color, index) tuples"""
