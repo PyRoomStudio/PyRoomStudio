@@ -4,7 +4,6 @@ Main application class for the 3D Architecture GUI
 import pygame
 import sys
 import subprocess
-import json
 from typing import List
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -175,56 +174,50 @@ class MainApplication:
             import traceback
             traceback.print_exc()
     
-    def _run_file_dialog_subprocess(self, title: str, filetypes: list, initialdir: str = None) -> str:
-        """Run a file dialog in a subprocess (required for macOS due to SDL/tkinter conflict)"""
-        # Build the Python code to run in subprocess
-        dialog_code = '''
-import tkinter as tk
-from tkinter import filedialog
-import json
-import sys
-
-root = tk.Tk()
-root.withdraw()
-root.update()
-
-# Bring to front on macOS
-if sys.platform == 'darwin':
-    root.lift()
-    root.attributes('-topmost', True)
-    root.focus_force()
-    # Additional macOS focus tricks
-    root.after(100, lambda: root.focus_force())
-
-filetypes = json.loads(sys.argv[1])
-title = sys.argv[2]
-initialdir = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] != "None" else None
-
-filepath = filedialog.askopenfilename(
-    title=title,
-    filetypes=filetypes,
-    initialdir=initialdir
-)
-
-root.destroy()
-print(filepath if filepath else "")
-'''
+    def _run_file_dialog_osascript(self, title: str, filetypes: list, initialdir: str = None) -> str:
+        """Run a file dialog using AppleScript (macOS native) - fast and properly focused"""
         try:
-            # Serialize filetypes for subprocess
-            filetypes_json = json.dumps(filetypes)
-            initialdir_str = str(initialdir) if initialdir else "None"
+            # Build file type filter for AppleScript
+            type_extensions = []
+            for name, pattern in filetypes:
+                # Extract extensions from patterns like "*.stl" or "*.wav *.mp3"
+                for ext in pattern.replace("*.", "").split():
+                    if ext != "*":
+                        # Add both lowercase and uppercase variants
+                        type_extensions.append(ext.lower())
+                        type_extensions.append(ext.upper())
             
-            # Run the dialog in a separate Python process
+            # Build the AppleScript command
+            script_parts = ['set theFile to choose file']
+            script_parts.append(f'with prompt "{title}"')
+            
+            # Add file type filter if we have specific extensions
+            if type_extensions:
+                type_list = ', '.join(f'"{ext}"' for ext in type_extensions)
+                script_parts.append(f'of type {{{type_list}}}')
+            
+            # Add default location if specified
+            if initialdir:
+                script_parts.append(f'default location POSIX file "{initialdir}"')
+            
+            # Complete the script
+            script = ' '.join(script_parts) + '\nreturn POSIX path of theFile'
+            
+            # Run osascript
             result = subprocess.run(
-                [sys.executable, '-c', dialog_code, filetypes_json, title, initialdir_str],
+                ['osascript', '-e', script],
                 capture_output=True,
                 text=True,
-                timeout=120  # 2 minute timeout for user to select file
+                timeout=120  # 2 minute timeout
             )
             
             filepath = result.stdout.strip()
+            
+            # User cancelled (returns error code 1) or other error
             if result.returncode != 0:
-                print(f"File dialog subprocess error: {result.stderr}")
+                if "User canceled" in result.stderr:
+                    return None  # User cancelled, not an error
+                print(f"AppleScript dialog error: {result.stderr}")
                 return None
             
             return filepath if filepath else None
@@ -233,7 +226,7 @@ print(filepath if filepath else "")
             print("File dialog timed out")
             return None
         except Exception as e:
-            print(f"Error running file dialog subprocess: {e}")
+            print(f"Error running AppleScript file dialog: {e}")
             return None
     
     def _run_file_dialog_native(self, title: str, filetypes: list, initialdir: str = None) -> str:
@@ -271,12 +264,12 @@ print(filepath if filepath else "")
     def open_file_dialog(self, title: str, filetypes: list, initialdir: str = None) -> str:
         """Open a cross-platform file dialog
         
-        On macOS, runs in a subprocess to avoid SDL/tkinter conflict.
-        On Windows/Linux, runs natively.
+        On macOS, uses native AppleScript for fast, properly-focused dialogs.
+        On Windows/Linux, runs natively with tkinter.
         """
         if sys.platform == 'darwin':
-            # macOS: Must use subprocess due to SDL/tkinter conflict
-            return self._run_file_dialog_subprocess(title, filetypes, initialdir)
+            # macOS: Use AppleScript for native, fast, properly-focused dialog
+            return self._run_file_dialog_osascript(title, filetypes, initialdir)
         else:
             # Windows/Linux: Use native tkinter
             return self._run_file_dialog_native(title, filetypes, initialdir)
