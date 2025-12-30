@@ -1,8 +1,9 @@
 """
-Gallery GUI components: ImageItem, SurfaceItem, ImageGallery, SurfaceGallery
+Gallery GUI components: ImageItem, SurfaceItem, MaterialItem, ImageGallery, SurfaceGallery, MaterialGallery
 """
 import pygame
-from typing import List, Tuple, Optional, Callable
+import random
+from typing import List, Tuple, Optional, Callable, Dict, Any
 from .constants import Colors
 from .base_components import GUIComponent
 
@@ -131,6 +132,179 @@ class SurfaceItem(GUIComponent):
         text_surface = self.font.render(self.surface_name, True, self.text_color)
         text_rect = text_surface.get_rect(center=(self.rect.centerx, self.rect.bottom - 10))
         surface.blit(text_surface, text_rect)
+
+
+class MaterialItem(GUIComponent):
+    """A material item showing the color and name of an acoustic material"""
+    
+    def __init__(self, x: int, y: int, width: int, height: int, 
+                 material_name: str, material_color: Tuple[int, int, int],
+                 absorption_coeff: float, callback: Optional[Callable] = None):
+        super().__init__(x, y, width, height)
+        self.material_name = material_name
+        self.material_color = material_color
+        self.absorption_coeff = absorption_coeff
+        self.callback = callback
+        self.font = pygame.font.Font(None, 11)
+        
+        # Colors
+        self.border_color = Colors.DARK_GRAY
+        self.hover_color = Colors.LIGHT_BLUE
+        self.text_color = Colors.BLACK
+    
+    def on_click(self):
+        if self.callback:
+            # Pass material data to callback
+            self.callback(self.material_name, self.material_color, self.absorption_coeff)
+    
+    def draw(self, surface: pygame.Surface):
+        if not self.visible:
+            return
+        
+        # Background with hover effect
+        if self.hover and self.enabled:
+            pygame.draw.rect(surface, self.hover_color, self.rect)
+        
+        # Draw border
+        border_color = self.border_color if self.enabled else Colors.GRAY
+        pygame.draw.rect(surface, border_color, self.rect, 1)
+        
+        # Draw color square (most of the item)
+        color_rect = pygame.Rect(self.rect.x + 2, self.rect.y + 2, 
+                               self.rect.width - 4, self.rect.height - 22)
+        
+        display_color = self.material_color
+        if not self.enabled:
+            # Desaturate color when disabled
+            gray = sum(display_color) // 3
+            display_color = (gray, gray, gray)
+        
+        pygame.draw.rect(surface, display_color, color_rect)
+        pygame.draw.rect(surface, border_color, color_rect, 1)
+        
+        # Draw material name
+        text_color = self.text_color if self.enabled else Colors.GRAY
+        text_surface = self.font.render(self.material_name, True, text_color)
+        text_rect = text_surface.get_rect(center=(self.rect.centerx, self.rect.bottom - 10))
+        surface.blit(text_surface, text_rect)
+
+
+class MaterialGallery(GUIComponent):
+    """A collapsible gallery of material items"""
+    
+    def __init__(self, x: int, y: int, width: int, title: str, 
+                 materials: List[Tuple[str, Tuple[int, int, int], float]],
+                 callback: Optional[Callable] = None):
+        """
+        Args:
+            materials: List of (material_name, color, absorption_coeff) tuples
+            callback: Called with (material_name, color, absorption_coeff) when clicked
+        """
+        # Calculate height based on number of items
+        self.title_height = 25
+        self.item_width = 75
+        self.item_height = 90
+        self.items_per_row = max(1, (width - 10) // self.item_width)
+        self.rows = (len(materials) + self.items_per_row - 1) // self.items_per_row
+        content_height = self.rows * self.item_height + 10
+        
+        super().__init__(x, y, width, self.title_height + content_height)
+        
+        self.title = title
+        self.collapsed = False
+        self.callback = callback
+        self.font = pygame.font.Font(None, 14)
+        self.material_items: List[MaterialItem] = []
+        
+        # Colors
+        self.bg_color = Colors.WHITE
+        self.border_color = Colors.DARK_GRAY
+        self.title_bg_color = Colors.LIGHT_GRAY
+        self.title_text_color = Colors.BLACK
+        
+        # Create material items
+        self._create_material_items(materials)
+        
+        # Update rect for collapsed state
+        self.expanded_height = self.rect.height
+        self.collapsed_height = self.title_height
+    
+    def _create_material_items(self, materials: List[Tuple[str, Tuple[int, int, int], float]]):
+        """Create material items from list of (name, color, absorption) tuples"""
+        self.material_items.clear()
+        
+        for i, (material_name, color, absorption) in enumerate(materials):
+            row = i // self.items_per_row
+            col = i % self.items_per_row
+            
+            item_x = self.rect.x + 5 + col * self.item_width
+            item_y = self.rect.y + self.title_height + 5 + row * self.item_height
+            
+            item = MaterialItem(item_x, item_y, self.item_width - 5, self.item_height - 5,
+                              material_name, color, absorption, self.callback)
+            self.material_items.append(item)
+    
+    def handle_event(self, event: pygame.event.Event) -> bool:
+        if not self.visible:
+            return False
+        
+        # Propagate enabled state to material items
+        for item in self.material_items:
+            item.enabled = self.enabled
+        
+        # Handle title click for collapse/expand (always enabled)
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            title_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.width, self.title_height)
+            if title_rect.collidepoint(event.pos):
+                self.collapsed = not self.collapsed
+                self.rect.height = self.collapsed_height if self.collapsed else self.expanded_height
+                return True
+        
+        # Handle material item events if not collapsed
+        if not self.collapsed:
+            for item in self.material_items:
+                if item.handle_event(event):
+                    return True
+        
+        return False
+    
+    def update(self, dt: float):
+        if not self.collapsed:
+            for item in self.material_items:
+                item.update(dt)
+    
+    def draw(self, surface: pygame.Surface):
+        if not self.visible:
+            return
+        
+        # Draw background
+        pygame.draw.rect(surface, self.bg_color, self.rect)
+        pygame.draw.rect(surface, self.border_color, self.rect, 1)
+        
+        # Draw title bar
+        title_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.width, self.title_height)
+        pygame.draw.rect(surface, self.title_bg_color, title_rect)
+        pygame.draw.rect(surface, self.border_color, title_rect, 1)
+        
+        # Draw title text with expand/collapse indicator
+        indicator = "+" if self.collapsed else "-"
+        title_text = f"{indicator} {self.title}"
+        text_surface = self.font.render(title_text, True, self.title_text_color)
+        text_rect = text_surface.get_rect(midleft=(title_rect.x + 5, title_rect.centery))
+        surface.blit(text_surface, text_rect)
+        
+        # Draw items if not collapsed
+        if not self.collapsed:
+            # Create clipping rect for content area
+            content_rect = pygame.Rect(self.rect.x + 1, self.rect.y + self.title_height + 1,
+                                     self.rect.width - 2, self.rect.height - self.title_height - 2)
+            clip_rect = surface.get_clip()
+            surface.set_clip(content_rect)
+            
+            for item in self.material_items:
+                item.draw(surface)
+            
+            surface.set_clip(clip_rect)
 
 
 class ImageGallery(GUIComponent):

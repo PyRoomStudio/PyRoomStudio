@@ -94,8 +94,8 @@ class MainApplication:
             print(f"Successfully created renderer for: {filepath}")
             print(f"Renderer model has {len(self.renderer.model.vectors)} triangles")
             
-            # Connect renderer to PropertyPanel for scale control
-            self.connect_renderer_to_property_panel()
+            # Connect renderer to panels (PropertyPanel and LibraryPanel)
+            self.connect_renderer_to_panels()
             
             # Extract surface information and populate assets panel
             self.populate_assets_from_renderer(filepath)
@@ -108,17 +108,19 @@ class MainApplication:
             self.renderer = None
             return False
     
-    def connect_renderer_to_property_panel(self):
-        """Connect the renderer to the property panel for scale control"""
+    def connect_renderer_to_panels(self):
+        """Connect the renderer to panels that need it"""
         if not self.renderer:
             return
         
-        # Find the property panel
+        # Find and connect the property panel
         property_panel = None
+        library_panel = None
         for component in self.components:
             if isinstance(component, PropertyPanel):
                 property_panel = component
-                break
+            elif isinstance(component, LibraryPanel):
+                library_panel = component
         
         if property_panel:
             # Set the renderer reference in the property panel
@@ -126,6 +128,13 @@ class MainApplication:
             print(f"Connected renderer to property panel (scale: {self.renderer.model_scale_factor:.2f}x)")
         else:
             print("Warning: Property panel not found")
+        
+        if library_panel:
+            # Set the renderer reference in the library panel for material application
+            library_panel.set_renderer(self.renderer)
+            print("Connected renderer to library panel for material selection")
+        else:
+            print("Warning: Library panel not found")
     
     def populate_assets_from_renderer(self, filepath: str):
         """Extract surface information from the renderer and populate the assets panel"""

@@ -94,6 +94,9 @@ class Render:
             (0.2, 0.8, 0.8),   # Cyan
         ]
         self.next_point_color_index = 0
+        
+        # Surface selection system
+        self.selected_surface_index: Optional[int] = None  # Index of currently selected surface
 
     def load_texture(self, filename):
         """Load a texture from file and return the OpenGL texture ID"""
@@ -567,29 +570,19 @@ class Render:
                     
                     # If mouse moved less than 5 pixels, treat as a click
                     if drag_distance < 5:
-                        if self.placement_mode:
-                            # In placement mode: left-click places a point
+                        # PRIORITY 1: Check if clicking on an existing point (for selection)
+                        # Points ALWAYS take priority over surfaces
+                        if self.try_select_point_at_mouse(event.pos):
+                            # Point was selected, deselect any surface
+                            self.selected_surface_index = None
+                        elif self.placement_mode:
+                            # PRIORITY 2: In placement mode, left-click places a new point
                             self.add_point_at_mouse(event.pos)
+                            # Deselect surface when placing new point
+                            self.selected_surface_index = None
                         else:
-                            # Normal mode: left-click applies texture
-                            glPushMatrix()
-                            self.update_camera()
-                            glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
-                            glTranslatef(-self.center[0], -self.center[1], -self.center[2])
-                            ray_origin, ray_dir = self.get_ray_from_mouse(event.pos)
-                            glPopMatrix()
-                            triangles = self.model.vectors
-                            min_t = float('inf')
-                            hit_tri = None
-                            for tri_idx, triangle in enumerate(triangles):
-                                t = self.ray_triangle_intersect(ray_origin, ray_dir, triangle)
-                                if t is not None and t < min_t:
-                                    min_t = t
-                                    hit_tri = tri_idx
-                            if hit_tri is not None:
-                                surf_idx = self.triangle_to_surface[hit_tri]
-                                self.surface_materials[surf_idx] = True  # Apply texture
-                                print(f"Applied texture to surface {surf_idx} (texture_id: {self.texture_id})")
+                            # PRIORITY 3: Normal mode - left-click selects a surface
+                            self.try_select_surface_at_mouse(event.pos)
                 
                 self.mouse_down_pos = None  # Reset
         elif event.type == pygame.MOUSEMOTION:
@@ -673,6 +666,7 @@ class Render:
         
         self.placed_points.append(point)
         self.active_point_index = len(self.placed_points) - 1
+        self.selected_surface_index = None  # Mutual exclusivity - new point deselects surface
         
         print(f"Placed point {self.active_point_index} at {intersection_point} (surface {self.triangle_to_surface.get(tri_idx, '?')})")
         return point
@@ -702,9 +696,10 @@ class Render:
         return 0.0
     
     def select_point(self, index: int):
-        """Select a point by index"""
+        """Select a point by index. Ensures mutual exclusivity with surfaces."""
         if 0 <= index < len(self.placed_points):
             self.active_point_index = index
+            self.selected_surface_index = None  # Mutual exclusivity
             print(f"Selected point {index}")
     
     def remove_active_point(self):
@@ -741,6 +736,185 @@ class Render:
                 'active': i == self.active_point_index
             })
         return info
+    
+    def get_point_at_mouse(self, mouse_pos) -> Optional[int]:
+        """
+        Check if mouse click hits any placed point.
+        Returns the index of the hit point (closest to camera), or None.
+        Points are treated as spheres for intersection testing.
+        """
+        if not self.placed_points:
+            return None
+        
+        # Set up OpenGL matrices for ray picking
+        glPushMatrix()
+        self.update_camera()
+        glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
+        glTranslatef(-self.center[0], -self.center[1], -self.center[2])
+        
+        ray_origin, ray_dir = self.get_ray_from_mouse(mouse_pos)
+        glPopMatrix()
+        
+        # Point hit radius - larger than visual size for easier selection
+        # Visual size is 0.15, but hit radius is 2x for easier clicking
+        hit_radius = 0.30 / self.model_scale_factor
+        
+        min_t = float('inf')
+        hit_point_idx = None
+        
+        for i, point in enumerate(self.placed_points):
+            position = point.get_position()
+            
+            # Ray-sphere intersection test
+            t = self._ray_sphere_intersect(ray_origin, ray_dir, position, hit_radius)
+            if t is not None and t < min_t:
+                min_t = t
+                hit_point_idx = i
+        
+        return hit_point_idx
+    
+    def _ray_sphere_intersect(self, ray_origin: np.ndarray, ray_dir: np.ndarray, 
+                               sphere_center: np.ndarray, sphere_radius: float) -> Optional[float]:
+        """
+        Ray-sphere intersection test.
+        Returns the distance t along the ray to the intersection, or None if no hit.
+        """
+        # Vector from ray origin to sphere center
+        oc = ray_origin - sphere_center
+        
+        # Quadratic equation coefficients: at^2 + bt + c = 0
+        a = np.dot(ray_dir, ray_dir)
+        b = 2.0 * np.dot(oc, ray_dir)
+        c = np.dot(oc, oc) - sphere_radius * sphere_radius
+        
+        discriminant = b * b - 4 * a * c
+        
+        if discriminant < 0:
+            return None  # No intersection
+        
+        # Find the nearest positive t
+        sqrt_disc = np.sqrt(discriminant)
+        t1 = (-b - sqrt_disc) / (2 * a)
+        t2 = (-b + sqrt_disc) / (2 * a)
+        
+        # Return the nearest positive intersection
+        if t1 > 0:
+            return t1
+        elif t2 > 0:
+            return t2
+        return None
+    
+    def try_select_point_at_mouse(self, mouse_pos) -> bool:
+        """
+        Try to select a point at the mouse position.
+        Returns True if a point was selected, False otherwise.
+        Ensures mutual exclusivity - deselects any surface when selecting a point.
+        """
+        hit_idx = self.get_point_at_mouse(mouse_pos)
+        if hit_idx is not None:
+            self.active_point_index = hit_idx
+            self.selected_surface_index = None  # Mutual exclusivity
+            print(f"Selected point {hit_idx}")
+            return True
+        return False
+    
+    def deselect_point(self):
+        """Deselect the currently active point"""
+        if self.active_point_index is not None:
+            print(f"Deselected point {self.active_point_index}")
+            self.active_point_index = None
+
+    # ============ Surface Selection Methods ============
+    
+    def try_select_surface_at_mouse(self, mouse_pos) -> bool:
+        """
+        Try to select a surface at the mouse position.
+        Returns True if a surface was selected, False otherwise.
+        Ensures mutual exclusivity - deselects any point when selecting a surface.
+        """
+        # Set up OpenGL matrices for ray picking
+        glPushMatrix()
+        self.update_camera()
+        glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
+        glTranslatef(-self.center[0], -self.center[1], -self.center[2])
+        ray_origin, ray_dir = self.get_ray_from_mouse(mouse_pos)
+        glPopMatrix()
+        
+        triangles = self.model.vectors
+        min_t = float('inf')
+        hit_tri = None
+        
+        for tri_idx, triangle in enumerate(triangles):
+            t = self.ray_triangle_intersect(ray_origin, ray_dir, triangle)
+            if t is not None and t < min_t:
+                min_t = t
+                hit_tri = tri_idx
+        
+        if hit_tri is not None:
+            surf_idx = self.triangle_to_surface[hit_tri]
+            self.selected_surface_index = surf_idx
+            self.active_point_index = None  # Deselect any point
+            print(f"Selected surface {surf_idx}")
+            return True
+        else:
+            # Clicked on empty space - deselect
+            self.selected_surface_index = None
+            return False
+    
+    def deselect_surface(self):
+        """Deselect the currently selected surface"""
+        if self.selected_surface_index is not None:
+            print(f"Deselected surface {self.selected_surface_index}")
+            self.selected_surface_index = None
+    
+    def get_selected_surface_info(self) -> Optional[dict]:
+        """Get information about the selected surface"""
+        if self.selected_surface_index is None:
+            return None
+        
+        surf_idx = self.selected_surface_index
+        surface = self.surfaces[surf_idx]
+        color = self.surface_colors[surf_idx]
+        has_texture = self.surface_materials[surf_idx] is not None
+        
+        # Calculate surface area (approximate)
+        triangles = self.model.vectors
+        total_area = 0.0
+        for tri_idx in surface:
+            tri = triangles[tri_idx]
+            # Cross product to get area
+            v1 = tri[1] - tri[0]
+            v2 = tri[2] - tri[0]
+            area = 0.5 * np.linalg.norm(np.cross(v1, v2))
+            total_area += area
+        
+        # Scale area to world units
+        total_area *= (self.model_scale_factor ** 2)
+        
+        return {
+            'index': surf_idx,
+            'triangle_count': len(surface),
+            'color': color,
+            'has_texture': has_texture,
+            'area': total_area
+        }
+    
+    def set_surface_color(self, surf_idx: int, color: Tuple[float, float, float]):
+        """Set the color of a surface"""
+        if 0 <= surf_idx < len(self.surface_colors):
+            self.surface_colors[surf_idx] = list(color)
+            self.surface_materials[surf_idx] = None  # Remove texture when changing color
+            print(f"Set surface {surf_idx} color to {color}")
+    
+    def toggle_surface_texture(self, surf_idx: int):
+        """Toggle texture on a surface"""
+        if 0 <= surf_idx < len(self.surface_materials):
+            if self.surface_materials[surf_idx]:
+                self.surface_materials[surf_idx] = None
+                print(f"Removed texture from surface {surf_idx}")
+            else:
+                self.surface_materials[surf_idx] = True
+                print(f"Applied texture to surface {surf_idx}")
 
     def draw_point_markers(self):
         """Draw all placed points as 2D billboard dots facing the camera"""
@@ -841,6 +1015,53 @@ class Render:
             y = size * math.sin(angle)
             glVertex3f(x, y, 0)
         glEnd()
+    
+    def draw_selected_surface_outline(self):
+        """Draw a white outline around the selected surface"""
+        if self.selected_surface_index is None:
+            return
+        
+        glPushMatrix()
+        self.update_camera()
+        
+        # Apply same scaling as model
+        glScalef(self.model_scale_factor, self.model_scale_factor, self.model_scale_factor)
+        
+        # Apply same translation as model
+        glTranslatef(-self.center[0], -self.center[1], -self.center[2])
+        
+        glDisable(GL_TEXTURE_2D)
+        glDisable(GL_DEPTH_TEST)  # Draw on top of everything
+        
+        # White outline color
+        glColor4f(1.0, 1.0, 1.0, 1.0)
+        glLineWidth(3)
+        
+        # Get the triangles for the selected surface
+        surface = self.surfaces[self.selected_surface_index]
+        triangles = self.model.vectors
+        
+        # Collect all edges for the surface and find boundary edges
+        edge_count = {}
+        for tri_idx in surface:
+            tri = triangles[tri_idx]
+            for i in range(3):
+                v1 = tuple(tri[i])
+                v2 = tuple(tri[(i + 1) % 3])
+                edge = tuple(sorted([v1, v2]))
+                edge_count[edge] = edge_count.get(edge, 0) + 1
+        
+        # Draw only boundary edges (edges that appear once) and feature edges
+        glBegin(GL_LINES)
+        for edge, count in edge_count.items():
+            # Draw boundary edges OR edges that are feature edges
+            if count == 1 or edge in self.feature_edges:
+                glVertex3fv(edge[0])
+                glVertex3fv(edge[1])
+        glEnd()
+        
+        glEnable(GL_DEPTH_TEST)
+        glPopMatrix()
 
     def draw_scene(self):
         # Save current OpenGL state to avoid interfering with pygame_gui rendering
@@ -859,6 +1080,9 @@ class Render:
         
         # Draw the 3D model
         self.draw_model()
+        
+        # Draw selected surface outline (on top of model)
+        self.draw_selected_surface_outline()
         
         # Draw placed point markers (on top of model)
         self.draw_point_markers()

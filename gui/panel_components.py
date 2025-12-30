@@ -3,11 +3,12 @@ Panel GUI components: Panel, LibraryPanel, PropertyPanel, AssetsPanel
 """
 import pygame
 import os
+import random
 from typing import List, Tuple, Optional, Callable
 from .constants import Colors
 from .base_components import GUIComponent, TextButton
 from .input_components import DropdownMenu, Slider, RadioButtonGroup, CheckBox
-from .gallery_components import ImageGallery, SurfaceGallery
+from .gallery_components import ImageGallery, SurfaceGallery, MaterialGallery
 
 
 class Panel(GUIComponent):
@@ -103,6 +104,50 @@ class Panel(GUIComponent):
             surface.set_clip(content_clip)
 
 
+# Acoustic material data: {category: [(material_name, absorption_coeff, color), ...]}
+# Absorption coefficients are in the range (0, 1) where:
+#   0 = fully reflective (no absorption)
+#   1 = fully absorptive (complete absorption)
+# Colors are RGB tuples (0-255)
+
+def _generate_material_color(seed: int) -> Tuple[int, int, int]:
+    """Generate a deterministic random color based on a seed"""
+    random.seed(seed)
+    return (random.randint(60, 220), random.randint(60, 220), random.randint(60, 220))
+
+ACOUSTIC_MATERIALS = {
+    "Wall Materials": [
+        ("Brick", 0.03, (178, 102, 85)),       # Brick red-brown
+        ("Concrete", 0.02, (160, 160, 160)),   # Gray
+        ("Drywall", 0.10, (240, 235, 225)),    # Off-white
+        ("Plaster", 0.04, (245, 240, 230)),    # Cream
+        ("Glass", 0.03, (200, 230, 245)),      # Light blue tint
+        ("Wood Panel", 0.10, (160, 120, 80)),  # Wood brown
+    ],
+    "Floor Materials": [
+        ("Hardwood", 0.10, (140, 90, 55)),     # Dark wood
+        ("Carpet Thick", 0.65, (100, 80, 120)),# Deep purple
+        ("Carpet Thin", 0.35, (150, 130, 160)),# Light purple
+        ("Tile", 0.02, (210, 200, 180)),       # Beige
+        ("Linoleum", 0.03, (180, 200, 170)),   # Light green
+        ("Concrete", 0.02, (145, 145, 145)),   # Dark gray
+    ],
+    "Ceiling Materials": [
+        ("Acoustic", 0.70, (90, 90, 110)),     # Dark blue-gray
+        ("Plaster", 0.04, (250, 250, 245)),    # White
+        ("Wood", 0.10, (180, 140, 100)),       # Light wood
+        ("Metal", 0.05, (190, 195, 200)),      # Silver
+        ("Suspended", 0.50, (220, 220, 230)),  # Light gray
+    ],
+    "Soft Furnish": [
+        ("Heavy Drape", 0.55, (130, 50, 70)),  # Burgundy
+        ("Light Drape", 0.15, (230, 200, 180)),# Cream
+        ("Upholstery", 0.45, (80, 100, 130)),  # Navy blue
+        ("Fabric", 0.60, (140, 160, 80)),      # Olive green
+    ],
+}
+
+
 class LibraryPanel(GUIComponent):
     """A specialized panel for the library with SOUND/MATERIAL tabs"""
     
@@ -130,9 +175,12 @@ class LibraryPanel(GUIComponent):
         self.active_tab = "SOUND"  # "SOUND" or "MATERIAL"
         self.tab_width = 80
         
+        # Reference to the renderer (set by application)
+        self.renderer = None
+        
         # Galleries for each tab
         self.sound_galleries: List[ImageGallery] = []
-        self.material_galleries: List[ImageGallery] = []
+        self.material_galleries: List[MaterialGallery] = []
         
         self._create_sample_galleries()
     
@@ -152,43 +200,36 @@ class LibraryPanel(GUIComponent):
         voices_gallery.enabled = False  # Disable individual items
         self.sound_galleries.append(voices_gallery)
         
-        # Material galleries  
-        hvac_items = [
-            ("assets/adult_male.png", "Item 1"),
-            ("assets/adult_female.png", "Item 2"),
-        ]
-        
-        electronics_items = [
-            ("assets/adult_male.png", "Item 3"),
-            ("assets/adult_female.png", "Item 4"),
-        ]
-        
-        custom_items = [
-            ("assets/adult_male.png", "Item 5"),
-            ("assets/adult_female.png", "Item 6"),
-        ]
-        
-        # Create galleries at initial positions (will be repositioned dynamically)
-        hvac_gallery = ImageGallery(self.rect.x + 5, self.content_y + 5, 
-                                  self.rect.width - 10, "HVAC", hvac_items,
-                                  tooltip="Future feature!")
-        hvac_gallery.enabled = False  # Disable individual items
-        self.material_galleries.append(hvac_gallery)
-        
-        electronics_gallery = ImageGallery(self.rect.x + 5, self.content_y + 5, 
-                                         self.rect.width - 10, "Electronics", electronics_items,
-                                         tooltip="Future feature!")
-        electronics_gallery.enabled = False  # Disable individual items
-        self.material_galleries.append(electronics_gallery)
-        
-        custom_gallery = ImageGallery(self.rect.x + 5, self.content_y + 5, 
-                                    self.rect.width - 10, "Custom", custom_items,
-                                    tooltip="Future feature!")
-        custom_gallery.enabled = False  # Disable individual items
-        self.material_galleries.append(custom_gallery)
+        # Material galleries - populated from ACOUSTIC_MATERIALS
+        # Each category becomes a gallery with materials as items
+        for category_name, materials in ACOUSTIC_MATERIALS.items():
+            # Convert materials to gallery items format: (name, color, absorption)
+            material_items = [
+                (material_name, color, absorption_coeff)
+                for material_name, absorption_coeff, color in materials
+            ]
+            
+            # Create gallery at initial position (will be repositioned dynamically)
+            gallery = MaterialGallery(
+                self.rect.x + 5, self.content_y + 5,
+                self.rect.width - 10, category_name, material_items,
+                callback=self.on_material_select
+            )
+            gallery.enabled = True  # Enable material selection
+            self.material_galleries.append(gallery)
         
         # Initial positioning
         self._reposition_galleries()
+    
+    def on_material_select(self, material_name: str, color: Tuple[int, int, int], absorption: float):
+        """Handle material selection - apply to selected surface"""
+        if self.renderer and self.renderer.selected_surface_index is not None:
+            # Convert color from 0-255 to 0-1 range for OpenGL
+            gl_color = (color[0] / 255.0, color[1] / 255.0, color[2] / 255.0)
+            self.renderer.set_surface_color(self.renderer.selected_surface_index, gl_color)
+            print(f"Applied material '{material_name}' (absorption: {absorption}) to surface {self.renderer.selected_surface_index + 1}")
+        else:
+            print(f"Select a surface first to apply material '{material_name}'")
     
     def _reposition_galleries(self):
         """Reposition galleries to stack towards the top based on their collapsed state"""
@@ -199,12 +240,17 @@ class LibraryPanel(GUIComponent):
             old_y = gallery.rect.y
             gallery.rect.y = current_y
             
-            # Update image item positions when gallery moves
+            # Update item positions when gallery moves (handle both types)
             y_offset = current_y - old_y
-            for item in gallery.image_items:
+            items = getattr(gallery, 'image_items', None) or getattr(gallery, 'material_items', [])
+            for item in items:
                 item.rect.y += y_offset
             
             current_y += gallery.rect.height + 5
+    
+    def set_renderer(self, renderer):
+        """Set the renderer reference for material application"""
+        self.renderer = renderer
     
     def handle_event(self, event: pygame.event.Event) -> bool:
         if not self.visible or not self.enabled:
@@ -345,53 +391,83 @@ class PropertyPanel(GUIComponent):
         
         # Placement mode indicator
         self.placement_mode_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 16, "Placement: OFF", 12)
-        current_y += 30
-        
-        # Single options (radio buttons) - DISABLED
-        self.single_options_label = TextButton(self.rect.x + 10, current_y, 100, 20, "Single options", 14)
         current_y += 25
         
-        options = ["Option 1", "Option 2", "Option 3"]
-        self.radio_group = RadioButtonGroup(self.rect.x + 10, current_y, self.rect.width - 20, 
-                                          options, 0, self.on_radio_select, tooltip="Future feature!")
-        self.radio_group.enabled = False
-        current_y += len(options) * 25 + 10
+        # ============ Selected Point Section ============
+        # This section is shown when a point is selected
         
-        # Dropdown - DISABLED
-        self.dropdown_label = TextButton(self.rect.x + 10, current_y, 80, 20, "Drop-down", 14)
-        current_y += 25
-        self.dropdown = DropdownMenu(self.rect.x + 10, current_y, self.rect.width - 20, 25, 
-                                   ["Text", "Option A", "Option B"], callback=self.on_dropdown_select,
-                                   tooltip="Future feature!")
-        self.dropdown.enabled = False
-        current_y += 35
+        # Section header
+        self.selected_point_header = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 20, "── Selected Point ──", 14)
+        current_y += 22
         
-        # Toggle (OFF) - DISABLED
-        self.toggle_off_label = TextButton(self.rect.x + 10, current_y, 80, 20, "Toggle (OFF)", 14)
-        current_y += 25
-        self.toggle_off_checkbox = CheckBox(self.rect.x + 10, current_y, self.rect.width - 20, 25, 
-                                          "Option 1", False, callback=self.on_toggle_off,
-                                          tooltip="Future feature!")
-        self.toggle_off_checkbox.enabled = False
-        current_y += 35
+        # Point index/name
+        self.point_index_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 18, "Point: None", 12)
+        current_y += 20
         
-        # Toggle (ON) - DISABLED
-        self.toggle_on_label = TextButton(self.rect.x + 10, current_y, 80, 20, "Toggle (ON)", 14)
-        current_y += 25
-        self.toggle_on_checkbox = CheckBox(self.rect.x + 10, current_y, self.rect.width - 20, 25, 
-                                         "Option 1", True, callback=self.on_toggle_on,
-                                         tooltip="Future feature!")
-        self.toggle_on_checkbox.enabled = False
+        # Point position labels
+        self.point_pos_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 18, "Position:", 12)
+        current_y += 18
+        self.point_pos_x_label = TextButton(self.rect.x + 15, current_y, self.rect.width - 25, 16, "X: --", 11)
+        current_y += 16
+        self.point_pos_y_label = TextButton(self.rect.x + 15, current_y, self.rect.width - 25, 16, "Y: --", 11)
+        current_y += 16
+        self.point_pos_z_label = TextButton(self.rect.x + 15, current_y, self.rect.width - 25, 16, "Z: --", 11)
+        current_y += 22
+        
+        # Delete Point button
+        self.delete_point_button = TextButton(self.rect.x + 10, current_y, 80, 24, "Delete", 12, 
+                                              callback=self.on_delete_point)
+        self.delete_point_button.enabled = False
+        
+        # Deselect Point button
+        self.deselect_point_button = TextButton(self.rect.x + 95, current_y, 80, 24, "Deselect", 12,
+                                          callback=self.on_deselect_point)
+        self.deselect_point_button.enabled = False
+        current_y += 28
+        
+        # Point count label
+        self.point_count_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 16, "Total Points: 0", 11)
+        current_y += 22
+        
+        # ============ Selected Surface Section ============
+        # This section is shown when a surface is selected
+        
+        # Section header
+        self.selected_surface_header = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 20, "── Selected Surface ──", 14)
+        current_y += 22
+        
+        # Surface index/name
+        self.surface_index_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 18, "Surface: None", 12)
+        current_y += 20
+        
+        # Surface info labels
+        self.surface_triangles_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 16, "Triangles: --", 11)
+        current_y += 16
+        self.surface_area_label = TextButton(self.rect.x + 10, current_y, self.rect.width - 20, 16, "Area: -- m²", 11)
+        current_y += 20
+        
+        # Toggle Texture button
+        self.toggle_texture_button = TextButton(self.rect.x + 10, current_y, 80, 24, "Texture", 12,
+                                                callback=self.on_toggle_texture)
+        self.toggle_texture_button.enabled = False
+        
+        # Deselect Surface button
+        self.deselect_surface_button = TextButton(self.rect.x + 95, current_y, 80, 24, "Deselect", 12,
+                                                  callback=self.on_deselect_surface)
+        self.deselect_surface_button.enabled = False
         
         # Store all components for easy handling
         self.components = [
             self.scale_label, self.scale_value_label, self.scale_slider, self.dimension_label,
             self.point_distance_label, self.point_distance_value_label, self.point_distance_slider,
             self.placement_mode_label,
-            self.single_options_label, self.radio_group,
-            self.dropdown_label, self.dropdown,
-            self.toggle_off_label, self.toggle_off_checkbox,
-            self.toggle_on_label, self.toggle_on_checkbox
+            self.selected_point_header, self.point_index_label,
+            self.point_pos_label, self.point_pos_x_label, self.point_pos_y_label, self.point_pos_z_label,
+            self.delete_point_button, self.deselect_point_button,
+            self.point_count_label,
+            self.selected_surface_header, self.surface_index_label,
+            self.surface_triangles_label, self.surface_area_label,
+            self.toggle_texture_button, self.deselect_surface_button
         ]
     
     def on_scale_change(self, value):
@@ -416,17 +492,25 @@ class PropertyPanel(GUIComponent):
         if self.renderer:
             self.renderer.update_active_point_distance(value)
     
-    def on_radio_select(self, option):
-        print(f"Radio selected: {option}")
+    def on_delete_point(self):
+        """Delete the currently selected point"""
+        if self.renderer and self.renderer.active_point_index is not None:
+            self.renderer.remove_active_point()
     
-    def on_dropdown_select(self, option):
-        print(f"Dropdown selected: {option}")
+    def on_deselect_point(self):
+        """Deselect the currently selected point"""
+        if self.renderer:
+            self.renderer.deselect_point()
     
-    def on_toggle_off(self, state):
-        print(f"Toggle OFF: {state}")
+    def on_toggle_texture(self):
+        """Toggle texture on the selected surface"""
+        if self.renderer and self.renderer.selected_surface_index is not None:
+            self.renderer.toggle_surface_texture(self.renderer.selected_surface_index)
     
-    def on_toggle_on(self, state):
-        print(f"Toggle ON: {state}")
+    def on_deselect_surface(self):
+        """Deselect the currently selected surface"""
+        if self.renderer:
+            self.renderer.deselect_surface()
     
     def set_renderer(self, renderer):
         """Set the renderer reference for scale control"""
@@ -453,7 +537,7 @@ class PropertyPanel(GUIComponent):
         for component in self.components:
             component.update(dt)
         
-        # Sync point distance slider with renderer's active point
+        # Sync with renderer state
         if self.renderer:
             # Update placement mode label
             if self.renderer.placement_mode:
@@ -461,13 +545,70 @@ class PropertyPanel(GUIComponent):
             else:
                 self.placement_mode_label.text = "Placement: OFF (P)"
             
-            # Sync slider with active point's distance
+            # Update point count
+            point_count = len(self.renderer.placed_points)
+            self.point_count_label.text = f"Total Points: {point_count}"
+            
+            # Check if a point is selected
             if self.renderer.active_point_index is not None:
-                current_distance = self.renderer.get_active_point_distance()
-                # Only update if significantly different (avoid feedback loop)
+                point_idx = self.renderer.active_point_index
+                point = self.renderer.placed_points[point_idx]
+                position = point.get_position()
+                
+                # Update point info labels
+                self.point_index_label.text = f"Point: {point_idx + 1}"
+                self.point_pos_x_label.text = f"X: {position[0]:.2f}m"
+                self.point_pos_y_label.text = f"Y: {position[1]:.2f}m"
+                self.point_pos_z_label.text = f"Z: {position[2]:.2f}m"
+                
+                # Enable point action buttons
+                self.delete_point_button.enabled = True
+                self.deselect_point_button.enabled = True
+                
+                # Sync distance slider with active point's distance
+                current_distance = point.distance
                 if abs(self.point_distance_slider.value - current_distance) > 0.01:
                     self.point_distance_slider.value = current_distance
                     self.point_distance_value_label.text = f"{current_distance:.1f}m"
+            else:
+                # No point selected - show placeholder values
+                self.point_index_label.text = "Point: None"
+                self.point_pos_x_label.text = "X: --"
+                self.point_pos_y_label.text = "Y: --"
+                self.point_pos_z_label.text = "Z: --"
+                
+                # Disable point action buttons
+                self.delete_point_button.enabled = False
+                self.deselect_point_button.enabled = False
+            
+            # Check if a surface is selected
+            if self.renderer.selected_surface_index is not None:
+                surface_info = self.renderer.get_selected_surface_info()
+                if surface_info:
+                    # Update surface info labels
+                    self.surface_index_label.text = f"Surface: {surface_info['index'] + 1}"
+                    self.surface_triangles_label.text = f"Triangles: {surface_info['triangle_count']}"
+                    self.surface_area_label.text = f"Area: {surface_info['area']:.2f} m²"
+                    
+                    # Update texture button text based on current state
+                    if surface_info['has_texture']:
+                        self.toggle_texture_button.text = "No Texture"
+                    else:
+                        self.toggle_texture_button.text = "Texture"
+                    
+                    # Enable surface action buttons
+                    self.toggle_texture_button.enabled = True
+                    self.deselect_surface_button.enabled = True
+            else:
+                # No surface selected - show placeholder values
+                self.surface_index_label.text = "Surface: None"
+                self.surface_triangles_label.text = "Triangles: --"
+                self.surface_area_label.text = "Area: -- m²"
+                self.toggle_texture_button.text = "Texture"
+                
+                # Disable surface action buttons
+                self.toggle_texture_button.enabled = False
+                self.deselect_surface_button.enabled = False
     
     def draw(self, surface: pygame.Surface):
         """Draw both the panel and dropdowns"""
