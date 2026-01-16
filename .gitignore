@@ -6,6 +6,7 @@ room_tutorial.ipynb
 sounds/simulations/
 build/
 dist/
+tests/generate_test_audio.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

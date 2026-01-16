@@ -2,7 +2,7 @@
 PyRoomStudio - 3D Acoustic Simulation GUI
 Main entry point for the application.
 """
-import pygame
+import pygame  # pyright: ignore[reportMissingImports]
 from utils import resource_path
 
 # Initialize pygame

@@ -517,7 +517,7 @@ class MainApplication:
                 self.place_point_button.text = "Place Point"
     
     def on_render(self):
-        """Trigger acoustic simulation using the loaded 3D model"""
+        """Trigger acoustic simulation using placed sound sources and listeners"""
         print("=" * 60)
         print("Starting Acoustic Simulation...")
         print("=" * 60)
@@ -528,56 +528,129 @@ class MainApplication:
             print("Use File → Open Project to load a model.")
             return
         
+        # Validate: Check for minimum sources and listeners
+        source_count, listener_count = self.renderer.count_sources_and_listeners()
+        print(f"Found {source_count} sound source(s) and {listener_count} listener(s)")
+        
+        if source_count == 0:
+            print("\nERROR: No sound sources placed.")
+            print("Please place at least one point and set its type to 'Source'.")
+            print("  1. Click 'Place Point' to enter placement mode")
+            print("  2. Click on a surface to place a point")
+            print("  3. Select the point and click 'Source' to set its type")
+            return
+        
+        if listener_count == 0:
+            print("\nERROR: No listeners placed.")
+            print("Please place at least one point and set its type to 'Listener'.")
+            print("  1. Click 'Place Point' to enter placement mode")
+            print("  2. Click on a surface to place a point")
+            print("  3. Select the point and click 'Listener' to set its type")
+            return
+        
+        # Validate: Check for sound file
+        if not self.sound_source_file:
+            print("\nERROR: No sound file loaded.")
+            print("Please import a sound file using 'Import Sound' button.")
+            return
+        
         try:
             # Update window title to show simulation in progress
             pygame.display.set_caption("PyRoomStudio - Simulating...")
             
-            # Extract necessary data from the renderer
-            print("Extracting geometry data from 3D model...")
+            # Extract sources and listeners from placed points
+            print("\nExtracting sources and listeners from placed points...")
+            sources_data, listeners_data = self.renderer.get_sources_and_listeners(self.sound_source_file)
+            
+            for i, src in enumerate(sources_data):
+                print(f"  Source {i+1}: position={src['position']}")
+            for i, lst in enumerate(listeners_data):
+                print(f"  Listener {i+1}: position={lst['position']}")
+            
+            # Build SceneManager with sources and listeners
+            from scene_manager import SceneManager, SoundSource, Listener
+            import numpy as np
+            
+            scene_manager = SceneManager()
+            
+            for src_data in sources_data:
+                scene_manager.add_sound_source(
+                    position=src_data['position'],
+                    audio_file=src_data['audio_file'],
+                    volume=src_data['volume'],
+                    name=src_data['name']
+                )
+            
+            for lst_data in listeners_data:
+                scene_manager.add_listener(
+                    position=lst_data['position'],
+                    name=lst_data['name']
+                )
+            
+            print(f"\n{scene_manager.get_summary()}")
+            
+            # Extract geometry data from the renderer (scaled)
+            print("\nExtracting geometry data from 3D model...")
             walls = self.renderer.get_walls_for_acoustic()
-            room_center = self.renderer.get_room_center()
-            model_vertices = self.renderer.get_model_vertices()
+            room_center = self.renderer.get_scaled_room_center()
+            model_vertices = self.renderer.get_scaled_model_vertices()
             
             print(f"  - Found {len(walls)} surfaces")
-            print(f"  - Room center: {room_center}")
+            print(f"  - Room center (scaled): {room_center}")
             print(f"  - Total vertices: {len(model_vertices)}")
+            print(f"  - Model scale factor: {self.renderer.model_scale_factor:.4f}x")
             
             # Import and create acoustic simulator
-            from acoustic import Acoustic
+            from acoustic_simulator import AcousticSimulator
             print("\nInitializing acoustic simulator...")
-            acoustic = Acoustic()
+            simulator = AcousticSimulator()
             
-            # Get the current scale factor from the renderer
-            scale_factor = self.renderer.model_scale_factor
-            print(f"Using scale factor from renderer: {scale_factor:.4f}x")
-            
-            # Run the simulation with custom sound source if loaded
+            # Run the simulation
             print("Running PyRoomAcoustics simulation...")
-            if self.sound_source_file:
-                print(f"Using custom sound source: {self.sound_source_file}")
-            else:
-                print("Using default sound source")
             print("(This may take a few moments...)")
-            output_file = acoustic.simulate(walls, room_center, model_vertices, scale_factor, self.sound_source_file)
             
-            # Restore window title (keep sound name if loaded)
+            output_dir = simulator.simulate_scene(
+                scene_manager=scene_manager,
+                walls_from_render=walls,
+                room_center=room_center,
+                model_vertices=model_vertices,
+                max_order=3,
+                n_rays=10000,
+                energy_absorption=0.2,
+                scattering=0.1
+            )
+            
+            # Restore window title
             if self.sound_source_file:
                 sound_name = self.sound_source_file.split('/')[-1].split('\\')[-1]
                 pygame.display.set_caption(f"PyRoomStudio - Sound: {sound_name}")
             else:
                 pygame.display.set_caption("PyRoomStudio")
             
-            # Print success message
-            print("\n" + "=" * 60)
-            print("SIMULATION COMPLETE!")
-            print("=" * 60)
-            print(f"Output saved to: {output_file}")
-            print("You can now play this file to hear the simulated acoustics.")
-            print("=" * 60)
+            if output_dir:
+                # Print success message with details
+                print("\n" + "=" * 60)
+                print("SIMULATION COMPLETE!")
+                print("=" * 60)
+                print(f"Output directory: {output_dir}")
+                print(f"\nGenerated files:")
+                
+                # List output files
+                import os
+                if os.path.exists(output_dir):
+                    for filename in os.listdir(output_dir):
+                        if filename.endswith('.wav'):
+                            print(f"  - {filename}")
+                
+                print("\nYou can play these files to hear the simulated acoustics.")
+                print("Each file represents what a listener hears from each source.")
+                print("=" * 60)
+            else:
+                print("\nERROR: Simulation failed. Check the error messages above.")
             
         except FileNotFoundError as e:
             print(f"\nERROR: File not found - {e}")
-            print("Make sure the sound source file exists in the sounds/sources/ directory.")
+            print("Make sure the sound source file exists.")
             pygame.display.set_caption("PyRoomStudio")
             
         except ValueError as e:

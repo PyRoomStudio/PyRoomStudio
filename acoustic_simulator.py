@@ -13,9 +13,6 @@ import json
 
 from scene_manager import SceneManager, SoundSource, Listener
 
-# Same scaling factor as acoustic.py
-SIZE_REDUCTION_FACTOR = 700.0
-
 
 class AcousticSimulator:
     """
@@ -82,6 +79,7 @@ class AcousticSimulator:
         material = pra.Material(energy_absorption=energy_absorption, scattering=scattering)
 
         # Build walls list from renderer's triangle data
+        # Note: model_vertices should already be pre-scaled by the renderer
         print("\nBuilding room geometry...")
         walls = []
         for wall_info in walls_from_render:
@@ -91,8 +89,8 @@ class AcousticSimulator:
                 if triangle_verts.shape[0] < 3:
                     continue
 
-                # Scale down to realistic room size
-                pra_vertices = triangle_verts.T / SIZE_REDUCTION_FACTOR
+                # Vertices are already scaled by renderer's model_scale_factor
+                pra_vertices = triangle_verts.T
 
                 walls.append(
                     pra.wall_factory(
@@ -103,6 +101,9 @@ class AcousticSimulator:
                 )
 
         print(f"Created {len(walls)} wall triangles")
+
+        # Track successful simulations
+        successful_simulations = 0
 
         # For each sound source, run a simulation
         for source_idx, sound_source in enumerate(scene_manager.sound_sources):
@@ -141,14 +142,14 @@ class AcousticSimulator:
                 print(f"  ERROR loading audio: {e}")
                 continue
 
-            # Scale source position
-            source_pos_scaled = sound_source.position / SIZE_REDUCTION_FACTOR
+            # Source position is already pre-scaled by the renderer
+            source_pos = sound_source.position
 
             # Prepare microphone array from all listeners
+            # Listener positions are already pre-scaled by the renderer
             mic_positions = []
             for listener in scene_manager.listeners:
-                mic_pos_scaled = listener.position / SIZE_REDUCTION_FACTOR
-                mic_positions.append(mic_pos_scaled)
+                mic_positions.append(listener.position)
 
             # Convert to column vectors for pyroomacoustics (shape: 3, n_mics)
             mic_array = np.column_stack(mic_positions)
@@ -165,7 +166,7 @@ class AcousticSimulator:
             )
 
             # Add source
-            room.add_source(source_pos_scaled, signal=signal)
+            room.add_source(source_pos, signal=signal)
 
             # Add microphone array
             room.add_microphone_array(mic_array)
@@ -206,14 +207,27 @@ class AcousticSimulator:
                     wavfile.write(output_path, fs, output_signal_int16)
                     print(f"    Saved: {output_filename}")
 
+                # Count this source as successfully simulated
+                successful_simulations += 1
+
             except Exception as e:
                 print(f"  ERROR during simulation: {e}")
                 import traceback
                 traceback.print_exc()
                 continue
 
+        # Check if any simulations succeeded
+        if successful_simulations == 0:
+            print(f"\n{'='*60}")
+            print("SIMULATION FAILED")
+            print("No sound sources were successfully simulated.")
+            print("Check that the audio file exists and is accessible.")
+            print(f"{'='*60}\n")
+            return None
+
         print(f"\n{'='*60}")
         print("SIMULATION COMPLETE")
+        print(f"Successfully simulated {successful_simulations}/{len(scene_manager.sound_sources)} source(s)")
         print(f"Output directory: {os.path.abspath(output_dir)}")
         print(f"{'='*60}\n")
 

@@ -1329,3 +1329,78 @@ class Render:
         
         return scale_factor
     
+    def get_sources_and_listeners(self, audio_file: str = None) -> Tuple[List[dict], List[dict]]:
+        """
+        Extract sound sources and listeners from placed points.
+        Returns positions scaled by model_scale_factor for acoustic simulation.
+        
+        Args:
+            audio_file: Path to audio file to use for all sound sources.
+                       If None, sources will have empty audio_file field.
+        
+        Returns:
+            Tuple of (sources, listeners) where each is a list of dicts with:
+            - sources: [{'position': np.ndarray, 'audio_file': str, 'name': str, 'volume': float}, ...]
+            - listeners: [{'position': np.ndarray, 'name': str}, ...]
+        """
+        sources = []
+        listeners = []
+        
+        source_count = 0
+        listener_count = 0
+        
+        for i, point in enumerate(self.placed_points):
+            # Get position in original model coordinates
+            original_pos = point.get_position()
+            
+            # Scale position by model_scale_factor for real-world coordinates
+            scaled_pos = original_pos * self.model_scale_factor
+            
+            if point.point_type == POINT_TYPE_SOURCE:
+                source_count += 1
+                sources.append({
+                    'position': scaled_pos,
+                    'audio_file': audio_file if audio_file else '',
+                    'name': f"Source {source_count}",
+                    'volume': 1.0
+                })
+            elif point.point_type == POINT_TYPE_LISTENER:
+                listener_count += 1
+                listeners.append({
+                    'position': scaled_pos,
+                    'name': f"Listener {listener_count}"
+                })
+        
+        return sources, listeners
+    
+    def count_sources_and_listeners(self) -> Tuple[int, int]:
+        """
+        Count the number of sound sources and listeners in placed points.
+        
+        Returns:
+            Tuple of (source_count, listener_count)
+        """
+        source_count = 0
+        listener_count = 0
+        
+        for point in self.placed_points:
+            if point.point_type == POINT_TYPE_SOURCE:
+                source_count += 1
+            elif point.point_type == POINT_TYPE_LISTENER:
+                listener_count += 1
+        
+        return source_count, listener_count
+    
+    def get_scaled_model_vertices(self) -> np.ndarray:
+        """
+        Return flattened vertex array scaled by model_scale_factor for acoustic simulation.
+        """
+        vertices = self.model.vectors.reshape(-1, 3)
+        return vertices * self.model_scale_factor
+    
+    def get_scaled_room_center(self) -> np.ndarray:
+        """
+        Return the center point of the 3D model scaled by model_scale_factor.
+        """
+        return self.center * self.model_scale_factor
+    
