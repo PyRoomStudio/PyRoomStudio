@@ -1,0 +1,733 @@
+#include <cmath>
+#include <algorithm>
+
+#include "Viewport3D.h"
+#include "RayPicking.h"
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+#include <GL/gl.h>
+#include <GL/glu.h>
+
+#include <QPainter>
+
+namespace prs {
+
+static const std::vector<Color3f> kPointColors = {
+    {0.2f, 0.8f, 0.2f}, {0.8f, 0.2f, 0.2f}, {0.2f, 0.2f, 0.8f},
+    {0.8f, 0.8f, 0.2f}, {0.8f, 0.2f, 0.8f}, {0.2f, 0.8f, 0.8f},
+};
+
+const std::vector<Color3f>& Viewport3D::pointColors() { return kPointColors; }
+
+Viewport3D::Viewport3D(QWidget* parent)
+    : QOpenGLWidget(parent)
+{
+    setFocusPolicy(Qt::StrongFocus);
+    setMinimumSize(200, 200);
+}
+
+bool Viewport3D::loadModel(const QString& filepath) {
+    if (!mesh_.loadSTL(filepath)) return false;
+
+    modelCenter_  = mesh_.center();
+    originalSize_ = mesh_.diagonalSize();
+
+    featureEdges_ = SurfaceGrouper::computeFeatureEdges(mesh_, 10.0f);
+    surfaces_     = SurfaceGrouper::groupTrianglesIntoSurfaces(mesh_, featureEdges_);
+
+    surfaceColors_.assign(surfaces_.size(), defaultSurfaceColor_);
+    surfaceTextured_.assign(surfaces_.size(), false);
+
+    triangleToSurface_.clear();
+    for (int si = 0; si < static_cast<int>(surfaces_.size()); ++si)
+        for (int ti : surfaces_[si])
+            triangleToSurface_[ti] = si;
+
+    placedPoints_.clear();
+    activePointIndex_ = -1;
+    selectedSurfaceIndex_ = -1;
+    nextPointColorIndex_ = 0;
+
+    autoNormalizeScale();
+
+    update();
+    emit modelLoaded(filepath);
+    return true;
+}
+
+void Viewport3D::autoNormalizeScale() {
+    float orig = mesh_.diagonalSize();
+    float factor;
+    constexpr float TARGET_SIZE = 6.0f;
+
+    if (orig > 1000.0f)
+        factor = 1.0f / 700.0f;
+    else if (orig < 1.0f)
+        factor = TARGET_SIZE / orig;
+    else
+        factor = TARGET_SIZE / orig;
+
+    setScaleFactor(factor);
+}
+
+void Viewport3D::setScaleFactor(float factor) {
+    scaleFactor_ = factor;
+    float scaledSize = mesh_.diagonalSize() * factor;
+    camera_.setDistance(2.5f * scaledSize);
+    camera_.setDistanceLimits(0.2f * scaledSize, 5.0f * scaledSize);
+    updateProjection();
+    emit scaleChanged(factor);
+    update();
+}
+
+void Viewport3D::updateProjection() {
+    makeCurrent();
+    float nearPlane = 0.1f;
+    float farPlane  = std::max(100.0f, camera_.maxDistance() * 10.0f);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    float aspect = width() > 0 ? static_cast<float>(width()) / height() : 1.0f;
+    gluPerspective(45.0, aspect, nearPlane, farPlane);
+    glMatrixMode(GL_MODELVIEW);
+    doneCurrent();
+}
+
+Vec3f Viewport3D::getRealWorldDimensions() const {
+    return (mesh_.maxBound() - mesh_.minBound()) * scaleFactor_;
+}
+
+float Viewport3D::getRealWorldSize() const {
+    return mesh_.diagonalSize() * scaleFactor_;
+}
+
+// ==================== Point Placement ====================
+
+void Viewport3D::setPlacementMode(bool enabled) {
+    placementMode_ = enabled;
+    emit placementModeChanged(enabled);
+    update();
+}
+
+void Viewport3D::updateActivePointDistance(float distance) {
+    if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size()))
+        placedPoints_[activePointIndex_].distance = distance;
+    update();
+}
+
+void Viewport3D::adjustActivePointDistance(float delta) {
+    if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size())) {
+        placedPoints_[activePointIndex_].distance += delta;
+        update();
+    }
+}
+
+float Viewport3D::getActivePointDistance() const {
+    if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size()))
+        return placedPoints_[activePointIndex_].distance;
+    return 0.0f;
+}
+
+void Viewport3D::setActivePointType(const std::string& type) {
+    if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size())) {
+        placedPoints_[activePointIndex_].pointType = type;
+        update();
+    }
+}
+
+std::string Viewport3D::getActivePointType() const {
+    if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size()))
+        return placedPoints_[activePointIndex_].pointType;
+    return POINT_TYPE_NONE;
+}
+
+void Viewport3D::removeActivePoint() {
+    if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size())) {
+        placedPoints_.erase(placedPoints_.begin() + activePointIndex_);
+        if (placedPoints_.empty())
+            activePointIndex_ = -1;
+        else if (activePointIndex_ >= static_cast<int>(placedPoints_.size()))
+            activePointIndex_ = static_cast<int>(placedPoints_.size()) - 1;
+        emit pointDeselected();
+        update();
+    }
+}
+
+void Viewport3D::deselectPoint() {
+    if (activePointIndex_ >= 0) {
+        activePointIndex_ = -1;
+        emit pointDeselected();
+        update();
+    }
+}
+
+void Viewport3D::clearPlacedPoints() {
+    placedPoints_.clear();
+    activePointIndex_ = -1;
+    nextPointColorIndex_ = 0;
+    emit pointDeselected();
+    update();
+}
+
+// ==================== Surface Selection ====================
+
+void Viewport3D::deselectSurface() {
+    if (selectedSurfaceIndex_ >= 0) {
+        selectedSurfaceIndex_ = -1;
+        emit surfaceDeselected();
+        update();
+    }
+}
+
+void Viewport3D::setSurfaceColor(int surfIdx, const Color3f& color) {
+    if (surfIdx >= 0 && surfIdx < static_cast<int>(surfaceColors_.size())) {
+        surfaceColors_[surfIdx] = color;
+        surfaceTextured_[surfIdx] = false;
+        update();
+    }
+}
+
+void Viewport3D::toggleSurfaceTexture(int surfIdx) {
+    if (surfIdx >= 0 && surfIdx < static_cast<int>(surfaceTextured_.size())) {
+        surfaceTextured_[surfIdx] = !surfaceTextured_[surfIdx];
+        update();
+    }
+}
+
+// ==================== Acoustic Helpers ====================
+
+std::pair<int, int> Viewport3D::countSourcesAndListeners() const {
+    int src = 0, lst = 0;
+    for (auto& p : placedPoints_) {
+        if (p.pointType == POINT_TYPE_SOURCE) ++src;
+        else if (p.pointType == POINT_TYPE_LISTENER) ++lst;
+    }
+    return {src, lst};
+}
+
+std::pair<std::vector<Viewport3D::SourceData>, std::vector<Viewport3D::ListenerData>>
+Viewport3D::getSourcesAndListeners(const std::string& audioFile) const {
+    std::vector<SourceData> sources;
+    std::vector<ListenerData> listeners;
+    int sc = 0, lc = 0;
+
+    for (auto& pt : placedPoints_) {
+        Vec3f pos = pt.getPosition() * scaleFactor_;
+        if (pt.pointType == POINT_TYPE_SOURCE) {
+            sources.push_back({pos, audioFile, "Source " + std::to_string(++sc), 1.0f});
+        } else if (pt.pointType == POINT_TYPE_LISTENER) {
+            listeners.push_back({pos, "Listener " + std::to_string(++lc)});
+        }
+    }
+    return {sources, listeners};
+}
+
+std::vector<Viewport3D::WallInfo> Viewport3D::getWallsForAcoustic() const {
+    std::vector<WallInfo> walls;
+    for (auto& surf : surfaces_) {
+        WallInfo wi;
+        wi.triangleIndices.assign(surf.begin(), surf.end());
+        walls.push_back(std::move(wi));
+    }
+    return walls;
+}
+
+Vec3f Viewport3D::getScaledRoomCenter() const {
+    return mesh_.center() * scaleFactor_;
+}
+
+std::vector<Vec3f> Viewport3D::getScaledModelVertices() const {
+    return mesh_.scaledFlatVertices(scaleFactor_);
+}
+
+// ==================== OpenGL ====================
+
+void Viewport3D::initializeGL() {
+    initializeOpenGLFunctions();
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+void Viewport3D::resizeGL(int w, int h) {
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    float aspect = h > 0 ? static_cast<float>(w) / h : 1.0f;
+    float nearPlane = 0.1f;
+    float farPlane  = std::max(100.0f, camera_.maxDistance() * 10.0f);
+    gluPerspective(45.0, aspect, nearPlane, farPlane);
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void Viewport3D::paintGL() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if (!hasModel()) {
+        drawPlaceholder();
+        return;
+    }
+
+    drawMeasurementGrid();
+    drawModel();
+    drawSelectedSurfaceOutline();
+    drawPointMarkers();
+}
+
+void Viewport3D::drawPlaceholder() {
+    // Use QPainter overlay for placeholder text
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    QRect r = rect();
+    painter.fillRect(r, QColor(200, 200, 200));
+    painter.setPen(QColor(64, 64, 64));
+
+    QFont font = painter.font();
+    font.setPointSize(14);
+    painter.setFont(font);
+    painter.drawText(r, Qt::AlignCenter,
+        "No 3D Model Loaded\n\nFile \u2192 Open Project\nto load an STL file");
+    painter.end();
+}
+
+void Viewport3D::drawMeasurementGrid() {
+    glPushMatrix();
+    camera_.applyViewMatrix();
+    glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
+    glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
+
+    Vec3f mn = mesh_.minBound();
+    Vec3f mx = mesh_.maxBound();
+    float gridZ = mn.z();
+    float cx = (mn.x() + mx.x()) * 0.5f;
+    float cy = (mn.y() + mx.y()) * 0.5f;
+    float extent = std::max(mx.x() - mn.x(), mx.y() - mn.y()) * 0.75f;
+
+    float meterInOrigUnits = 1.0f / scaleFactor_;
+    float minorSpacing = meterInOrigUnits;
+    int numLines = static_cast<int>(extent / minorSpacing) + 1;
+
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
+
+    for (int i = -numLines; i <= numLines; ++i) {
+        float offset = i * minorSpacing;
+        bool isMajor = (i % 5 == 0);
+
+        if (isMajor) { glColor4f(0.4f, 0.4f, 0.4f, 0.8f); glLineWidth(2); }
+        else         { glColor4f(0.7f, 0.7f, 0.7f, 0.5f); glLineWidth(1); }
+
+        glBegin(GL_LINES);
+        glVertex3f(cx - extent, cy + offset, gridZ);
+        glVertex3f(cx + extent, cy + offset, gridZ);
+        glEnd();
+
+        glBegin(GL_LINES);
+        glVertex3f(cx + offset, cy - extent, gridZ);
+        glVertex3f(cx + offset, cy + extent, gridZ);
+        glEnd();
+    }
+
+    glPopMatrix();
+}
+
+void Viewport3D::drawModel() {
+    glPushMatrix();
+    camera_.applyViewMatrix();
+    glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
+    glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
+
+    const auto& tris = mesh_.triangles();
+    glDisable(GL_TEXTURE_2D);
+
+    // Draw filled triangles
+    for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
+        auto it = triangleToSurface_.find(i);
+        if (it == triangleToSurface_.end()) continue;
+        int si = it->second;
+        auto& c = surfaceColors_[si];
+        float alpha = transparentMode_ ? 0.3f : 1.0f;
+        glColor4f(c[0], c[1], c[2], alpha);
+
+        glBegin(GL_TRIANGLES);
+        glVertex3f(tris[i].v0.x(), tris[i].v0.y(), tris[i].v0.z());
+        glVertex3f(tris[i].v1.x(), tris[i].v1.y(), tris[i].v1.z());
+        glVertex3f(tris[i].v2.x(), tris[i].v2.y(), tris[i].v2.z());
+        glEnd();
+    }
+
+    // Draw feature edges
+    glColor3f(0, 0, 0);
+    glLineWidth(3);
+    glBegin(GL_LINES);
+    for (auto& [e1, e2] : featureEdges_) {
+        glVertex3f(std::get<0>(e1), std::get<1>(e1), std::get<2>(e1));
+        glVertex3f(std::get<0>(e2), std::get<1>(e2), std::get<2>(e2));
+    }
+    glEnd();
+
+    glPopMatrix();
+}
+
+void Viewport3D::drawPointMarkers() {
+    if (placedPoints_.empty()) return;
+
+    glPushMatrix();
+    camera_.applyViewMatrix();
+    glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
+    glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
+
+    glDisable(GL_TEXTURE_2D);
+    if (transparentMode_) glDisable(GL_DEPTH_TEST);
+
+    float baseSize = 0.15f / scaleFactor_;
+
+    GLfloat modelview[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
+
+    for (int i = 0; i < static_cast<int>(placedPoints_.size()); ++i) {
+        auto& pt = placedPoints_[i];
+        Vec3f pos = pt.getPosition();
+        bool isActive = (i == activePointIndex_);
+        float size = isActive ? baseSize * 1.3f : baseSize;
+        float alpha = isActive ? 1.0f : 0.8f;
+
+        glPushMatrix();
+        glTranslatef(pos.x(), pos.y(), pos.z());
+
+        // Billboard: cancel camera rotation
+        GLfloat billboard[16] = {
+            modelview[0], modelview[4], modelview[8], 0,
+            modelview[1], modelview[5], modelview[9], 0,
+            modelview[2], modelview[6], modelview[10], 0,
+            0, 0, 0, 1
+        };
+        glMultMatrixf(billboard);
+
+        // Draw colored dot
+        Color3f color = pt.color;
+        if (pt.pointType == POINT_TYPE_SOURCE)
+            color = {0.8f, 0.2f, 0.2f};
+        else if (pt.pointType == POINT_TYPE_LISTENER)
+            color = {0.2f, 0.2f, 0.8f};
+
+        constexpr int segs = 24;
+        glColor4f(color[0], color[1], color[2], alpha);
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex3f(0, 0, 0);
+        for (int s = 0; s <= segs; ++s) {
+            float angle = 2.0f * static_cast<float>(M_PI) * s / segs;
+            glVertex3f(size * std::cos(angle), size * std::sin(angle), 0);
+        }
+        glEnd();
+
+        // Outline
+        if (isActive) { glColor4f(1, 1, 1, 1); glLineWidth(3); }
+        else          { glColor4f(color[0]*0.5f, color[1]*0.5f, color[2]*0.5f, alpha); glLineWidth(2); }
+        glBegin(GL_LINE_LOOP);
+        for (int s = 0; s < segs; ++s) {
+            float angle = 2.0f * static_cast<float>(M_PI) * s / segs;
+            glVertex3f(size * std::cos(angle), size * std::sin(angle), 0);
+        }
+        glEnd();
+
+        glPopMatrix();
+    }
+
+    if (transparentMode_) glEnable(GL_DEPTH_TEST);
+    glPopMatrix();
+}
+
+void Viewport3D::drawSelectedSurfaceOutline() {
+    if (selectedSurfaceIndex_ < 0) return;
+
+    glPushMatrix();
+    camera_.applyViewMatrix();
+    glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
+    glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
+
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
+    glColor4f(1, 1, 1, 1);
+    glLineWidth(3);
+
+    const auto& tris = mesh_.triangles();
+    auto& surface = surfaces_[selectedSurfaceIndex_];
+
+    std::map<Edge, int> edgeCount;
+    for (int ti : surface) {
+        const Vec3f* verts[3] = {&tris[ti].v0, &tris[ti].v1, &tris[ti].v2};
+        for (int j = 0; j < 3; ++j) {
+            Edge e = makeEdge(*verts[j], *verts[(j + 1) % 3]);
+            edgeCount[e]++;
+        }
+    }
+
+    glBegin(GL_LINES);
+    for (auto& [edge, count] : edgeCount) {
+        if (count == 1 || featureEdges_.count(edge)) {
+            glVertex3f(std::get<0>(edge.first), std::get<1>(edge.first), std::get<2>(edge.first));
+            glVertex3f(std::get<0>(edge.second), std::get<1>(edge.second), std::get<2>(edge.second));
+        }
+    }
+    glEnd();
+
+    glEnable(GL_DEPTH_TEST);
+    glPopMatrix();
+}
+
+// ==================== Ray Picking ====================
+
+std::pair<Vec3f, Vec3f> Viewport3D::getRayFromMouse(const QPoint& pos) {
+    GLint viewport[4];
+    GLdouble modelview[16], projection[16];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+    double mx = pos.x();
+    double my = viewport[3] - pos.y();
+
+    GLdouble nx, ny, nz, fx, fy, fz;
+    gluUnProject(mx, my, 0.0, modelview, projection, viewport, &nx, &ny, &nz);
+    gluUnProject(mx, my, 1.0, modelview, projection, viewport, &fx, &fy, &fz);
+
+    Vec3f origin(nx, ny, nz);
+    Vec3f dir = Vec3f(fx - nx, fy - ny, fz - nz).normalized();
+    return {origin, dir};
+}
+
+std::optional<Viewport3D::IntersectionResult> Viewport3D::getIntersectionPoint(const QPoint& pos) {
+    makeCurrent();
+    glPushMatrix();
+    camera_.applyViewMatrix();
+    glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
+    glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
+
+    auto [rayOrigin, rayDir] = getRayFromMouse(pos);
+    glPopMatrix();
+    doneCurrent();
+
+    const auto& tris = mesh_.triangles();
+    float minT = std::numeric_limits<float>::max();
+    int hitIdx = -1;
+
+    for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
+        auto t = RayPicking::rayTriangleIntersect(rayOrigin, rayDir, tris[i]);
+        if (t && *t < minT) { minT = *t; hitIdx = i; }
+    }
+
+    if (hitIdx < 0) return std::nullopt;
+
+    Vec3f hitPoint = rayOrigin + rayDir * minT;
+    Vec3f normal = tris[hitIdx].normal.normalized();
+    if (normal.dot(rayOrigin - hitPoint) < 0) normal = -normal;
+
+    return IntersectionResult{hitPoint, normal, hitIdx};
+}
+
+std::optional<int> Viewport3D::getPointAtMouse(const QPoint& pos) {
+    if (placedPoints_.empty()) return std::nullopt;
+
+    makeCurrent();
+    glPushMatrix();
+    camera_.applyViewMatrix();
+    glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
+    glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
+
+    auto [rayOrigin, rayDir] = getRayFromMouse(pos);
+    glPopMatrix();
+    doneCurrent();
+
+    float hitRadius = 0.30f / scaleFactor_;
+    float minT = std::numeric_limits<float>::max();
+    int hitIdx = -1;
+
+    for (int i = 0; i < static_cast<int>(placedPoints_.size()); ++i) {
+        auto t = RayPicking::raySphereIntersect(
+            rayOrigin, rayDir, placedPoints_[i].getPosition(), hitRadius);
+        if (t && *t < minT) { minT = *t; hitIdx = i; }
+    }
+
+    if (hitIdx >= 0) return hitIdx;
+    return std::nullopt;
+}
+
+bool Viewport3D::trySelectPointAtMouse(const QPoint& pos) {
+    auto idx = getPointAtMouse(pos);
+    if (idx) {
+        activePointIndex_ = *idx;
+        selectedSurfaceIndex_ = -1;
+        emit pointSelected(*idx);
+        return true;
+    }
+    return false;
+}
+
+bool Viewport3D::trySelectSurfaceAtMouse(const QPoint& pos) {
+    makeCurrent();
+    glPushMatrix();
+    camera_.applyViewMatrix();
+    glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
+    glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
+
+    auto [rayOrigin, rayDir] = getRayFromMouse(pos);
+    glPopMatrix();
+    doneCurrent();
+
+    const auto& tris = mesh_.triangles();
+    float minT = std::numeric_limits<float>::max();
+    int hitTri = -1;
+
+    for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
+        auto t = RayPicking::rayTriangleIntersect(rayOrigin, rayDir, tris[i]);
+        if (t && *t < minT) { minT = *t; hitTri = i; }
+    }
+
+    if (hitTri >= 0) {
+        auto it = triangleToSurface_.find(hitTri);
+        if (it != triangleToSurface_.end()) {
+            selectedSurfaceIndex_ = it->second;
+            activePointIndex_ = -1;
+            emit surfaceSelected(selectedSurfaceIndex_);
+            return true;
+        }
+    }
+
+    selectedSurfaceIndex_ = -1;
+    return false;
+}
+
+void Viewport3D::addPointAtMouse(const QPoint& pos) {
+    auto result = getIntersectionPoint(pos);
+    if (!result) return;
+
+    const auto& colors = pointColors();
+    Color3f color = colors[nextPointColorIndex_ % colors.size()];
+    ++nextPointColorIndex_;
+
+    PlacedPoint pt;
+    pt.surfacePoint = result->point;
+    pt.normal       = result->normal;
+    pt.distance     = 0.0f;
+    pt.color        = color;
+
+    placedPoints_.push_back(pt);
+    activePointIndex_ = static_cast<int>(placedPoints_.size()) - 1;
+    selectedSurfaceIndex_ = -1;
+    emit pointPlaced(activePointIndex_);
+}
+
+// ==================== Mouse/Key Events ====================
+
+void Viewport3D::mousePressEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        mouseDown_ = true;
+        lastMousePos_ = event->pos();
+        mouseDownPos_ = event->pos();
+    } else if (event->button() == Qt::RightButton && hasModel()) {
+        // Right click: random color change on surface
+        makeCurrent();
+        glPushMatrix();
+        camera_.applyViewMatrix();
+        glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
+        glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
+        auto [ro, rd] = getRayFromMouse(event->pos());
+        glPopMatrix();
+        doneCurrent();
+
+        const auto& tris = mesh_.triangles();
+        float minT = std::numeric_limits<float>::max();
+        int hitTri = -1;
+        for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
+            auto t = RayPicking::rayTriangleIntersect(ro, rd, tris[i]);
+            if (t && *t < minT) { minT = *t; hitTri = i; }
+        }
+        if (hitTri >= 0) {
+            auto it = triangleToSurface_.find(hitTri);
+            if (it != triangleToSurface_.end()) {
+                auto randF = []() { return 0.2f + static_cast<float>(rand()) / RAND_MAX * 0.7f; };
+                setSurfaceColor(it->second, {randF(), randF(), randF()});
+            }
+        }
+    }
+    QOpenGLWidget::mousePressEvent(event);
+}
+
+void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        mouseDown_ = false;
+
+        QPoint delta = event->pos() - mouseDownPos_;
+        float dragDist = std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
+
+        if (dragDist < 5 && hasModel()) {
+            if (trySelectPointAtMouse(event->pos())) {
+                selectedSurfaceIndex_ = -1;
+            } else if (placementMode_) {
+                addPointAtMouse(event->pos());
+                selectedSurfaceIndex_ = -1;
+            } else {
+                if (!trySelectSurfaceAtMouse(event->pos())) {
+                    deselectPoint();
+                }
+            }
+            update();
+        }
+    }
+    QOpenGLWidget::mouseReleaseEvent(event);
+}
+
+void Viewport3D::mouseMoveEvent(QMouseEvent* event) {
+    if (mouseDown_) {
+        QPoint delta = event->pos() - lastMousePos_;
+        camera_.orbit(delta.x(), delta.y());
+        lastMousePos_ = event->pos();
+        update();
+    }
+    QOpenGLWidget::mouseMoveEvent(event);
+}
+
+void Viewport3D::wheelEvent(QWheelEvent* event) {
+    float delta = event->angleDelta().y() / 120.0f;
+
+    if (placementMode_ && activePointIndex_ >= 0) {
+        adjustActivePointDistance(delta > 0 ? 0.1f : -0.1f);
+    } else {
+        camera_.zoom(delta, getRealWorldSize());
+    }
+    update();
+    QOpenGLWidget::wheelEvent(event);
+}
+
+void Viewport3D::keyPressEvent(QKeyEvent* event) {
+    switch (event->key()) {
+    case Qt::Key_T:
+        transparentMode_ = !transparentMode_;
+        update();
+        break;
+    case Qt::Key_R:
+        surfaceColors_.assign(surfaces_.size(), defaultSurfaceColor_);
+        surfaceTextured_.assign(surfaces_.size(), false);
+        update();
+        break;
+    case Qt::Key_P:
+        setPlacementMode(!placementMode_);
+        break;
+    case Qt::Key_Delete:
+    case Qt::Key_Backspace:
+        if (activePointIndex_ >= 0) removeActivePoint();
+        break;
+    case Qt::Key_C:
+        clearPlacedPoints();
+        break;
+    default:
+        break;
+    }
+    QOpenGLWidget::keyPressEvent(event);
+}
+
+} // namespace prs

@@ -1,0 +1,28 @@
+{
+	"bmi-installation" : null,
+	"compiler-frontend-variant" : "GNU",
+	"compiler-id" : "GNU",
+	"compiler-simulate-id" : "",
+	"config" : "Release",
+	"cxx-modules" : {},
+	"dir-cur-bld" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/lapack",
+	"dir-cur-src" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/lapack",
+	"dir-top-bld" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build",
+	"dir-top-src" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp",
+	"exports" : [],
+	"forward-modules-from-target-dirs" : [],
+	"include-dirs" : 
+	[
+		"_deps\\eigen-build\\lapack\\eigen_lapack_autogen\\include",
+		"_deps\\eigen-src",
+		"_deps\\eigen-src\\lapack\\..\\blas"
+	],
+	"language" : "Fortran",
+	"linked-target-dirs" : 
+	[
+		"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/blas/CMakeFiles/eigen_blas.dir"
+	],
+	"module-dir" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/lapack",
+	"submodule-ext" : ".smod",
+	"submodule-sep" : "@"
+}

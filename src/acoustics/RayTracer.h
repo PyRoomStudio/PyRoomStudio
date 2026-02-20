@@ -1,0 +1,33 @@
+#pragma once
+
+#include "core/Types.h"
+#include "Wall.h"
+
+#include <vector>
+
+namespace prs {
+
+struct RayContribution {
+    float delay  = 0.0f;
+    float energy = 0.0f;
+};
+
+class RayTracer {
+public:
+    std::vector<RayContribution> trace(
+        const Vec3f& sourcePos,
+        const Vec3f& listenerPos,
+        const std::vector<Wall>& walls,
+        int numRays,
+        float listenerRadius = 0.5f,
+        int maxBounces = 100,
+        float minEnergy = 1e-6f);
+
+private:
+    Vec3f randomDirectionOnSphere() const;
+    int findNearestWall(const Vec3f& origin, const Vec3f& dir,
+                        const std::vector<Wall>& walls, float& outT) const;
+    Vec3f reflectDirection(const Vec3f& dir, const Vec3f& normal, float scattering) const;
+};
+
+} // namespace prs

@@ -1,0 +1,34 @@
+#pragma once
+
+#include "core/Types.h"
+#include "core/Material.h"
+
+#include <QWidget>
+#include <QTabWidget>
+#include <QVBoxLayout>
+#include <QString>
+#include <vector>
+
+namespace prs {
+
+class MaterialGallery;
+
+class LibraryPanel : public QWidget {
+    Q_OBJECT
+
+public:
+    explicit LibraryPanel(QWidget* parent = nullptr);
+
+signals:
+    void materialSelected(const QString& name, const Color3f& glColor, float absorption);
+
+private:
+    void setupUI();
+    void createSoundTab(QWidget* tab);
+    void createMaterialTab(QWidget* tab);
+
+    QTabWidget* tabWidget_ = nullptr;
+    std::vector<MaterialGallery*> materialGalleries_;
+};
+
+} // namespace prs
