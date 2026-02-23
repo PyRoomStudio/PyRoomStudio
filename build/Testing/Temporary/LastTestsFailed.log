@@ -1,0 +1,8 @@
+1:test_core
+2:test_scene_manager
+3:test_audio
+4:test_mesh
+5:test_rendering
+6:test_acoustics
+7:test_project_file
+8:test_gui

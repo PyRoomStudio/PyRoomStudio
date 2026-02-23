@@ -38,6 +38,7 @@ bool Viewport3D::loadModel(const QString& filepath) {
     surfaces_     = SurfaceGrouper::groupTrianglesIntoSurfaces(mesh_, featureEdges_);
 
     surfaceColors_.assign(surfaces_.size(), defaultSurfaceColor_);
+    surfaceMaterials_.assign(surfaces_.size(), std::nullopt);
     surfaceTextured_.assign(surfaces_.size(), false);
 
     triangleToSurface_.clear();
@@ -170,7 +171,32 @@ void Viewport3D::clearPlacedPoints() {
     update();
 }
 
+void Viewport3D::restorePlacedPoints(const std::vector<PlacedPoint>& points) {
+    placedPoints_ = points;
+    nextPointColorIndex_ = static_cast<int>(points.size());
+    activePointIndex_ = -1;
+    update();
+}
+
+// ==================== Measure Mode ====================
+
+void Viewport3D::setMeasureMode(bool enabled) {
+    measureMode_ = enabled;
+    measurePoint1_ = std::nullopt;
+    measurePoint2_ = std::nullopt;
+    update();
+}
+
 // ==================== Surface Selection ====================
+
+void Viewport3D::selectSurface(int index) {
+    if (index >= 0 && index < static_cast<int>(surfaces_.size())) {
+        selectedSurfaceIndex_ = index;
+        activePointIndex_ = -1;
+        emit surfaceSelected(index);
+        update();
+    }
+}
 
 void Viewport3D::deselectSurface() {
     if (selectedSurfaceIndex_ >= 0) {
@@ -188,11 +214,75 @@ void Viewport3D::setSurfaceColor(int surfIdx, const Color3f& color) {
     }
 }
 
+void Viewport3D::assignMaterial(int surfIdx, const Material& material) {
+    if (surfIdx >= 0 && surfIdx < static_cast<int>(surfaceColors_.size())) {
+        surfaceMaterials_[surfIdx] = material;
+        surfaceColors_[surfIdx] = {material.color[0] / 255.0f,
+                                    material.color[1] / 255.0f,
+                                    material.color[2] / 255.0f};
+        surfaceTextured_[surfIdx] = false;
+        emit surfaceMaterialChanged(surfIdx, QString::fromStdString(material.name));
+        update();
+    }
+}
+
+std::optional<Material> Viewport3D::getSurfaceMaterial(int surfIdx) const {
+    if (surfIdx >= 0 && surfIdx < static_cast<int>(surfaceMaterials_.size()))
+        return surfaceMaterials_[surfIdx];
+    return std::nullopt;
+}
+
 void Viewport3D::toggleSurfaceTexture(int surfIdx) {
     if (surfIdx >= 0 && surfIdx < static_cast<int>(surfaceTextured_.size())) {
         surfaceTextured_[surfIdx] = !surfaceTextured_[surfIdx];
         update();
     }
+}
+
+bool Viewport3D::loadTexture(const QString& filepath) {
+    QImage img(filepath);
+    if (img.isNull()) return false;
+
+    textureImage_ = img.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
+    makeCurrent();
+    if (textureId_ != 0) glDeleteTextures(1, &textureId_);
+    glGenTextures(1, &textureId_);
+    glBindTexture(GL_TEXTURE_2D, textureId_);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureImage_.width(), textureImage_.height(),
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, textureImage_.constBits());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    doneCurrent();
+    update();
+    return true;
+}
+
+static Vec2f getTexCoordsFromNormal(const Vec3f& vertex, const Vec3f& normal,
+                                     const Vec3f& boundsMin, const Vec3f& boundsMax) {
+    Vec3f absNormal = normal.cwiseAbs();
+    Vec3f extent = boundsMax - boundsMin;
+    float u = 0, v = 0;
+
+    if (absNormal.z() >= absNormal.x() && absNormal.z() >= absNormal.y()) {
+        float ex = extent.x() > 1e-6f ? extent.x() : 1.0f;
+        float ey = extent.y() > 1e-6f ? extent.y() : 1.0f;
+        u = (vertex.x() - boundsMin.x()) / ex;
+        v = (vertex.y() - boundsMin.y()) / ey;
+    } else if (absNormal.y() >= absNormal.x()) {
+        float ex = extent.x() > 1e-6f ? extent.x() : 1.0f;
+        float ez = extent.z() > 1e-6f ? extent.z() : 1.0f;
+        u = (vertex.x() - boundsMin.x()) / ex;
+        v = (vertex.z() - boundsMin.z()) / ez;
+    } else {
+        float ey = extent.y() > 1e-6f ? extent.y() : 1.0f;
+        float ez = extent.z() > 1e-6f ? extent.z() : 1.0f;
+        u = (vertex.y() - boundsMin.y()) / ey;
+        v = (vertex.z() - boundsMin.z()) / ez;
+    }
+    return {u, v};
 }
 
 // ==================== Acoustic Helpers ====================
@@ -215,9 +305,14 @@ Viewport3D::getSourcesAndListeners(const std::string& audioFile) const {
     for (auto& pt : placedPoints_) {
         Vec3f pos = pt.getPosition() * scaleFactor_;
         if (pt.pointType == POINT_TYPE_SOURCE) {
-            sources.push_back({pos, audioFile, "Source " + std::to_string(++sc), 1.0f});
+            ++sc;
+            std::string file = pt.audioFile.empty() ? audioFile : pt.audioFile;
+            std::string name = pt.name.empty() ? "Source " + std::to_string(sc) : pt.name;
+            sources.push_back({pos, file, name, pt.volume});
         } else if (pt.pointType == POINT_TYPE_LISTENER) {
-            listeners.push_back({pos, "Listener " + std::to_string(++lc)});
+            ++lc;
+            std::string name = pt.name.empty() ? "Listener " + std::to_string(lc) : pt.name;
+            listeners.push_back({pos, name});
         }
     }
     return {sources, listeners};
@@ -225,9 +320,13 @@ Viewport3D::getSourcesAndListeners(const std::string& audioFile) const {
 
 std::vector<Viewport3D::WallInfo> Viewport3D::getWallsForAcoustic() const {
     std::vector<WallInfo> walls;
-    for (auto& surf : surfaces_) {
+    for (int si = 0; si < static_cast<int>(surfaces_.size()); ++si) {
         WallInfo wi;
-        wi.triangleIndices.assign(surf.begin(), surf.end());
+        wi.triangleIndices.assign(surfaces_[si].begin(), surfaces_[si].end());
+        if (si < static_cast<int>(surfaceMaterials_.size()) && surfaceMaterials_[si].has_value()) {
+            wi.energyAbsorption = surfaceMaterials_[si]->energyAbsorption;
+            wi.scattering = surfaceMaterials_[si]->scattering;
+        }
         walls.push_back(std::move(wi));
     }
     return walls;
@@ -274,6 +373,26 @@ void Viewport3D::paintGL() {
     drawModel();
     drawSelectedSurfaceOutline();
     drawPointMarkers();
+
+    // Draw measurement line if both points are set
+    if (measurePoint1_ && measurePoint2_) {
+        glPushMatrix();
+        camera_.applyViewMatrix();
+        glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
+        glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
+        glDisable(GL_DEPTH_TEST);
+        glColor4f(1.0f, 1.0f, 0.0f, 1.0f);
+        glLineWidth(3);
+        glEnable(GL_LINE_STIPPLE);
+        glLineStipple(4, 0xAAAA);
+        glBegin(GL_LINES);
+        glVertex3f(measurePoint1_->x(), measurePoint1_->y(), measurePoint1_->z());
+        glVertex3f(measurePoint2_->x(), measurePoint2_->y(), measurePoint2_->z());
+        glEnd();
+        glDisable(GL_LINE_STIPPLE);
+        glEnable(GL_DEPTH_TEST);
+        glPopMatrix();
+    }
 }
 
 void Viewport3D::drawPlaceholder() {
@@ -341,15 +460,42 @@ void Viewport3D::drawModel() {
     glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
 
     const auto& tris = mesh_.triangles();
-    glDisable(GL_TEXTURE_2D);
+    Vec3f mn = mesh_.minBound();
+    Vec3f mx = mesh_.maxBound();
+    float alpha = transparentMode_ ? 0.3f : 1.0f;
 
-    // Draw filled triangles
+    // Draw textured surfaces first (if texture loaded)
+    if (textureId_ != 0) {
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, textureId_);
+        for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
+            auto it = triangleToSurface_.find(i);
+            if (it == triangleToSurface_.end()) continue;
+            int si = it->second;
+            if (!surfaceTextured_[si]) continue;
+
+            glColor4f(1.0f, 1.0f, 1.0f, alpha);
+            glBegin(GL_TRIANGLES);
+            for (const Vec3f* v : {&tris[i].v0, &tris[i].v1, &tris[i].v2}) {
+                Vec2f uv = getTexCoordsFromNormal(*v, tris[i].normal, mn, mx);
+                glTexCoord2f(uv.x(), uv.y());
+                glVertex3f(v->x(), v->y(), v->z());
+            }
+            glEnd();
+        }
+        glDisable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    // Draw non-textured surfaces
+    glDisable(GL_TEXTURE_2D);
     for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
         auto it = triangleToSurface_.find(i);
         if (it == triangleToSurface_.end()) continue;
         int si = it->second;
+        if (textureId_ != 0 && surfaceTextured_[si]) continue;
+
         auto& c = surfaceColors_[si];
-        float alpha = transparentMode_ ? 0.3f : 1.0f;
         glColor4f(c[0], c[1], c[2], alpha);
 
         glBegin(GL_TRIANGLES);
@@ -665,7 +811,18 @@ void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
         float dragDist = std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
 
         if (dragDist < 5 && hasModel()) {
-            if (trySelectPointAtMouse(event->pos())) {
+            if (measureMode_) {
+                auto hit = getIntersectionPoint(event->pos());
+                if (hit) {
+                    if (!measurePoint1_) {
+                        measurePoint1_ = hit->point;
+                    } else {
+                        measurePoint2_ = hit->point;
+                        float dist = (*measurePoint2_ - *measurePoint1_).norm() * scaleFactor_;
+                        emit measurementResult(dist);
+                    }
+                }
+            } else if (trySelectPointAtMouse(event->pos())) {
                 selectedSurfaceIndex_ = -1;
             } else if (placementMode_) {
                 addPointAtMouse(event->pos());

@@ -145,11 +145,13 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/PyRoomStudio_autoge
   C:/Qt/6.10.2/mingw_64/include/QtCore/qxptype_traits.h \
   C:/Qt/6.10.2/mingw_64/include/QtCore/qyieldcpu.h \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QAction \
+  C:/Qt/6.10.2/mingw_64/include/QtGui/QImage \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QKeyEvent \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QMouseEvent \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QOpenGLFunctions \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QSurfaceFormat \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QTransform \
+  C:/Qt/6.10.2/mingw_64/include/QtGui/QUndoStack \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QWheelEvent \
   C:/Qt/6.10.2/mingw_64/include/QtGui/qaction.h \
   C:/Qt/6.10.2/mingw_64/include/QtGui/qbitmap.h \
@@ -190,6 +192,7 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/PyRoomStudio_autoge
   C:/Qt/6.10.2/mingw_64/include/QtGui/qtguiexports.h \
   C:/Qt/6.10.2/mingw_64/include/QtGui/qtguiglobal.h \
   C:/Qt/6.10.2/mingw_64/include/QtGui/qtransform.h \
+  C:/Qt/6.10.2/mingw_64/include/QtGui/qundostack.h \
   C:/Qt/6.10.2/mingw_64/include/QtGui/qvector2d.h \
   C:/Qt/6.10.2/mingw_64/include/QtGui/qvectornd.h \
   C:/Qt/6.10.2/mingw_64/include/QtGui/qwindowdefs.h \
@@ -199,11 +202,13 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/PyRoomStudio_autoge
   C:/Qt/6.10.2/mingw_64/include/QtOpenGLWidgets/qtopenglwidgetsexports.h \
   C:/Qt/6.10.2/mingw_64/include/QtOpenGLWidgets/qtopenglwidgetsglobal.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QMainWindow \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/QMenu \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QSplitter \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QToolBar \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QWidget \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qmainwindow.h \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/qmenu.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qsizepolicy.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qsplitter.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabwidget.h \
@@ -619,6 +624,7 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/PyRoomStudio_autoge
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/src/plugins/MatrixCwiseUnaryOps.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/src/plugins/ReshapedMethods.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/Listener.h \
+  C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/Material.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/PlacedPoint.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/SoundSource.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/Types.h \

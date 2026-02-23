@@ -48,6 +48,7 @@ set(SOURCES
     src/core/SoundSource.cpp
     src/core/Listener.cpp
     src/core/PlacedPoint.cpp
+    src/core/ProjectFile.cpp
     src/scene/SceneManager.cpp
     src/rendering/Viewport3D.cpp
     src/rendering/Camera.cpp
@@ -59,6 +60,7 @@ set(SOURCES
     src/acoustics/RayTracer.cpp
     src/acoustics/RoomImpulseResponse.cpp
     src/acoustics/Wall.cpp
+    src/acoustics/SimulationWorker.cpp
     src/audio/AudioFile.cpp
     src/audio/SignalProcessing.cpp
     src/gui/MainWindow.cpp
@@ -66,6 +68,8 @@ set(SOURCES
     src/gui/PropertyPanel.cpp
     src/gui/AssetsPanel.cpp
     src/gui/BottomToolbar.cpp
+    src/gui/UndoCommands.cpp
+    src/gui/dialogs/SettingsDialogs.cpp
     src/gui/widgets/MaterialGallery.cpp
     src/gui/widgets/SurfaceGallery.cpp
     src/gui/widgets/ColorSwatch.cpp
@@ -78,6 +82,7 @@ set(HEADERS
     src/core/SoundSource.h
     src/core/Listener.h
     src/core/PlacedPoint.h
+    src/core/ProjectFile.h
     src/scene/SceneManager.h
     src/rendering/Viewport3D.h
     src/rendering/Camera.h
@@ -89,6 +94,7 @@ set(HEADERS
     src/acoustics/RayTracer.h
     src/acoustics/RoomImpulseResponse.h
     src/acoustics/Wall.h
+    src/acoustics/SimulationWorker.h
     src/audio/AudioFile.h
     src/audio/SignalProcessing.h
     src/gui/MainWindow.h
@@ -96,6 +102,8 @@ set(HEADERS
     src/gui/PropertyPanel.h
     src/gui/AssetsPanel.h
     src/gui/BottomToolbar.h
+    src/gui/UndoCommands.h
+    src/gui/dialogs/SettingsDialogs.h
     src/gui/widgets/MaterialGallery.h
     src/gui/widgets/SurfaceGallery.h
     src/gui/widgets/ColorSwatch.h
@@ -150,3 +158,6 @@ install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+enable_testing()
+add_subdirectory(tests)

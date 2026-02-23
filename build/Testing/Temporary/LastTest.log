@@ -1,0 +1,123 @@
+Start testing: Feb 23 15:16 Central Standard Time
+----------------------------------------------------------
+1/8 Testing: test_core
+1/8 Test: test_core
+Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_core.exe"
+Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
+"test_core" start time: Feb 23 15:16 Central Standard Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"test_core" end time: Feb 23 15:16 Central Standard Time
+"test_core" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/8 Testing: test_scene_manager
+2/8 Test: test_scene_manager
+Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_scene_manager.exe"
+Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
+"test_scene_manager" start time: Feb 23 15:16 Central Standard Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"test_scene_manager" end time: Feb 23 15:16 Central Standard Time
+"test_scene_manager" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/8 Testing: test_audio
+3/8 Test: test_audio
+Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_audio.exe"
+Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
+"test_audio" start time: Feb 23 15:16 Central Standard Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"test_audio" end time: Feb 23 15:16 Central Standard Time
+"test_audio" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/8 Testing: test_mesh
+4/8 Test: test_mesh
+Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_mesh.exe"
+Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
+"test_mesh" start time: Feb 23 15:16 Central Standard Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"test_mesh" end time: Feb 23 15:16 Central Standard Time
+"test_mesh" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/8 Testing: test_rendering
+5/8 Test: test_rendering
+Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_rendering.exe"
+Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
+"test_rendering" start time: Feb 23 15:16 Central Standard Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"test_rendering" end time: Feb 23 15:16 Central Standard Time
+"test_rendering" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/8 Testing: test_acoustics
+6/8 Test: test_acoustics
+Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_acoustics.exe"
+Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
+"test_acoustics" start time: Feb 23 15:16 Central Standard Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"test_acoustics" end time: Feb 23 15:16 Central Standard Time
+"test_acoustics" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/8 Testing: test_project_file
+7/8 Test: test_project_file
+Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_project_file.exe"
+Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
+"test_project_file" start time: Feb 23 15:16 Central Standard Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"test_project_file" end time: Feb 23 15:16 Central Standard Time
+"test_project_file" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/8 Testing: test_gui
+8/8 Test: test_gui
+Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_gui.exe"
+Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
+"test_gui" start time: Feb 23 15:16 Central Standard Time
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"test_gui" end time: Feb 23 15:16 Central Standard Time
+"test_gui" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Feb 23 15:16 Central Standard Time

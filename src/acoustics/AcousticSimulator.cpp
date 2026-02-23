@@ -44,9 +44,12 @@ QString AcousticSimulator::simulateScene(
     // Save scene config
     scene.saveToFile(QDir(outputDir).filePath("scene.json"));
 
-    // Build walls from mesh triangles
+    // Build walls from mesh triangles, using per-surface material properties
     std::vector<Wall> walls;
     for (auto& wi : wallsFromRender) {
+        float wallAbsorption = wi.energyAbsorption;
+        float wallScattering = wi.scattering;
+
         for (int triIdx : wi.triangleIndices) {
             int baseVert = triIdx * 3;
             if (baseVert + 2 >= static_cast<int>(modelVertices.size())) continue;
@@ -58,8 +61,8 @@ QString AcousticSimulator::simulateScene(
             Vec3f e1 = wall.triangle.v1 - wall.triangle.v0;
             Vec3f e2 = wall.triangle.v2 - wall.triangle.v0;
             wall.triangle.normal = e1.cross(e2).normalized();
-            wall.energyAbsorption = energyAbsorption;
-            wall.scattering       = scattering;
+            wall.energyAbsorption = wallAbsorption;
+            wall.scattering       = wallScattering;
 
             if (wall.area() > 1e-8f)
                 walls.push_back(wall);

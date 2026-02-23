@@ -39,19 +39,9 @@ rule CUSTOM_COMMAND
 
 
 #############################################
-# Rule for compiling C files.
-
-rule C_COMPILER__eigen_blas_static_unscanned_Release
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1310_64\bin\gcc.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building C object $out
-
-
-#############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__eigen_blas_static_unscanned_Release
+rule CXX_COMPILER__test_core_unscanned_
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1310_64\bin\g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -59,137 +49,18 @@ rule CXX_COMPILER__eigen_blas_static_unscanned_Release
 
 
 #############################################
-# Rule for generating Fortran dependencies.
+# Rule for linking CXX executable.
 
-rule Fortran_PREPROCESS_SCAN__eigen_blas_static_Release
-  depfile = $DEP_FILE
-  command = C:\WINDOWS\system32\cmd.exe /C "C:\Strawberry\c\bin\gfortran.exe -cpp $DEFINES $INCLUDES $FLAGS -E $in -o $out && C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_depends --tdi=_deps\eigen-build\blas\CMakeFiles\eigen_blas_static.dir\FortranDependInfo.json --lang=Fortran --src=$out --out=$out --dep=$DEP_FILE --obj=$OBJ_FILE --ddi=$DYNDEP_INTERMEDIATE_FILE --src-orig=$in"
-  description = Building Fortran preprocessed $out
-
-
-#############################################
-# Rule for generating Fortran dependencies on non-preprocessed files.
-
-rule Fortran_SCAN__eigen_blas_static_Release
-  depfile = $DEP_FILE
-  command = C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_depends --tdi=_deps\eigen-build\blas\CMakeFiles\eigen_blas_static.dir\FortranDependInfo.json --lang=Fortran --src=$in --out=$out --dep=$DEP_FILE --obj=$OBJ_FILE --ddi=$out
-  description = Generating Fortran dependencies for $in
-
-
-#############################################
-# Rule to generate ninja dyndep files for Fortran.
-
-rule Fortran_DYNDEP__eigen_blas_static_Release
-  command = C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_dyndep --tdi=_deps\eigen-build\blas\CMakeFiles\eigen_blas_static.dir\FortranDependInfo.json --lang=Fortran --dd=$out @$out.rsp
-  description = Generating Fortran dyndep file $out
-  rspfile = $out.rsp
-  rspfile_content = $in
-  restat = 1
-
-
-#############################################
-# Rule for compiling Fortran files.
-
-rule Fortran_COMPILER__eigen_blas_static_scanned_Release
-  command = ${LAUNCHER}${CODE_CHECK}C:\Strawberry\c\bin\gfortran.exe $INCLUDES $FLAGS -c $in -o $out
-  description = Building Fortran object $out
-
-
-#############################################
-# Rule for compiling Fortran files.
-
-rule Fortran_COMPILER__eigen_blas_static_unscanned_Release
-  command = ${LAUNCHER}${CODE_CHECK}C:\Strawberry\c\bin\gfortran.exe $DEFINES $INCLUDES $FLAGS -c $in -o $out
-  description = Building Fortran object $out
-
-
-#############################################
-# Rule for linking CXX static library.
-
-rule CXX_STATIC_LIBRARY_LINKER__eigen_blas_static_Release
-  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\CMake_64\bin\cmake.exe -E rm -f $TARGET_FILE && C:\Qt\Tools\mingw1310_64\bin\ar.exe qc $TARGET_FILE $LINK_FLAGS $in && C:\Qt\Tools\mingw1310_64\bin\ranlib.exe $TARGET_FILE && $POST_BUILD"
-  description = Linking CXX static library $TARGET_FILE
-  restat = $RESTAT
-
-
-#############################################
-# Rule for compiling C files.
-
-rule C_COMPILER__eigen_blas_unscanned_Release
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1310_64\bin\gcc.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building C object $out
-
-
-#############################################
-# Rule for compiling CXX files.
-
-rule CXX_COMPILER__eigen_blas_unscanned_Release
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1310_64\bin\g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
-
-
-#############################################
-# Rule for generating Fortran dependencies.
-
-rule Fortran_PREPROCESS_SCAN__eigen_blas_Release
-  depfile = $DEP_FILE
-  command = C:\WINDOWS\system32\cmd.exe /C "C:\Strawberry\c\bin\gfortran.exe -cpp $DEFINES $INCLUDES $FLAGS -E $in -o $out && C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_depends --tdi=_deps\eigen-build\blas\CMakeFiles\eigen_blas.dir\FortranDependInfo.json --lang=Fortran --src=$out --out=$out --dep=$DEP_FILE --obj=$OBJ_FILE --ddi=$DYNDEP_INTERMEDIATE_FILE --src-orig=$in"
-  description = Building Fortran preprocessed $out
-
-
-#############################################
-# Rule for generating Fortran dependencies on non-preprocessed files.
-
-rule Fortran_SCAN__eigen_blas_Release
-  depfile = $DEP_FILE
-  command = C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_depends --tdi=_deps\eigen-build\blas\CMakeFiles\eigen_blas.dir\FortranDependInfo.json --lang=Fortran --src=$in --out=$out --dep=$DEP_FILE --obj=$OBJ_FILE --ddi=$out
-  description = Generating Fortran dependencies for $in
-
-
-#############################################
-# Rule to generate ninja dyndep files for Fortran.
-
-rule Fortran_DYNDEP__eigen_blas_Release
-  command = C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_dyndep --tdi=_deps\eigen-build\blas\CMakeFiles\eigen_blas.dir\FortranDependInfo.json --lang=Fortran --dd=$out @$out.rsp
-  description = Generating Fortran dyndep file $out
-  rspfile = $out.rsp
-  rspfile_content = $in
-  restat = 1
-
-
-#############################################
-# Rule for compiling Fortran files.
-
-rule Fortran_COMPILER__eigen_blas_scanned_Release
-  command = ${LAUNCHER}${CODE_CHECK}C:\Strawberry\c\bin\gfortran.exe $INCLUDES $FLAGS -c $in -o $out
-  description = Building Fortran object $out
-
-
-#############################################
-# Rule for compiling Fortran files.
-
-rule Fortran_COMPILER__eigen_blas_unscanned_Release
-  command = ${LAUNCHER}${CODE_CHECK}C:\Strawberry\c\bin\gfortran.exe $DEFINES $INCLUDES $FLAGS -c $in -o $out
-  description = Building Fortran object $out
-
-
-#############################################
-# Rule for linking CXX shared library.
-
-rule CXX_SHARED_LIBRARY_LINKER__eigen_blas_Release
-  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\mingw1310_64\bin\g++.exe $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
-  description = Linking CXX shared library $TARGET_FILE
+rule CXX_EXECUTABLE_LINKER__test_core_
+  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\mingw1310_64\bin\g++.exe $FLAGS $LINK_FLAGS $in -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
+  description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
 
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__eigen_lapack_static_unscanned_Release
+rule CXX_COMPILER__test_scene_manager_unscanned_
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1310_64\bin\g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -197,63 +68,18 @@ rule CXX_COMPILER__eigen_lapack_static_unscanned_Release
 
 
 #############################################
-# Rule for generating Fortran dependencies.
+# Rule for linking CXX executable.
 
-rule Fortran_PREPROCESS_SCAN__eigen_lapack_static_Release
-  depfile = $DEP_FILE
-  command = C:\WINDOWS\system32\cmd.exe /C "C:\Strawberry\c\bin\gfortran.exe -cpp $DEFINES $INCLUDES $FLAGS -E $in -o $out && C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_depends --tdi=_deps\eigen-build\lapack\CMakeFiles\eigen_lapack_static.dir\FortranDependInfo.json --lang=Fortran --src=$out --out=$out --dep=$DEP_FILE --obj=$OBJ_FILE --ddi=$DYNDEP_INTERMEDIATE_FILE --src-orig=$in"
-  description = Building Fortran preprocessed $out
-
-
-#############################################
-# Rule for generating Fortran dependencies on non-preprocessed files.
-
-rule Fortran_SCAN__eigen_lapack_static_Release
-  depfile = $DEP_FILE
-  command = C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_depends --tdi=_deps\eigen-build\lapack\CMakeFiles\eigen_lapack_static.dir\FortranDependInfo.json --lang=Fortran --src=$in --out=$out --dep=$DEP_FILE --obj=$OBJ_FILE --ddi=$out
-  description = Generating Fortran dependencies for $in
-
-
-#############################################
-# Rule to generate ninja dyndep files for Fortran.
-
-rule Fortran_DYNDEP__eigen_lapack_static_Release
-  command = C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_dyndep --tdi=_deps\eigen-build\lapack\CMakeFiles\eigen_lapack_static.dir\FortranDependInfo.json --lang=Fortran --dd=$out @$out.rsp
-  description = Generating Fortran dyndep file $out
-  rspfile = $out.rsp
-  rspfile_content = $in
-  restat = 1
-
-
-#############################################
-# Rule for compiling Fortran files.
-
-rule Fortran_COMPILER__eigen_lapack_static_scanned_Release
-  command = ${LAUNCHER}${CODE_CHECK}C:\Strawberry\c\bin\gfortran.exe $INCLUDES $FLAGS -c $in -o $out
-  description = Building Fortran object $out
-
-
-#############################################
-# Rule for compiling Fortran files.
-
-rule Fortran_COMPILER__eigen_lapack_static_unscanned_Release
-  command = ${LAUNCHER}${CODE_CHECK}C:\Strawberry\c\bin\gfortran.exe $DEFINES $INCLUDES $FLAGS -c $in -o $out
-  description = Building Fortran object $out
-
-
-#############################################
-# Rule for linking CXX static library.
-
-rule CXX_STATIC_LIBRARY_LINKER__eigen_lapack_static_Release
-  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\CMake_64\bin\cmake.exe -E rm -f $TARGET_FILE && C:\Qt\Tools\mingw1310_64\bin\ar.exe qc $TARGET_FILE $LINK_FLAGS $in && C:\Qt\Tools\mingw1310_64\bin\ranlib.exe $TARGET_FILE && $POST_BUILD"
-  description = Linking CXX static library $TARGET_FILE
+rule CXX_EXECUTABLE_LINKER__test_scene_manager_
+  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\mingw1310_64\bin\g++.exe $FLAGS $LINK_FLAGS $in -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
+  description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
 
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__eigen_lapack_unscanned_Release
+rule CXX_COMPILER__test_audio_unscanned_
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1310_64\bin\g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -261,56 +87,106 @@ rule CXX_COMPILER__eigen_lapack_unscanned_Release
 
 
 #############################################
-# Rule for generating Fortran dependencies.
+# Rule for linking CXX executable.
 
-rule Fortran_PREPROCESS_SCAN__eigen_lapack_Release
+rule CXX_EXECUTABLE_LINKER__test_audio_
+  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\mingw1310_64\bin\g++.exe $FLAGS $LINK_FLAGS $in -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
+  description = Linking CXX executable $TARGET_FILE
+  restat = $RESTAT
+
+
+#############################################
+# Rule for compiling CXX files.
+
+rule CXX_COMPILER__test_mesh_unscanned_
   depfile = $DEP_FILE
-  command = C:\WINDOWS\system32\cmd.exe /C "C:\Strawberry\c\bin\gfortran.exe -cpp $DEFINES $INCLUDES $FLAGS -E $in -o $out && C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_depends --tdi=_deps\eigen-build\lapack\CMakeFiles\eigen_lapack.dir\FortranDependInfo.json --lang=Fortran --src=$out --out=$out --dep=$DEP_FILE --obj=$OBJ_FILE --ddi=$DYNDEP_INTERMEDIATE_FILE --src-orig=$in"
-  description = Building Fortran preprocessed $out
+  deps = gcc
+  command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1310_64\bin\g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building CXX object $out
 
 
 #############################################
-# Rule for generating Fortran dependencies on non-preprocessed files.
+# Rule for linking CXX executable.
 
-rule Fortran_SCAN__eigen_lapack_Release
+rule CXX_EXECUTABLE_LINKER__test_mesh_
+  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\mingw1310_64\bin\g++.exe $FLAGS $LINK_FLAGS $in -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
+  description = Linking CXX executable $TARGET_FILE
+  restat = $RESTAT
+
+
+#############################################
+# Rule for compiling CXX files.
+
+rule CXX_COMPILER__test_rendering_unscanned_
   depfile = $DEP_FILE
-  command = C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_depends --tdi=_deps\eigen-build\lapack\CMakeFiles\eigen_lapack.dir\FortranDependInfo.json --lang=Fortran --src=$in --out=$out --dep=$DEP_FILE --obj=$OBJ_FILE --ddi=$out
-  description = Generating Fortran dependencies for $in
+  deps = gcc
+  command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1310_64\bin\g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building CXX object $out
 
 
 #############################################
-# Rule to generate ninja dyndep files for Fortran.
+# Rule for linking CXX executable.
 
-rule Fortran_DYNDEP__eigen_lapack_Release
-  command = C:\Qt\Tools\CMake_64\bin\cmake.exe -E cmake_ninja_dyndep --tdi=_deps\eigen-build\lapack\CMakeFiles\eigen_lapack.dir\FortranDependInfo.json --lang=Fortran --dd=$out @$out.rsp
-  description = Generating Fortran dyndep file $out
-  rspfile = $out.rsp
-  rspfile_content = $in
-  restat = 1
+rule CXX_EXECUTABLE_LINKER__test_rendering_
+  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\mingw1310_64\bin\g++.exe $FLAGS $LINK_FLAGS $in -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
+  description = Linking CXX executable $TARGET_FILE
+  restat = $RESTAT
 
 
 #############################################
-# Rule for compiling Fortran files.
+# Rule for compiling CXX files.
 
-rule Fortran_COMPILER__eigen_lapack_scanned_Release
-  command = ${LAUNCHER}${CODE_CHECK}C:\Strawberry\c\bin\gfortran.exe $INCLUDES $FLAGS -c $in -o $out
-  description = Building Fortran object $out
-
-
-#############################################
-# Rule for compiling Fortran files.
-
-rule Fortran_COMPILER__eigen_lapack_unscanned_Release
-  command = ${LAUNCHER}${CODE_CHECK}C:\Strawberry\c\bin\gfortran.exe $DEFINES $INCLUDES $FLAGS -c $in -o $out
-  description = Building Fortran object $out
+rule CXX_COMPILER__test_acoustics_unscanned_
+  depfile = $DEP_FILE
+  deps = gcc
+  command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1310_64\bin\g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building CXX object $out
 
 
 #############################################
-# Rule for linking CXX shared library.
+# Rule for linking CXX executable.
 
-rule CXX_SHARED_LIBRARY_LINKER__eigen_lapack_Release
-  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\mingw1310_64\bin\g++.exe $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
-  description = Linking CXX shared library $TARGET_FILE
+rule CXX_EXECUTABLE_LINKER__test_acoustics_
+  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\mingw1310_64\bin\g++.exe $FLAGS $LINK_FLAGS $in -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
+  description = Linking CXX executable $TARGET_FILE
+  restat = $RESTAT
+
+
+#############################################
+# Rule for compiling CXX files.
+
+rule CXX_COMPILER__test_project_file_unscanned_
+  depfile = $DEP_FILE
+  deps = gcc
+  command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1310_64\bin\g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building CXX object $out
+
+
+#############################################
+# Rule for linking CXX executable.
+
+rule CXX_EXECUTABLE_LINKER__test_project_file_
+  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\mingw1310_64\bin\g++.exe $FLAGS $LINK_FLAGS $in -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
+  description = Linking CXX executable $TARGET_FILE
+  restat = $RESTAT
+
+
+#############################################
+# Rule for compiling CXX files.
+
+rule CXX_COMPILER__test_gui_unscanned_
+  depfile = $DEP_FILE
+  deps = gcc
+  command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1310_64\bin\g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building CXX object $out
+
+
+#############################################
+# Rule for linking CXX executable.
+
+rule CXX_EXECUTABLE_LINKER__test_gui_
+  command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\mingw1310_64\bin\g++.exe $FLAGS $LINK_FLAGS $in -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
+  description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
 

@@ -144,6 +144,7 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/PyRoomStudio_autoge
   C:/Qt/6.10.2/mingw_64/include/QtCore/qversiontagging.h \
   C:/Qt/6.10.2/mingw_64/include/QtCore/qxptype_traits.h \
   C:/Qt/6.10.2/mingw_64/include/QtCore/qyieldcpu.h \
+  C:/Qt/6.10.2/mingw_64/include/QtGui/QImage \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QKeyEvent \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QMouseEvent \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QOpenGLFunctions \
@@ -609,6 +610,7 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/PyRoomStudio_autoge
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/src/plugins/MatrixCwiseBinaryOps.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/src/plugins/MatrixCwiseUnaryOps.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/src/plugins/ReshapedMethods.h \
+  C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/Material.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/PlacedPoint.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/Types.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/Camera.h \

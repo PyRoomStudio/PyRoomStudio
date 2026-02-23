@@ -2,6 +2,7 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QList \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QObject \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QRect \
+	C:/Qt/6.10.2/mingw_64/include/QtCore/QSettings \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QSize \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QSizeF \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QString \
@@ -15,6 +16,7 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/q23type_traits.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/q23utility.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qabstracteventdispatcher.h \
+	C:/Qt/6.10.2/mingw_64/include/QtCore/qabstractitemmodel.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qalgorithms.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qalloc.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qanystringview.h \
@@ -65,6 +67,7 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qhashfunctions.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qiodevice.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qiodevicebase.h \
+	C:/Qt/6.10.2/mingw_64/include/QtCore/qitemselectionmodel.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qiterable.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qiterator.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qlatin1stringview.h \
@@ -92,9 +95,11 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qprocessordetection.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qrect.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qrefcount.h \
+	C:/Qt/6.10.2/mingw_64/include/QtCore/qregularexpression.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qscopedpointer.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qscopeguard.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qset.h \
+	C:/Qt/6.10.2/mingw_64/include/QtCore/qsettings.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qshareddata.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qshareddata_impl.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qsharedpointer.h \
@@ -146,11 +151,13 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qxptype_traits.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qyieldcpu.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QAction \
+	C:/Qt/6.10.2/mingw_64/include/QtGui/QImage \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QKeyEvent \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QMouseEvent \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QOpenGLFunctions \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QSurfaceFormat \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QTransform \
+	C:/Qt/6.10.2/mingw_64/include/QtGui/QUndoStack \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QWheelEvent \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qaction.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qbitmap.h \
@@ -177,6 +184,7 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qopenglfunctions.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qpaintdevice.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qpalette.h \
+	C:/Qt/6.10.2/mingw_64/include/QtGui/qpen.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qpicture.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qpixelformat.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qpixmap.h \
@@ -188,11 +196,16 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qscreen.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qscreen_platform.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qsurfaceformat.h \
+	C:/Qt/6.10.2/mingw_64/include/QtGui/qtextcursor.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qtextdocument.h \
+	C:/Qt/6.10.2/mingw_64/include/QtGui/qtextformat.h \
+	C:/Qt/6.10.2/mingw_64/include/QtGui/qtextoption.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qtgui-config.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qtguiexports.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qtguiglobal.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qtransform.h \
+	C:/Qt/6.10.2/mingw_64/include/QtGui/qundostack.h \
+	C:/Qt/6.10.2/mingw_64/include/QtGui/qvalidator.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qvector2d.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qvectornd.h \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qwindowdefs.h \
@@ -201,30 +214,57 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtOpenGLWidgets/qopenglwidget.h \
 	C:/Qt/6.10.2/mingw_64/include/QtOpenGLWidgets/qtopenglwidgetsexports.h \
 	C:/Qt/6.10.2/mingw_64/include/QtOpenGLWidgets/qtopenglwidgetsglobal.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QCheckBox \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QComboBox \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QDialog \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QDoubleSpinBox \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QGroupBox \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QLabel \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QLineEdit \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QListWidget \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QMainWindow \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QMenu \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QPushButton \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QSlider \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QSpinBox \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QSplitter \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QTabWidget \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QTableWidget \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QToolBar \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/QWidget \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractitemdelegate.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractitemview.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractscrollarea.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractslider.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractspinbox.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qcheckbox.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qcombobox.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qdialog.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qgroupbox.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qlabel.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayout.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayoutitem.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qlineedit.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qlistview.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qlistwidget.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qmainwindow.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qmenu.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qpushbutton.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qrubberband.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qsizepolicy.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qslider.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qspinbox.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qsplitter.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qstyle.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qstyleoption.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabbar.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtableview.h \
+	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtablewidget.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabwidget.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtoolbar.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgets-config.h \
@@ -397,98 +437,32 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6WidgetsTools/Qt6WidgetsToolsTargets-relwithdebinfo.cmake \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6WidgetsTools/Qt6WidgetsToolsTargets.cmake \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6WidgetsTools/Qt6WidgetsToolsVersionlessTargets.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXCompiler.cmake.in \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXCompilerABI.cpp \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXInformation.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCommonLanguageInclude.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCompilerIdDetection.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCXXCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerSupport.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineRCCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineSystem.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindBinUtils.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeParseImplicitIncludeInfo.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeParseImplicitLinkInfo.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeParseLibraryArchitecture.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeRCCompiler.cmake.in \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeRCInformation.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystem.cmake.in \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestCXXCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestCompilerCommon.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestRCCompiler.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CheckCXXCompilerFlag.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CheckCXXSourceCompiles.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CheckIncludeFileCXX.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CheckLibraryExists.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/ADSP-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/ARMCC-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/ARMClang-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/AppleClang-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Borland-DetermineCompiler.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Clang-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Clang-DetermineCompilerInternal.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Compaq-CXX-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Cray-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/CrayClang-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Embarcadero-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Fujitsu-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/FujitsuClang-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GHS-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GNU-CXX-DetermineCompiler.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GNU-CXX.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GNU-FindBinUtils.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GNU.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/HP-CXX-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/IAR-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/IBMCPP-CXX-DetermineVersionInternal.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/IBMClang-CXX-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Intel-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/IntelLLVM-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/LCC-CXX-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/MSVC-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/NVHPC-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/NVIDIA-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/OrangeC-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/PGI-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/PathScale-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/SCO-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/SunPro-CXX-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/TI-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/TIClang-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Tasking-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/VisualAge-CXX-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/Watcom-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/XL-CXX-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/XLClang-CXX-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/zOS-CXX-DetermineCompiler.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/ExternalProject/shared_internal_commands.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FetchContent.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FetchContent/CMakeLists.cmake.in \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FindGit.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FindPackageMessage.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FindPkgConfig.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FindThreads.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FindVulkan.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/GNUInstallDirs.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/CMakeDetermineLinkerId.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/CheckCompilerFlag.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/CheckFlagCommonConfig.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/CheckSourceCompiles.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/FeatureTesting.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-Determine-CXX.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-CXX-ABI.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-CXX.cmake \
 	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU.cmake \
@@ -737,6 +711,9 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.30.5/CMakeRCCompiler.cmake \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.30.5/CMakeSystem.cmake \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/PyRoomStudio_autogen/moc_predefs.h \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/Eigen3Config.cmake \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/Eigen3ConfigVersion.cmake \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/Eigen3Targets.cmake \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/Cholesky \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/Core \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/Geometry \
@@ -916,6 +893,8 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/RayTracer.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/RoomImpulseResponse.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/RoomImpulseResponse.h \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/SimulationWorker.cpp \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/SimulationWorker.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/Wall.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/Wall.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/audio/AudioFile.cpp \
@@ -928,6 +907,8 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/Material.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/PlacedPoint.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/PlacedPoint.h \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/ProjectFile.cpp \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/ProjectFile.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/SoundSource.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/SoundSource.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/core/Types.h \
@@ -941,6 +922,10 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/MainWindow.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/PropertyPanel.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/PropertyPanel.h \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/UndoCommands.cpp \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/UndoCommands.h \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/dialogs/SettingsDialogs.cpp \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/dialogs/SettingsDialogs.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/widgets/ColorSwatch.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/widgets/ColorSwatch.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/widgets/MaterialGallery.cpp \

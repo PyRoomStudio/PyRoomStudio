@@ -11,6 +11,9 @@ struct PlacedPoint {
     float distance     = 0.0f;
     Color3f color      = {0.2f, 0.8f, 0.2f};
     std::string pointType = POINT_TYPE_NONE;
+    std::string name;
+    float volume = 1.0f;
+    std::string audioFile;
 
     Vec3f getPosition() const {
         return surfacePoint + normal * distance;

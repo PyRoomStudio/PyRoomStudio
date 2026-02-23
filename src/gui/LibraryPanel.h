@@ -6,6 +6,9 @@
 #include <QWidget>
 #include <QTabWidget>
 #include <QVBoxLayout>
+#include <QListWidget>
+#include <QPushButton>
+#include <QLabel>
 #include <QString>
 #include <vector>
 
@@ -21,14 +24,19 @@ public:
 
 signals:
     void materialSelected(const QString& name, const Color3f& glColor, float absorption);
+    void soundFileSelected(const QString& filepath);
 
 private:
     void setupUI();
     void createSoundTab(QWidget* tab);
     void createMaterialTab(QWidget* tab);
+    void scanSoundDirectory(const QString& dir);
 
     QTabWidget* tabWidget_ = nullptr;
     std::vector<MaterialGallery*> materialGalleries_;
+    QListWidget* soundList_ = nullptr;
+    QLabel* soundDirLabel_ = nullptr;
+    QString soundDirectory_;
 };
 
 } // namespace prs

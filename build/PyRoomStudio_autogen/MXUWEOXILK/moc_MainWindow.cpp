@@ -43,6 +43,7 @@ template <> constexpr inline auto prs::MainWindow::qt_create_metaobjectdata<qt_m
         "",
         "onOpenProject",
         "onSaveProject",
+        "onSaveProjectAs",
         "onExit",
         "onImportRoom",
         "onImportSound",
@@ -68,39 +69,41 @@ template <> constexpr inline auto prs::MainWindow::qt_create_metaobjectdata<qt_m
         QtMocHelpers::SlotData<void()>(3, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onSaveProject'
         QtMocHelpers::SlotData<void()>(4, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onExit'
+        // Slot 'onSaveProjectAs'
         QtMocHelpers::SlotData<void()>(5, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onImportRoom'
+        // Slot 'onExit'
         QtMocHelpers::SlotData<void()>(6, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onImportSound'
+        // Slot 'onImportRoom'
         QtMocHelpers::SlotData<void()>(7, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onPlacePoint'
+        // Slot 'onImportSound'
         QtMocHelpers::SlotData<void()>(8, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onRender'
+        // Slot 'onPlacePoint'
         QtMocHelpers::SlotData<void()>(9, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onRender'
+        QtMocHelpers::SlotData<void()>(10, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onModelLoaded'
-        QtMocHelpers::SlotData<void(const QString &)>(10, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::QString, 11 },
+        QtMocHelpers::SlotData<void(const QString &)>(11, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 12 },
         }}),
         // Slot 'onPointSelected'
-        QtMocHelpers::SlotData<void(int)>(12, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 13 },
+        QtMocHelpers::SlotData<void(int)>(13, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 14 },
         }}),
         // Slot 'onPointDeselected'
-        QtMocHelpers::SlotData<void()>(14, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(15, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onSurfaceSelected'
-        QtMocHelpers::SlotData<void(int)>(15, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 13 },
+        QtMocHelpers::SlotData<void(int)>(16, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 14 },
         }}),
         // Slot 'onSurfaceDeselected'
-        QtMocHelpers::SlotData<void()>(16, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(17, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onPlacementModeChanged'
-        QtMocHelpers::SlotData<void(bool)>(17, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Bool, 18 },
+        QtMocHelpers::SlotData<void(bool)>(18, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Bool, 19 },
         }}),
         // Slot 'onScaleChanged'
-        QtMocHelpers::SlotData<void(float)>(19, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Float, 20 },
+        QtMocHelpers::SlotData<void(float)>(20, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Float, 21 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
@@ -128,18 +131,19 @@ void prs::MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
         case 0: _t->onNewProject(); break;
         case 1: _t->onOpenProject(); break;
         case 2: _t->onSaveProject(); break;
-        case 3: _t->onExit(); break;
-        case 4: _t->onImportRoom(); break;
-        case 5: _t->onImportSound(); break;
-        case 6: _t->onPlacePoint(); break;
-        case 7: _t->onRender(); break;
-        case 8: _t->onModelLoaded((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
-        case 9: _t->onPointSelected((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
-        case 10: _t->onPointDeselected(); break;
-        case 11: _t->onSurfaceSelected((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
-        case 12: _t->onSurfaceDeselected(); break;
-        case 13: _t->onPlacementModeChanged((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
-        case 14: _t->onScaleChanged((*reinterpret_cast<std::add_pointer_t<float>>(_a[1]))); break;
+        case 3: _t->onSaveProjectAs(); break;
+        case 4: _t->onExit(); break;
+        case 5: _t->onImportRoom(); break;
+        case 6: _t->onImportSound(); break;
+        case 7: _t->onPlacePoint(); break;
+        case 8: _t->onRender(); break;
+        case 9: _t->onModelLoaded((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
+        case 10: _t->onPointSelected((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
+        case 11: _t->onPointDeselected(); break;
+        case 12: _t->onSurfaceSelected((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
+        case 13: _t->onSurfaceDeselected(); break;
+        case 14: _t->onPlacementModeChanged((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
+        case 15: _t->onScaleChanged((*reinterpret_cast<std::add_pointer_t<float>>(_a[1]))); break;
         default: ;
         }
     }
@@ -164,14 +168,14 @@ int prs::MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 15)
+        if (_id < 16)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 15;
+        _id -= 16;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 15)
+        if (_id < 16)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 15;
+        _id -= 16;
     }
     return _id;
 }

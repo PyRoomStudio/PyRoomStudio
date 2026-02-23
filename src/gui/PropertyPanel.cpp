@@ -76,12 +76,44 @@ void PropertyPanel::setupUI() {
         auto* group = new QGroupBox("Selected Point");
         auto* gl    = new QVBoxLayout(group);
 
+        pointNameEdit_ = new QLineEdit;
+        pointNameEdit_->setPlaceholderText("Point name...");
+        gl->addWidget(pointNameEdit_);
+        connect(pointNameEdit_, &QLineEdit::textChanged, this, &PropertyPanel::pointNameChanged);
+
         auto* typeRow = new QHBoxLayout;
         sourceBtn_   = new QPushButton("Source");
         listenerBtn_ = new QPushButton("Listener");
         typeRow->addWidget(sourceBtn_);
         typeRow->addWidget(listenerBtn_);
         gl->addLayout(typeRow);
+
+        // Volume (only relevant for sources)
+        auto* volRow = new QHBoxLayout;
+        volRow->addWidget(new QLabel("Volume:"));
+        pointVolumeSlider_ = new QSlider(Qt::Horizontal);
+        pointVolumeSlider_->setRange(0, 200);
+        pointVolumeSlider_->setValue(100);
+        pointVolumeLabel_ = new QLabel("1.0");
+        volRow->addWidget(pointVolumeSlider_);
+        volRow->addWidget(pointVolumeLabel_);
+        gl->addLayout(volRow);
+
+        connect(pointVolumeSlider_, &QSlider::valueChanged, [this](int v) {
+            if (updatingSlider_) return;
+            float vol = v / 100.0f;
+            pointVolumeLabel_->setText(QString::number(vol, 'f', 2));
+            emit pointVolumeChanged(vol);
+        });
+
+        // Audio file (only relevant for sources)
+        pointAudioBtn_ = new QPushButton("Set Audio File");
+        gl->addWidget(pointAudioBtn_);
+        pointAudioLabel_ = new QLabel("No audio file");
+        pointAudioLabel_->setStyleSheet("font-size: 10px; color: #666;");
+        pointAudioLabel_->setWordWrap(true);
+        gl->addWidget(pointAudioLabel_);
+        connect(pointAudioBtn_, &QPushButton::clicked, this, &PropertyPanel::selectPointAudioFile);
 
         auto* actionRow = new QHBoxLayout;
         deletePointBtn_  = new QPushButton("Delete");
@@ -105,16 +137,23 @@ void PropertyPanel::setupUI() {
         auto* group = new QGroupBox("Selected Surface");
         auto* gl    = new QVBoxLayout(group);
 
+        materialLabel_ = new QLabel("Material: (none)");
+        materialLabel_->setStyleSheet("font-size: 10px;");
+        gl->addWidget(materialLabel_);
+
         auto* row = new QHBoxLayout;
         textureBtn_     = new QPushButton("Texture");
+        loadTextureBtn_ = new QPushButton("Load Texture...");
         deselectSurfBtn_ = new QPushButton("Deselect");
         row->addWidget(textureBtn_);
-        row->addWidget(deselectSurfBtn_);
+        row->addWidget(loadTextureBtn_);
         gl->addLayout(row);
+        gl->addWidget(deselectSurfBtn_);
 
         layout->addWidget(group);
 
         connect(textureBtn_,      &QPushButton::clicked, this, &PropertyPanel::toggleTexture);
+        connect(loadTextureBtn_,  &QPushButton::clicked, this, &PropertyPanel::loadTexture);
         connect(deselectSurfBtn_, &QPushButton::clicked, this, &PropertyPanel::deselectSurface);
 
         setSurfaceControlsEnabled(false);
@@ -155,19 +194,51 @@ void PropertyPanel::setPointType(const QString& type) {
 }
 
 void PropertyPanel::setPointControlsEnabled(bool enabled) {
+    pointNameEdit_->setEnabled(enabled);
     sourceBtn_->setEnabled(enabled);
     listenerBtn_->setEnabled(enabled);
     deletePointBtn_->setEnabled(enabled);
     deselectPointBtn_->setEnabled(enabled);
+    pointVolumeSlider_->setEnabled(enabled);
+    pointAudioBtn_->setEnabled(enabled);
     if (!enabled) {
         sourceBtn_->setText("Source");
         listenerBtn_->setText("Listener");
+        pointNameEdit_->clear();
+        pointAudioLabel_->setText("No audio file");
+        updatingSlider_ = true;
+        pointVolumeSlider_->setValue(100);
+        pointVolumeLabel_->setText("1.00");
+        updatingSlider_ = false;
     }
 }
 
 void PropertyPanel::setSurfaceControlsEnabled(bool enabled) {
     textureBtn_->setEnabled(enabled);
+    loadTextureBtn_->setEnabled(enabled);
     deselectSurfBtn_->setEnabled(enabled);
+    if (!enabled) materialLabel_->setText("Material: (none)");
+}
+
+void PropertyPanel::setMaterialName(const QString& name) {
+    materialLabel_->setText("Material: " + (name.isEmpty() ? "(none)" : name));
+}
+
+void PropertyPanel::setPointName(const QString& name) {
+    pointNameEdit_->blockSignals(true);
+    pointNameEdit_->setText(name);
+    pointNameEdit_->blockSignals(false);
+}
+
+void PropertyPanel::setPointVolume(float volume) {
+    updatingSlider_ = true;
+    pointVolumeSlider_->setValue(static_cast<int>(volume * 100));
+    pointVolumeLabel_->setText(QString::number(volume, 'f', 2));
+    updatingSlider_ = false;
+}
+
+void PropertyPanel::setPointAudioFile(const QString& filename) {
+    pointAudioLabel_->setText(filename.isEmpty() ? "No audio file" : filename);
 }
 
 } // namespace prs

@@ -49,7 +49,13 @@ template <> constexpr inline auto prs::PropertyPanel::qt_create_metaobjectdata<q
         "deletePoint",
         "deselectPoint",
         "toggleTexture",
-        "deselectSurface"
+        "loadTexture",
+        "deselectSurface",
+        "pointNameChanged",
+        "name",
+        "pointVolumeChanged",
+        "volume",
+        "selectPointAudioFile"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -71,8 +77,20 @@ template <> constexpr inline auto prs::PropertyPanel::qt_create_metaobjectdata<q
         QtMocHelpers::SignalData<void()>(8, 2, QMC::AccessPublic, QMetaType::Void),
         // Signal 'toggleTexture'
         QtMocHelpers::SignalData<void()>(9, 2, QMC::AccessPublic, QMetaType::Void),
-        // Signal 'deselectSurface'
+        // Signal 'loadTexture'
         QtMocHelpers::SignalData<void()>(10, 2, QMC::AccessPublic, QMetaType::Void),
+        // Signal 'deselectSurface'
+        QtMocHelpers::SignalData<void()>(11, 2, QMC::AccessPublic, QMetaType::Void),
+        // Signal 'pointNameChanged'
+        QtMocHelpers::SignalData<void(const QString &)>(12, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::QString, 13 },
+        }}),
+        // Signal 'pointVolumeChanged'
+        QtMocHelpers::SignalData<void(float)>(14, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Float, 15 },
+        }}),
+        // Signal 'selectPointAudioFile'
+        QtMocHelpers::SignalData<void()>(16, 2, QMC::AccessPublic, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -103,7 +121,11 @@ void prs::PropertyPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, i
         case 4: _t->deletePoint(); break;
         case 5: _t->deselectPoint(); break;
         case 6: _t->toggleTexture(); break;
-        case 7: _t->deselectSurface(); break;
+        case 7: _t->loadTexture(); break;
+        case 8: _t->deselectSurface(); break;
+        case 9: _t->pointNameChanged((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
+        case 10: _t->pointVolumeChanged((*reinterpret_cast<std::add_pointer_t<float>>(_a[1]))); break;
+        case 11: _t->selectPointAudioFile(); break;
         default: ;
         }
     }
@@ -122,7 +144,15 @@ void prs::PropertyPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, i
             return;
         if (QtMocHelpers::indexOfMethod<void (PropertyPanel::*)()>(_a, &PropertyPanel::toggleTexture, 6))
             return;
-        if (QtMocHelpers::indexOfMethod<void (PropertyPanel::*)()>(_a, &PropertyPanel::deselectSurface, 7))
+        if (QtMocHelpers::indexOfMethod<void (PropertyPanel::*)()>(_a, &PropertyPanel::loadTexture, 7))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (PropertyPanel::*)()>(_a, &PropertyPanel::deselectSurface, 8))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (PropertyPanel::*)(const QString & )>(_a, &PropertyPanel::pointNameChanged, 9))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (PropertyPanel::*)(float )>(_a, &PropertyPanel::pointVolumeChanged, 10))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (PropertyPanel::*)()>(_a, &PropertyPanel::selectPointAudioFile, 11))
             return;
     }
 }
@@ -146,14 +176,14 @@ int prs::PropertyPanel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 8)
+        if (_id < 12)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 12;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 8)
+        if (_id < 12)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 8;
+        _id -= 12;
     }
     return _id;
 }
@@ -201,8 +231,32 @@ void prs::PropertyPanel::toggleTexture()
 }
 
 // SIGNAL 7
-void prs::PropertyPanel::deselectSurface()
+void prs::PropertyPanel::loadTexture()
 {
     QMetaObject::activate(this, &staticMetaObject, 7, nullptr);
+}
+
+// SIGNAL 8
+void prs::PropertyPanel::deselectSurface()
+{
+    QMetaObject::activate(this, &staticMetaObject, 8, nullptr);
+}
+
+// SIGNAL 9
+void prs::PropertyPanel::pointNameChanged(const QString & _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 9, nullptr, _t1);
+}
+
+// SIGNAL 10
+void prs::PropertyPanel::pointVolumeChanged(float _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 10, nullptr, _t1);
+}
+
+// SIGNAL 11
+void prs::PropertyPanel::selectPointAudioFile()
+{
+    QMetaObject::activate(this, &staticMetaObject, 11, nullptr);
 }
 QT_WARNING_POP

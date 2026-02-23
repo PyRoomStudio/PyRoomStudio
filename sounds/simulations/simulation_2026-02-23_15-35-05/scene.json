@@ -1,0 +1,36 @@
+{
+    "listeners": [
+        {
+            "marker_color": [
+                100,
+                100,
+                255
+            ],
+            "name": "Listener 1",
+            "position": [
+                -0.20045852661132812,
+                9.14012622833252,
+                1.5789588689804077
+            ]
+        }
+    ],
+    "sound_sources": [
+        {
+            "audio_file": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio/sounds/sources/sine_440hz.wav",
+            "marker_color": [
+                255,
+                100,
+                100
+            ],
+            "name": "Source 1",
+            "position": [
+                2.9843132495880127,
+                -8.27304458618164,
+                5.378579139709473
+            ],
+            "volume": 1
+        }
+    ],
+    "timestamp": "2026-02-23T15:35:05",
+    "version": "1.0"
+}

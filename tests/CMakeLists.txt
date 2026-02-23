@@ -1,29 +1,85 @@
-find_package(Qt6 REQUIRED COMPONENTS Test)
+find_package(Qt6 REQUIRED COMPONENTS Test Widgets OpenGL OpenGLWidgets)
 
-add_executable(test_acoustic_simulation test_acoustic_simulation.cpp
-    ${CMAKE_SOURCE_DIR}/src/acoustics/AcousticSimulator.cpp
+set(TEST_COMMON_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/core/Material.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/SoundSource.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/Listener.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/PlacedPoint.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/ProjectFile.cpp
+    ${CMAKE_SOURCE_DIR}/src/scene/SceneManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/rendering/Camera.cpp
+    ${CMAKE_SOURCE_DIR}/src/rendering/MeshData.cpp
+    ${CMAKE_SOURCE_DIR}/src/rendering/SurfaceGrouper.cpp
+    ${CMAKE_SOURCE_DIR}/src/rendering/RayPicking.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/Wall.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/ImageSourceMethod.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/RayTracer.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/RoomImpulseResponse.cpp
-    ${CMAKE_SOURCE_DIR}/src/acoustics/Wall.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/AcousticSimulator.cpp
     ${CMAKE_SOURCE_DIR}/src/audio/AudioFile.cpp
     ${CMAKE_SOURCE_DIR}/src/audio/SignalProcessing.cpp
-    ${CMAKE_SOURCE_DIR}/src/rendering/RayPicking.cpp
-    ${CMAKE_SOURCE_DIR}/src/rendering/MeshData.cpp
-    ${CMAKE_SOURCE_DIR}/src/rendering/SurfaceGrouper.cpp
-    ${CMAKE_SOURCE_DIR}/src/scene/SceneManager.cpp
-    ${CMAKE_SOURCE_DIR}/src/core/Material.cpp
 )
 
-target_include_directories(test_acoustic_simulation PRIVATE
+set(TEST_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}/src
-    ${EIGEN3_INCLUDE_DIR}
 )
 
-target_link_libraries(test_acoustic_simulation PRIVATE
-    Qt6::Core
-    Qt6::Test
-    Eigen3::Eigen
-)
+function(add_prs_test TEST_NAME TEST_SOURCE)
+    add_executable(${TEST_NAME} ${TEST_SOURCE} ${TEST_COMMON_SOURCES})
+    target_include_directories(${TEST_NAME} PRIVATE ${TEST_INCLUDE_DIRS})
+    target_link_libraries(${TEST_NAME} PRIVATE
+        Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Eigen3::Eigen)
+    if(WIN32)
+        target_link_libraries(${TEST_NAME} PRIVATE opengl32 glu32)
+    elseif(APPLE)
+        find_package(OpenGL REQUIRED)
+        target_link_libraries(${TEST_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
+    else()
+        find_package(OpenGL REQUIRED)
+        target_link_libraries(${TEST_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
+    endif()
+    target_compile_definitions(${TEST_NAME} PRIVATE _USE_MATH_DEFINES)
+    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+endfunction()
 
-add_test(NAME AcousticSimulation COMMAND test_acoustic_simulation)
+add_prs_test(test_core test_core.cpp)
+add_prs_test(test_scene_manager test_scene_manager.cpp)
+add_prs_test(test_audio test_audio.cpp)
+add_prs_test(test_mesh test_mesh.cpp)
+add_prs_test(test_rendering test_rendering.cpp)
+add_prs_test(test_acoustics test_acoustics.cpp)
+add_prs_test(test_project_file test_project_file.cpp)
+
+# GUI test needs MOC and more sources
+set(GUI_TEST_EXTRA
+    ${CMAKE_SOURCE_DIR}/src/gui/MainWindow.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/LibraryPanel.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/PropertyPanel.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/AssetsPanel.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/BottomToolbar.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/UndoCommands.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/dialogs/SettingsDialogs.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/widgets/MaterialGallery.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/widgets/SurfaceGallery.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/widgets/ColorSwatch.cpp
+    ${CMAKE_SOURCE_DIR}/src/utils/ResourcePath.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationWorker.cpp
+    ${CMAKE_SOURCE_DIR}/src/rendering/Viewport3D.cpp
+)
+qt6_add_resources(TEST_RESOURCES ${CMAKE_SOURCE_DIR}/resources/resources.qrc)
+add_executable(test_gui test_gui.cpp ${TEST_COMMON_SOURCES} ${GUI_TEST_EXTRA} ${TEST_RESOURCES})
+target_include_directories(test_gui PRIVATE ${TEST_INCLUDE_DIRS})
+target_link_libraries(test_gui PRIVATE
+    Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Eigen3::Eigen)
+if(WIN32)
+    target_link_libraries(test_gui PRIVATE opengl32 glu32)
+elseif(APPLE)
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(test_gui PRIVATE OpenGL::GL OpenGL::GLU)
+else()
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(test_gui PRIVATE OpenGL::GL OpenGL::GLU)
+endif()
+target_compile_definitions(test_gui PRIVATE _USE_MATH_DEFINES)
+set_target_properties(test_gui PROPERTIES AUTOMOC ON AUTORCC ON)
+add_test(NAME test_gui COMMAND test_gui)

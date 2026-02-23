@@ -1,0 +1,17 @@
+test_core 0 0
+test_scene_manager 0 0
+test_audio 0 0
+test_mesh 0 0
+test_rendering 0 0
+test_acoustics 0 0
+test_project_file 0 0
+test_gui 0 0
+---
+test_core
+test_scene_manager
+test_audio
+test_mesh
+test_rendering
+test_acoustics
+test_project_file
+test_gui

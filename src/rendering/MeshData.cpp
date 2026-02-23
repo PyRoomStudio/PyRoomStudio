@@ -45,6 +45,7 @@ bool MeshData::loadSTL(const QString& filepath) {
         ptr += 50;
     }
 
+    filePath_ = filepath;
     computeBounds();
     return true;
 }

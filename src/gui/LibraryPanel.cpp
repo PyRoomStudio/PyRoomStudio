@@ -4,6 +4,10 @@
 #include <QLabel>
 #include <QScrollArea>
 #include <QGroupBox>
+#include <QDir>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QSettings>
 
 namespace prs {
 
@@ -40,11 +44,61 @@ void LibraryPanel::setupUI() {
 
 void LibraryPanel::createSoundTab(QWidget* tab) {
     auto* layout = new QVBoxLayout(tab);
-    auto* label  = new QLabel("Voice libraries\n(Future feature)");
-    label->setAlignment(Qt::AlignCenter);
-    label->setEnabled(false);
-    layout->addWidget(label);
-    layout->addStretch();
+    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setSpacing(4);
+
+    soundDirLabel_ = new QLabel("No folder selected");
+    soundDirLabel_->setStyleSheet("font-size: 10px; color: #666;");
+    soundDirLabel_->setWordWrap(true);
+    layout->addWidget(soundDirLabel_);
+
+    auto* browseBtn = new QPushButton("Browse Folder...");
+    connect(browseBtn, &QPushButton::clicked, [this]() {
+        QString dir = QFileDialog::getExistingDirectory(this, "Select Sound Folder");
+        if (!dir.isEmpty()) {
+            scanSoundDirectory(dir);
+            QSettings s("PyRoomStudio", "PyRoomStudio");
+            s.setValue("soundDirectory", dir);
+        }
+    });
+    layout->addWidget(browseBtn);
+
+    soundList_ = new QListWidget;
+    soundList_->setAlternatingRowColors(true);
+    connect(soundList_, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item) {
+        QString filepath = item->data(Qt::UserRole).toString();
+        emit soundFileSelected(filepath);
+    });
+    layout->addWidget(soundList_);
+
+    auto* hintLabel = new QLabel("Double-click to select a sound file");
+    hintLabel->setStyleSheet("font-size: 9px; color: #888;");
+    hintLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(hintLabel);
+
+    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QString savedDir = s.value("soundDirectory", "sounds/sources").toString();
+    if (QDir(savedDir).exists())
+        scanSoundDirectory(savedDir);
+}
+
+void LibraryPanel::scanSoundDirectory(const QString& dir) {
+    soundDirectory_ = dir;
+    soundDirLabel_->setText(QDir(dir).dirName());
+    soundDirLabel_->setToolTip(dir);
+
+    soundList_->clear();
+
+    QDir directory(dir);
+    QStringList filters = {"*.wav", "*.mp3", "*.flac", "*.ogg"};
+    QFileInfoList files = directory.entryInfoList(filters, QDir::Files, QDir::Name);
+
+    for (auto& fi : files) {
+        auto* item = new QListWidgetItem(fi.fileName());
+        item->setData(Qt::UserRole, fi.absoluteFilePath());
+        item->setToolTip(fi.absoluteFilePath());
+        soundList_->addItem(item);
+    }
 }
 
 void LibraryPanel::createMaterialTab(QWidget* tab) {

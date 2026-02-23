@@ -2,6 +2,7 @@
 
 #include "core/Types.h"
 #include "core/PlacedPoint.h"
+#include "core/Material.h"
 #include "Camera.h"
 #include "MeshData.h"
 #include "SurfaceGrouper.h"
@@ -11,6 +12,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QKeyEvent>
+#include <QImage>
 
 #include <vector>
 #include <set>
@@ -48,14 +50,26 @@ public:
     void removeActivePoint();
     void deselectPoint();
     void clearPlacedPoints();
+    void restorePlacedPoints(const std::vector<PlacedPoint>& points);
     int  activePointIndex() const { return activePointIndex_; }
     const std::vector<PlacedPoint>& placedPoints() const { return placedPoints_; }
+    std::vector<PlacedPoint>& placedPoints() { return placedPoints_; }
+
+    // Measure mode
+    void setMeasureMode(bool enabled);
+    bool measureMode() const { return measureMode_; }
 
     // Surface selection
     int  selectedSurfaceIndex() const { return selectedSurfaceIndex_; }
+    void selectSurface(int index);
     void deselectSurface();
     void setSurfaceColor(int surfIdx, const Color3f& color);
+    void assignMaterial(int surfIdx, const Material& material);
+    std::optional<Material> getSurfaceMaterial(int surfIdx) const;
+    const std::vector<std::optional<Material>>& surfaceMaterials() const { return surfaceMaterials_; }
     void toggleSurfaceTexture(int surfIdx);
+    bool loadTexture(const QString& filepath);
+    bool hasTexture() const { return textureId_ != 0; }
 
     // Acoustic simulation helpers
     std::pair<int, int> countSourcesAndListeners() const;
@@ -64,7 +78,11 @@ public:
     std::pair<std::vector<SourceData>, std::vector<ListenerData>>
         getSourcesAndListeners(const std::string& audioFile) const;
 
-    struct WallInfo { std::vector<int> triangleIndices; };
+    struct WallInfo {
+        std::vector<int> triangleIndices;
+        float energyAbsorption = DEFAULT_ENERGY_ABSORPTION;
+        float scattering = DEFAULT_SCATTERING;
+    };
     std::vector<WallInfo> getWallsForAcoustic() const;
     Vec3f getScaledRoomCenter() const;
     std::vector<Vec3f> getScaledModelVertices() const;
@@ -82,8 +100,10 @@ signals:
     void pointDeselected();
     void surfaceSelected(int index);
     void surfaceDeselected();
+    void surfaceMaterialChanged(int index, const QString& materialName);
     void placementModeChanged(bool enabled);
     void scaleChanged(float factor);
+    void measurementResult(float distance);
 
 protected:
     void initializeGL() override;
@@ -127,6 +147,7 @@ private:
     SurfaceGrouper::EdgeSet featureEdges_;
     std::vector<std::set<int>> surfaces_;
     std::vector<Color3f> surfaceColors_;
+    std::vector<std::optional<Material>> surfaceMaterials_;
     std::vector<bool> surfaceTextured_;
     std::map<int, int> triangleToSurface_;
 
@@ -145,8 +166,13 @@ private:
     QPoint lastMousePos_;
     QPoint mouseDownPos_;
     bool transparentMode_ = false;
+    bool measureMode_ = false;
+    std::optional<Vec3f> measurePoint1_;
+    std::optional<Vec3f> measurePoint2_;
 
     Color3f defaultSurfaceColor_ = {0.6f, 0.8f, 1.0f};
+    unsigned int textureId_ = 0;
+    QImage textureImage_;
 };
 
 } // namespace prs

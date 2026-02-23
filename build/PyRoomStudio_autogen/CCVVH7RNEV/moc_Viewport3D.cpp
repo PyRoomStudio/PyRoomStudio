@@ -48,10 +48,14 @@ template <> constexpr inline auto prs::Viewport3D::qt_create_metaobjectdata<qt_m
         "pointDeselected",
         "surfaceSelected",
         "surfaceDeselected",
+        "surfaceMaterialChanged",
+        "materialName",
         "placementModeChanged",
         "enabled",
         "scaleChanged",
-        "factor"
+        "factor",
+        "measurementResult",
+        "distance"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -75,13 +79,21 @@ template <> constexpr inline auto prs::Viewport3D::qt_create_metaobjectdata<qt_m
         }}),
         // Signal 'surfaceDeselected'
         QtMocHelpers::SignalData<void()>(9, 2, QMC::AccessPublic, QMetaType::Void),
+        // Signal 'surfaceMaterialChanged'
+        QtMocHelpers::SignalData<void(int, const QString &)>(10, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Int, 5 }, { QMetaType::QString, 11 },
+        }}),
         // Signal 'placementModeChanged'
-        QtMocHelpers::SignalData<void(bool)>(10, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::Bool, 11 },
+        QtMocHelpers::SignalData<void(bool)>(12, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Bool, 13 },
         }}),
         // Signal 'scaleChanged'
-        QtMocHelpers::SignalData<void(float)>(12, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::Float, 13 },
+        QtMocHelpers::SignalData<void(float)>(14, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Float, 15 },
+        }}),
+        // Signal 'measurementResult'
+        QtMocHelpers::SignalData<void(float)>(16, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Float, 17 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
@@ -112,8 +124,10 @@ void prs::Viewport3D::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
         case 3: _t->pointDeselected(); break;
         case 4: _t->surfaceSelected((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
         case 5: _t->surfaceDeselected(); break;
-        case 6: _t->placementModeChanged((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
-        case 7: _t->scaleChanged((*reinterpret_cast<std::add_pointer_t<float>>(_a[1]))); break;
+        case 6: _t->surfaceMaterialChanged((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<QString>>(_a[2]))); break;
+        case 7: _t->placementModeChanged((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
+        case 8: _t->scaleChanged((*reinterpret_cast<std::add_pointer_t<float>>(_a[1]))); break;
+        case 9: _t->measurementResult((*reinterpret_cast<std::add_pointer_t<float>>(_a[1]))); break;
         default: ;
         }
     }
@@ -130,9 +144,13 @@ void prs::Viewport3D::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
             return;
         if (QtMocHelpers::indexOfMethod<void (Viewport3D::*)()>(_a, &Viewport3D::surfaceDeselected, 5))
             return;
-        if (QtMocHelpers::indexOfMethod<void (Viewport3D::*)(bool )>(_a, &Viewport3D::placementModeChanged, 6))
+        if (QtMocHelpers::indexOfMethod<void (Viewport3D::*)(int , const QString & )>(_a, &Viewport3D::surfaceMaterialChanged, 6))
             return;
-        if (QtMocHelpers::indexOfMethod<void (Viewport3D::*)(float )>(_a, &Viewport3D::scaleChanged, 7))
+        if (QtMocHelpers::indexOfMethod<void (Viewport3D::*)(bool )>(_a, &Viewport3D::placementModeChanged, 7))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (Viewport3D::*)(float )>(_a, &Viewport3D::scaleChanged, 8))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (Viewport3D::*)(float )>(_a, &Viewport3D::measurementResult, 9))
             return;
     }
 }
@@ -158,14 +176,14 @@ int prs::Viewport3D::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 8)
+        if (_id < 10)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 10;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 8)
+        if (_id < 10)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 8;
+        _id -= 10;
     }
     return _id;
 }
@@ -207,14 +225,26 @@ void prs::Viewport3D::surfaceDeselected()
 }
 
 // SIGNAL 6
-void prs::Viewport3D::placementModeChanged(bool _t1)
+void prs::Viewport3D::surfaceMaterialChanged(int _t1, const QString & _t2)
 {
-    QMetaObject::activate<void>(this, &staticMetaObject, 6, nullptr, _t1);
+    QMetaObject::activate<void>(this, &staticMetaObject, 6, nullptr, _t1, _t2);
 }
 
 // SIGNAL 7
-void prs::Viewport3D::scaleChanged(float _t1)
+void prs::Viewport3D::placementModeChanged(bool _t1)
 {
     QMetaObject::activate<void>(this, &staticMetaObject, 7, nullptr, _t1);
+}
+
+// SIGNAL 8
+void prs::Viewport3D::scaleChanged(float _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 8, nullptr, _t1);
+}
+
+// SIGNAL 9
+void prs::Viewport3D::measurementResult(float _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 9, nullptr, _t1);
 }
 QT_WARNING_POP

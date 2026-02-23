@@ -14,6 +14,7 @@ public:
 
     const std::vector<Triangle>& triangles() const { return triangles_; }
     int triangleCount() const { return static_cast<int>(triangles_.size()); }
+    QString filePath() const { return filePath_; }
 
     Vec3f center() const { return center_; }
     float diagonalSize() const { return size_; }
@@ -32,6 +33,7 @@ private:
     Vec3f min_    = Vec3f::Zero();
     Vec3f max_    = Vec3f::Zero();
     float size_   = 0.0f;
+    QString filePath_;
 };
 
 } // namespace prs

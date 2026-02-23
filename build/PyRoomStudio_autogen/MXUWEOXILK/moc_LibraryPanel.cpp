@@ -7,6 +7,7 @@
 *****************************************************************************/
 
 #include "../../../src/gui/LibraryPanel.h"
+#include <QtGui/qtextcursor.h>
 #include <QtCore/qmetatype.h>
 
 #include <QtCore/qtmochelpers.h>
@@ -44,13 +45,19 @@ template <> constexpr inline auto prs::LibraryPanel::qt_create_metaobjectdata<qt
         "name",
         "Color3f",
         "glColor",
-        "absorption"
+        "absorption",
+        "soundFileSelected",
+        "filepath"
     };
 
     QtMocHelpers::UintData qt_methods {
         // Signal 'materialSelected'
         QtMocHelpers::SignalData<void(const QString &, const Color3f &, float)>(1, 2, QMC::AccessPublic, QMetaType::Void, {{
             { QMetaType::QString, 3 }, { 0x80000000 | 4, 5 }, { QMetaType::Float, 6 },
+        }}),
+        // Signal 'soundFileSelected'
+        QtMocHelpers::SignalData<void(const QString &)>(7, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::QString, 8 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
@@ -76,11 +83,14 @@ void prs::LibraryPanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, in
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: _t->materialSelected((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<Color3f>>(_a[2])),(*reinterpret_cast<std::add_pointer_t<float>>(_a[3]))); break;
+        case 1: _t->soundFileSelected((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
         default: ;
         }
     }
     if (_c == QMetaObject::IndexOfMethod) {
         if (QtMocHelpers::indexOfMethod<void (LibraryPanel::*)(const QString & , const Color3f & , float )>(_a, &LibraryPanel::materialSelected, 0))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (LibraryPanel::*)(const QString & )>(_a, &LibraryPanel::soundFileSelected, 1))
             return;
     }
 }
@@ -104,14 +114,14 @@ int prs::LibraryPanel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 1)
+        if (_id < 2)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 1;
+        _id -= 2;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 1)
+        if (_id < 2)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 1;
+        _id -= 2;
     }
     return _id;
 }
@@ -120,5 +130,11 @@ int prs::LibraryPanel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 void prs::LibraryPanel::materialSelected(const QString & _t1, const Color3f & _t2, float _t3)
 {
     QMetaObject::activate<void>(this, &staticMetaObject, 0, nullptr, _t1, _t2, _t3);
+}
+
+// SIGNAL 1
+void prs::LibraryPanel::soundFileSelected(const QString & _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 1, nullptr, _t1);
 }
 QT_WARNING_POP
