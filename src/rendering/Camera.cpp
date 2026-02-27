@@ -2,15 +2,10 @@
 #include <algorithm>
 
 #include "Camera.h"
+#include "GLHeaders.h"
 
 #include <QOpenGLFunctions>
 #include <QtGui/QOpenGLContext>
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
-#include <GL/gl.h>
-#include <GL/glu.h>
 
 namespace prs {
 

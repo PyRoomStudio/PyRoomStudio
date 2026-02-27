@@ -84,6 +84,7 @@ set(HEADERS
     src/core/PlacedPoint.h
     src/core/ProjectFile.h
     src/scene/SceneManager.h
+    src/rendering/GLHeaders.h
     src/rendering/Viewport3D.h
     src/rendering/Camera.h
     src/rendering/MeshData.h

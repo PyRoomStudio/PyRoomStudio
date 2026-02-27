@@ -4,7 +4,7 @@
 	"CMAKE_BINARY_DIR" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build",
 	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests",
 	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/tests",
-	"CMAKE_EXECUTABLE" : "C:/Qt/Tools/CMake_64/bin/cmake.exe",
+	"CMAKE_EXECUTABLE" : "C:/Strawberry/c/bin/cmake.exe",
 	"CMAKE_LIST_FILES" : 
 	[
 		"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/tests/CMakeLists.txt",
@@ -19,7 +19,7 @@
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/Qt6Targets.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/Qt6VersionlessAliasTargets.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/QtFeature.cmake",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CheckCXXCompilerFlag.cmake",
+		"C:/Strawberry/c/share/cmake-3.29/Modules/CheckCXXCompilerFlag.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/QtFeatureCommon.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/QtPublicAndroidHelpers.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/QtPublicAppleHelpers.cmake",
@@ -53,12 +53,12 @@
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/QtPublicToolHelpers.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/QtPublicWalkLibsHelpers.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/QtPublicWindowsHelpers.cmake",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake",
+		"C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFindDependencyMacro.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/Qt6Dependencies.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Test/Qt6TestConfigVersion.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Test/Qt6TestConfigVersionImpl.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Test/Qt6TestConfig.cmake",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake",
+		"C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFindDependencyMacro.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Test/Qt6TestDependencies.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Test/Qt6TestTargets.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Test/Qt6TestTargets-relwithdebinfo.cmake",
@@ -243,7 +243,7 @@
 		"-dM",
 		"-E",
 		"-c",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXCompilerABI.cpp"
+		"C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCXXCompilerABI.cpp"
 	],
 	"MOC_PREDEFS_FILE" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_core_autogen/moc_predefs.h",
 	"MOC_RELAXED_MODE" : false,

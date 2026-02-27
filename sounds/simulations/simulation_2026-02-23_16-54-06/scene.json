@@ -1,0 +1,49 @@
+{
+    "listeners": [
+        {
+            "marker_color": [
+                100,
+                100,
+                255
+            ],
+            "name": "Listener 1",
+            "position": [
+                23.328166961669922,
+                7.729155540466309,
+                1.1107760667800903
+            ]
+        },
+        {
+            "marker_color": [
+                100,
+                100,
+                255
+            ],
+            "name": "Listener 2",
+            "position": [
+                22.009401321411133,
+                7.366338729858398,
+                0.7606510519981384
+            ]
+        }
+    ],
+    "sound_sources": [
+        {
+            "audio_file": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio/sounds/sources/test_sound.wav",
+            "marker_color": [
+                255,
+                100,
+                100
+            ],
+            "name": "Source 1",
+            "position": [
+                22.816734313964844,
+                6.1623854637146,
+                0.6825700998306274
+            ],
+            "volume": 1
+        }
+    ],
+    "timestamp": "2026-02-23T16:54:06",
+    "version": "1.0"
+}

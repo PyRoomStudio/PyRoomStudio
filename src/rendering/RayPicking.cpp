@@ -50,5 +50,29 @@ std::optional<float> raySphereIntersect(
     return std::nullopt;
 }
 
+bool segmentPassesThroughSphere(const Vec3f& a, const Vec3f& b,
+                                const Vec3f& center, float radius)
+{
+    Vec3f ab = b - a;
+    float length = ab.norm();
+    if (length < 1e-12f) return false;
+    Vec3f rayDir = ab / length;
+
+    Vec3f oc = a - center;
+    float rayA = rayDir.dot(rayDir);
+    float rayB = 2.0f * oc.dot(rayDir);
+    float rayC = oc.dot(oc) - radius * radius;
+    float disc = rayB * rayB - 4.0f * rayA * rayC;
+    if (disc < 0.0f) return false;
+
+    float sqrtDisc = std::sqrt(disc);
+    float t1 = (-rayB - sqrtDisc) / (2.0f * rayA);
+    float t2 = (-rayB + sqrtDisc) / (2.0f * rayA);
+    constexpr float eps = 1e-6f;
+    if (t1 > eps && t1 < length - eps) return true;
+    if (t2 > eps && t2 < length - eps) return true;
+    return false;
+}
+
 } // namespace RayPicking
 } // namespace prs

@@ -84,7 +84,7 @@ DisplaySettingsDialog::DisplaySettingsDialog(QWidget* parent)
     auto* alphaRow = new QHBoxLayout;
     transparencyAlpha_ = new QSlider(Qt::Horizontal);
     transparencyAlpha_->setRange(5, 100);
-    transparencyAlpha_->setValue(static_cast<int>(s.value("display/transparencyAlpha", 0.3).toDouble() * 100));
+    transparencyAlpha_->setValue(static_cast<int>(s.value("display/transparencyAlpha", 0.55).toDouble() * 100));
     alphaLabel_ = new QLabel(QString::number(transparencyAlpha_->value() / 100.0, 'f', 2));
     connect(transparencyAlpha_, &QSlider::valueChanged, [this](int v) {
         alphaLabel_->setText(QString::number(v / 100.0, 'f', 2));

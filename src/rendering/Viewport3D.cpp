@@ -3,12 +3,7 @@
 
 #include "Viewport3D.h"
 #include "RayPicking.h"
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include "GLHeaders.h"
 
 #include <QPainter>
 
@@ -462,7 +457,7 @@ void Viewport3D::drawModel() {
     const auto& tris = mesh_.triangles();
     Vec3f mn = mesh_.minBound();
     Vec3f mx = mesh_.maxBound();
-    float alpha = transparentMode_ ? 0.3f : 1.0f;
+    float alpha = transparentMode_ ? 0.55f : 1.0f;  // Semi-transparent so points inside remain visible
 
     // Draw textured surfaces first (if texture loaded)
     if (textureId_ != 0) {

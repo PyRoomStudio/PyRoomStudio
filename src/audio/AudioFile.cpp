@@ -49,6 +49,30 @@ bool AudioFile::save(const QString& filepath, int sampleRate) const {
     return true;
 }
 
+bool AudioFile::saveStereo(const QString& filepath, int sampleRate,
+                          const std::vector<float>& left,
+                          const std::vector<float>& right)
+{
+    if (left.size() != right.size() || left.empty()) return false;
+    SF_INFO sfinfo;
+    std::memset(&sfinfo, 0, sizeof(sfinfo));
+    sfinfo.samplerate = sampleRate;
+    sfinfo.channels   = 2;
+    sfinfo.format     = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
+
+    SNDFILE* file = sf_open(filepath.toStdString().c_str(), SFM_WRITE, &sfinfo);
+    if (!file) return false;
+
+    std::vector<float> interleaved(left.size() * 2);
+    for (size_t i = 0; i < left.size(); ++i) {
+        interleaved[i * 2]     = left[i];
+        interleaved[i * 2 + 1] = right[i];
+    }
+    sf_writef_float(file, interleaved.data(), static_cast<sf_count_t>(left.size()));
+    sf_close(file);
+    return true;
+}
+
 #else
 
 // Minimal WAV reader/writer when libsndfile is not available
@@ -159,6 +183,51 @@ bool AudioFile::save(const QString& filepath, int sampleRate) const {
         float clamped = std::clamp(s, -1.0f, 1.0f);
         int16_t val   = static_cast<int16_t>(clamped * 32767.0f);
         file.write(reinterpret_cast<const char*>(&val), 2);
+    }
+
+    file.close();
+    return true;
+}
+
+bool AudioFile::saveStereo(const QString& filepath, int sampleRate,
+                          const std::vector<float>& left,
+                          const std::vector<float>& right)
+{
+    if (left.size() != right.size() || left.empty()) return false;
+    QFile file(filepath);
+    if (!file.open(QIODevice::WriteOnly)) return false;
+
+    const int numFrames = static_cast<int>(left.size());
+    const int dataSize  = numFrames * 4;  // 2 channels * 2 bytes
+
+    struct {
+        char     riff[4]       = {'R','I','F','F'};
+        int32_t  fileSize      = 0;
+        char     wave[4]       = {'W','A','V','E'};
+        char     fmt[4]        = {'f','m','t',' '};
+        int32_t  fmtSize       = 16;
+        int16_t  audioFormat   = 1;
+        int16_t  numChannels   = 2;
+        int32_t  sampleRate    = 0;
+        int32_t  byteRate      = 0;
+        int16_t  blockAlign    = 4;
+        int16_t  bitsPerSample = 16;
+        char     data[4]       = {'d','a','t','a'};
+        int32_t  dataSize      = 0;
+    } header;
+
+    header.fileSize   = 36 + dataSize;
+    header.sampleRate = sampleRate;
+    header.byteRate   = sampleRate * 4;
+    header.dataSize   = dataSize;
+
+    file.write(reinterpret_cast<const char*>(&header), sizeof(header));
+
+    for (int i = 0; i < numFrames; ++i) {
+        int16_t l = static_cast<int16_t>(std::clamp(left[i],  -1.0f, 1.0f) * 32767.0f);
+        int16_t r = static_cast<int16_t>(std::clamp(right[i], -1.0f, 1.0f) * 32767.0f);
+        file.write(reinterpret_cast<const char*>(&l), 2);
+        file.write(reinterpret_cast<const char*>(&r), 2);
     }
 
     file.close();

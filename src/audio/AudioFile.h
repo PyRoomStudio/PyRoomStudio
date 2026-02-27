@@ -11,6 +11,10 @@ public:
 
     bool load(const QString& filepath);
     bool save(const QString& filepath, int sampleRate) const;
+    /** Write stereo WAV (interleaved L,R). left and right must have the same size. */
+    static bool saveStereo(const QString& filepath, int sampleRate,
+                          const std::vector<float>& left,
+                          const std::vector<float>& right);
 
     const std::vector<float>& samples() const { return samples_; }
     std::vector<float>& samples() { return samples_; }

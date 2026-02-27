@@ -14,7 +14,9 @@ std::vector<RayContribution> RayTracer::trace(
     int numRays,
     float listenerRadius,
     int maxBounces,
-    float minEnergy)
+    float minEnergy,
+    const Vec3f* headCenter,
+    float headRadius)
 {
     std::vector<RayContribution> contributions;
 
@@ -25,15 +27,19 @@ std::vector<RayContribution> RayTracer::trace(
         float totalDist = 0.0f;
 
         for (int bounce = 0; bounce < maxBounces && energy > minEnergy; ++bounce) {
-            // Check if ray passes near listener (detection sphere)
             auto tListener = RayPicking::raySphereIntersect(
                 rayOrigin, rayDir, listenerPos, listenerRadius);
             if (tListener) {
-                float detDist = totalDist + *tListener;
-                RayContribution rc;
-                rc.delay  = detDist / SPEED_OF_SOUND;
-                rc.energy = energy / (4.0f * static_cast<float>(M_PI) * detDist * detDist + 1e-8f);
-                contributions.push_back(rc);
+                Vec3f hitPoint = rayOrigin + rayDir * *tListener;
+                bool throughHead = (headRadius > 0.0f && headCenter != nullptr &&
+                    RayPicking::segmentPassesThroughSphere(rayOrigin, hitPoint, *headCenter, headRadius));
+                if (!throughHead) {
+                    float detDist = totalDist + *tListener;
+                    RayContribution rc;
+                    rc.delay  = detDist / SPEED_OF_SOUND;
+                    rc.energy = energy / (4.0f * static_cast<float>(M_PI) * detDist * detDist + 1e-8f);
+                    contributions.push_back(rc);
+                }
             }
 
             // Find nearest wall intersection

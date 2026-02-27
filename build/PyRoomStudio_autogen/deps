@@ -935,6 +935,7 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/main.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/Camera.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/Camera.h \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/GLHeaders.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshData.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshData.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/RayPicking.cpp \
