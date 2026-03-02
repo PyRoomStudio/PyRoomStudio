@@ -26,6 +26,8 @@ if(NOT Eigen3_FOUND)
     FetchContent_MakeAvailable(eigen)
 endif()
 
+find_package(OpenMP)
+
 find_package(PkgConfig QUIET)
 if(PkgConfig_FOUND)
     pkg_check_modules(SNDFILE sndfile)
@@ -55,7 +57,9 @@ set(SOURCES
     src/rendering/MeshData.cpp
     src/rendering/SurfaceGrouper.cpp
     src/rendering/RayPicking.cpp
+    src/rendering/MeshSimplifier.cpp
     src/acoustics/AcousticSimulator.cpp
+    src/acoustics/Bvh.cpp
     src/acoustics/ImageSourceMethod.cpp
     src/acoustics/RayTracer.cpp
     src/acoustics/RoomImpulseResponse.cpp
@@ -90,7 +94,9 @@ set(HEADERS
     src/rendering/MeshData.h
     src/rendering/SurfaceGrouper.h
     src/rendering/RayPicking.h
+    src/rendering/MeshSimplifier.h
     src/acoustics/AcousticSimulator.h
+    src/acoustics/Bvh.h
     src/acoustics/ImageSourceMethod.h
     src/acoustics/RayTracer.h
     src/acoustics/RoomImpulseResponse.h
@@ -126,6 +132,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::OpenGLWidgets
     Eigen3::Eigen
 )
+
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
+endif()
 
 if(SNDFILE_LIBRARIES)
     target_include_directories(${PROJECT_NAME} PRIVATE ${SNDFILE_INCLUDE_DIRS})

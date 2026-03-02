@@ -437,39 +437,6 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6WidgetsTools/Qt6WidgetsToolsTargets-relwithdebinfo.cmake \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6WidgetsTools/Qt6WidgetsToolsTargets.cmake \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6WidgetsTools/Qt6WidgetsToolsVersionlessTargets.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXInformation.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCommonLanguageInclude.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeRCInformation.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CheckCXXCompilerFlag.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CheckCXXSourceCompiles.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CheckIncludeFileCXX.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CheckLibraryExists.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GNU-CXX.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GNU.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FindPackageMessage.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FindPkgConfig.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FindThreads.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/FindVulkan.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/GNUInstallDirs.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/CheckCompilerFlag.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/CheckFlagCommonConfig.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/CheckSourceCompiles.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-CXX-ABI.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-CXX.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-Initialize.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-windres.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/WindowsPaths.cmake \
 	C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/algorithm \
 	C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/array \
 	C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/atomic \
@@ -706,10 +673,45 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/vadefs.h \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wctype.h \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCXXInformation.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFindDependencyMacro.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeGenericSystem.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeInitializeConfigs.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeParseImplicitLinkInfo.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeRCInformation.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeSystemSpecificInformation.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeSystemSpecificInitialize.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CheckCXXCompilerFlag.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CheckCXXSourceCompiles.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CheckIncludeFileCXX.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CheckLibraryExists.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/CMakeCommonCompilerMacros.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/GNU-CXX.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/GNU.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/FindOpenMP.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/FindPackageHandleStandardArgs.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/FindPackageMessage.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/FindPkgConfig.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/FindThreads.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/FindVulkan.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/GNUInstallDirs.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Internal/CheckCompilerFlag.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Internal/CheckFlagCommonConfig.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Internal/CheckSourceCompiles.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX-ABI.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-GNU.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-Initialize.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-windres.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Platform/WindowsPaths.cmake \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/CMakeLists.txt \
-	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake \
-	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.30.5/CMakeRCCompiler.cmake \
-	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.30.5/CMakeSystem.cmake \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.29.2/CMakeCXXCompiler.cmake \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.29.2/CMakeRCCompiler.cmake \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.29.2/CMakeSystem.cmake \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/PyRoomStudio_autogen/moc_predefs.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/Eigen3Config.cmake \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/Eigen3ConfigVersion.cmake \
@@ -887,6 +889,8 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/resources/resources.qrc \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/AcousticSimulator.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/AcousticSimulator.h \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/Bvh.cpp \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/Bvh.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/ImageSourceMethod.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/ImageSourceMethod.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/RayTracer.cpp \
@@ -938,6 +942,8 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/GLHeaders.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshData.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshData.h \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshSimplifier.cpp \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshSimplifier.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/RayPicking.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/RayPicking.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/SurfaceGrouper.cpp \
@@ -948,4 +954,4 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/scene/SceneManager.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/utils/ResourcePath.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/utils/ResourcePath.h \
-	C:/Qt/Tools/CMake_64/bin/cmake.exe
+	C:/Strawberry/c/bin/cmake.exe

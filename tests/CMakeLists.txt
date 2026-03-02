@@ -11,7 +11,9 @@ set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/rendering/MeshData.cpp
     ${CMAKE_SOURCE_DIR}/src/rendering/SurfaceGrouper.cpp
     ${CMAKE_SOURCE_DIR}/src/rendering/RayPicking.cpp
+    ${CMAKE_SOURCE_DIR}/src/rendering/MeshSimplifier.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/Wall.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/Bvh.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/ImageSourceMethod.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/RayTracer.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/RoomImpulseResponse.cpp
@@ -29,6 +31,9 @@ function(add_prs_test TEST_NAME TEST_SOURCE)
     target_include_directories(${TEST_NAME} PRIVATE ${TEST_INCLUDE_DIRS})
     target_link_libraries(${TEST_NAME} PRIVATE
         Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Eigen3::Eigen)
+    if(OpenMP_CXX_FOUND)
+        target_link_libraries(${TEST_NAME} PRIVATE OpenMP::OpenMP_CXX)
+    endif()
     if(WIN32)
         target_link_libraries(${TEST_NAME} PRIVATE opengl32 glu32)
     elseif(APPLE)
@@ -71,6 +76,9 @@ add_executable(test_gui test_gui.cpp ${TEST_COMMON_SOURCES} ${GUI_TEST_EXTRA} ${
 target_include_directories(test_gui PRIVATE ${TEST_INCLUDE_DIRS})
 target_link_libraries(test_gui PRIVATE
     Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Eigen3::Eigen)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(test_gui PRIVATE OpenMP::OpenMP_CXX)
+endif()
 if(WIN32)
     target_link_libraries(test_gui PRIVATE opengl32 glu32)
 elseif(APPLE)

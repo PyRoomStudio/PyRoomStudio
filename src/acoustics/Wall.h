@@ -19,4 +19,18 @@ struct Wall {
     float area() const;
 };
 
+struct AcousticSurface {
+    Vec3f normal;
+    Vec3f centroid;
+    Vec3f planePoint;
+    float area = 0.0f;
+    float energyAbsorption = 0.2f;
+    float scattering = 0.1f;
+
+    Vec3f reflectPoint(const Vec3f& point) const {
+        float d = normal.dot(point - planePoint);
+        return point - 2.0f * d * normal;
+    }
+};
+
 } // namespace prs

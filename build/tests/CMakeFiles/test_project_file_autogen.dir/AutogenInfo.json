@@ -80,6 +80,12 @@
 			null
 		],
 		[
+			"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/Bvh.h",
+			"MU",
+			"BVWZ63TNOE/moc_Bvh.cpp",
+			null
+		],
+		[
 			"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/ImageSourceMethod.h",
 			"MU",
 			"BVWZ63TNOE/moc_ImageSourceMethod.cpp",
@@ -155,6 +161,12 @@
 			"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshData.h",
 			"MU",
 			"TZMUFR4QMR/moc_MeshData.cpp",
+			null
+		],
+		[
+			"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshSimplifier.h",
+			"MU",
+			"TZMUFR4QMR/moc_MeshSimplifier.cpp",
 			null
 		],
 		[
@@ -273,6 +285,11 @@
 			null
 		],
 		[
+			"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/Bvh.cpp",
+			"MU",
+			null
+		],
+		[
 			"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/ImageSourceMethod.cpp",
 			"MU",
 			null
@@ -334,6 +351,11 @@
 		],
 		[
 			"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshData.cpp",
+			"MU",
+			null
+		],
+		[
+			"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshSimplifier.cpp",
 			"MU",
 			null
 		],

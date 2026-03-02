@@ -901,6 +901,7 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_acoustic
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/src/plugins/MatrixCwiseBinaryOps.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/src/plugins/MatrixCwiseUnaryOps.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/src/plugins/ReshapedMethods.h \
+  C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/Bvh.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/ImageSourceMethod.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/RayTracer.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/RoomImpulseResponse.h \

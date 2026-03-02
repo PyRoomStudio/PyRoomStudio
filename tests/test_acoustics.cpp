@@ -2,6 +2,7 @@
 #include <QTemporaryFile>
 #include <QDir>
 #include "acoustics/Wall.h"
+#include "acoustics/Bvh.h"
 #include "acoustics/ImageSourceMethod.h"
 #include "acoustics/RayTracer.h"
 #include "acoustics/RoomImpulseResponse.h"
@@ -99,9 +100,11 @@ private slots:
         Vec3f source(2.5f, 2.5f, 2.5f);
         Vec3f listener(1, 1, 1);
 
+        Bvh bvh;
+        bvh.build(walls);
+
         RayTracer rt;
-        auto contributions = rt.trace(source, listener, walls, 100);
-        // Some rays should contribute
+        auto contributions = rt.trace(source, listener, walls, bvh, 100);
         QVERIFY(contributions.size() >= 0);
     }
 

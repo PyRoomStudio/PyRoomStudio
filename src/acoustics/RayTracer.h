@@ -2,6 +2,7 @@
 
 #include "core/Types.h"
 #include "Wall.h"
+#include "Bvh.h"
 
 #include <vector>
 
@@ -19,6 +20,7 @@ public:
         const Vec3f& sourcePos,
         const Vec3f& listenerPos,
         const std::vector<Wall>& walls,
+        const Bvh& bvh,
         int numRays,
         float listenerRadius = 0.5f,
         int maxBounces = 100,
@@ -28,8 +30,6 @@ public:
 
 private:
     Vec3f randomDirectionOnSphere() const;
-    int findNearestWall(const Vec3f& origin, const Vec3f& dir,
-                        const std::vector<Wall>& walls, float& outT) const;
     Vec3f reflectDirection(const Vec3f& dir, const Vec3f& normal, float scattering) const;
 };
 

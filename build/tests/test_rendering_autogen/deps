@@ -428,8 +428,6 @@ test_rendering_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Test/Qt6TestTargets.cmake \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Test/Qt6TestVersionlessAliasTargets.cmake \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Test/QtTestProperties.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake \
-	C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CheckCXXCompilerFlag.cmake \
 	C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/adxintrin.h \
 	C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/amxbf16intrin.h \
 	C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/amxcomplexintrin.h \
@@ -782,6 +780,8 @@ test_rendering_autogen/timestamp: \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/vadefs.h \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wctype.h \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFindDependencyMacro.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CheckCXXCompilerFlag.cmake \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/Cholesky \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/Core \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/Geometry \
@@ -956,6 +956,8 @@ test_rendering_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/resources/resources.qrc \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/AcousticSimulator.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/AcousticSimulator.h \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/Bvh.cpp \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/Bvh.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/ImageSourceMethod.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/ImageSourceMethod.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/acoustics/RayTracer.cpp \
@@ -983,6 +985,8 @@ test_rendering_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/Camera.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshData.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshData.h \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshSimplifier.cpp \
+	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshSimplifier.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/RayPicking.cpp \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/RayPicking.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/SurfaceGrouper.cpp \
@@ -991,4 +995,4 @@ test_rendering_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/scene/SceneManager.h \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/tests/CMakeLists.txt \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/tests/test_rendering.cpp \
-	C:/Qt/Tools/CMake_64/bin/cmake.exe
+	C:/Strawberry/c/bin/cmake.exe

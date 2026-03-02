@@ -1,17 +1,17 @@
-Start testing: Feb 23 15:16 Central Standard Time
+Start testing: Mar 02 10:58 Central Standard Time
 ----------------------------------------------------------
 1/8 Testing: test_core
 1/8 Test: test_core
 Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_core.exe"
 Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
-"test_core" start time: Feb 23 15:16 Central Standard Time
+"test_core" start time: Mar 02 10:58 Central Standard Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.01 sec
+Test time =   0.21 sec
 ----------------------------------------------------------
-Test Failed.
-"test_core" end time: Feb 23 15:16 Central Standard Time
+Test Passed.
+"test_core" end time: Mar 02 10:58 Central Standard Time
 "test_core" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -19,14 +19,14 @@ Test Failed.
 2/8 Test: test_scene_manager
 Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_scene_manager.exe"
 Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
-"test_scene_manager" start time: Feb 23 15:16 Central Standard Time
+"test_scene_manager" start time: Mar 02 10:58 Central Standard Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.01 sec
+Test time =   0.20 sec
 ----------------------------------------------------------
-Test Failed.
-"test_scene_manager" end time: Feb 23 15:16 Central Standard Time
+Test Passed.
+"test_scene_manager" end time: Mar 02 10:58 Central Standard Time
 "test_scene_manager" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -34,14 +34,14 @@ Test Failed.
 3/8 Test: test_audio
 Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_audio.exe"
 Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
-"test_audio" start time: Feb 23 15:16 Central Standard Time
+"test_audio" start time: Mar 02 10:58 Central Standard Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.01 sec
+Test time =   0.22 sec
 ----------------------------------------------------------
-Test Failed.
-"test_audio" end time: Feb 23 15:16 Central Standard Time
+Test Passed.
+"test_audio" end time: Mar 02 10:58 Central Standard Time
 "test_audio" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -49,14 +49,14 @@ Test Failed.
 4/8 Test: test_mesh
 Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_mesh.exe"
 Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
-"test_mesh" start time: Feb 23 15:16 Central Standard Time
+"test_mesh" start time: Mar 02 10:58 Central Standard Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.01 sec
+Test time =   0.20 sec
 ----------------------------------------------------------
-Test Failed.
-"test_mesh" end time: Feb 23 15:16 Central Standard Time
+Test Passed.
+"test_mesh" end time: Mar 02 10:58 Central Standard Time
 "test_mesh" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -64,14 +64,14 @@ Test Failed.
 5/8 Test: test_rendering
 Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_rendering.exe"
 Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
-"test_rendering" start time: Feb 23 15:16 Central Standard Time
+"test_rendering" start time: Mar 02 10:58 Central Standard Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.01 sec
+Test time =   0.20 sec
 ----------------------------------------------------------
-Test Failed.
-"test_rendering" end time: Feb 23 15:16 Central Standard Time
+Test Passed.
+"test_rendering" end time: Mar 02 10:58 Central Standard Time
 "test_rendering" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -79,14 +79,14 @@ Test Failed.
 6/8 Test: test_acoustics
 Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_acoustics.exe"
 Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
-"test_acoustics" start time: Feb 23 15:16 Central Standard Time
+"test_acoustics" start time: Mar 02 10:58 Central Standard Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.01 sec
+Test time =   0.24 sec
 ----------------------------------------------------------
-Test Failed.
-"test_acoustics" end time: Feb 23 15:16 Central Standard Time
+Test Passed.
+"test_acoustics" end time: Mar 02 10:58 Central Standard Time
 "test_acoustics" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -94,14 +94,14 @@ Test Failed.
 7/8 Test: test_project_file
 Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_project_file.exe"
 Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
-"test_project_file" start time: Feb 23 15:16 Central Standard Time
+"test_project_file" start time: Mar 02 10:58 Central Standard Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.01 sec
+Test time =   0.20 sec
 ----------------------------------------------------------
-Test Failed.
-"test_project_file" end time: Feb 23 15:16 Central Standard Time
+Test Passed.
+"test_project_file" end time: Mar 02 10:58 Central Standard Time
 "test_project_file" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -109,15 +109,15 @@ Test Failed.
 8/8 Test: test_gui
 Command: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_gui.exe"
 Directory: C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests
-"test_gui" start time: Feb 23 15:16 Central Standard Time
+"test_gui" start time: Mar 02 10:58 Central Standard Time
 Output:
 ----------------------------------------------------------
 <end of output>
-Test time =   0.01 sec
+Test time =   0.30 sec
 ----------------------------------------------------------
-Test Failed.
-"test_gui" end time: Feb 23 15:16 Central Standard Time
+Test Passed.
+"test_gui" end time: Mar 02 10:58 Central Standard Time
 "test_gui" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Feb 23 15:16 Central Standard Time
+End testing: Mar 02 10:58 Central Standard Time
