@@ -244,8 +244,8 @@ void SimulationWorker::process() {
             // Ray tracing with BVH
             phaseTimer.restart();
             RayTracer rt;
-            auto rayLeft  = rt.trace(sourcePos, leftEar,  walls, bvh, params_.nRays, 0.5f, 100, 1e-6f, &headCenter, HEAD_RADIUS);
-            auto rayRight = rt.trace(sourcePos, rightEar, walls, bvh, params_.nRays, 0.5f, 100, 1e-6f, &headCenter, HEAD_RADIUS);
+            auto rayLeft  = rt.trace(sourcePos, leftEar,  walls, bvh, params_.nRays, 0.5f, 100, 1e-6f, &headCenter, HEAD_RADIUS, params_.airAbsorption);
+            auto rayRight = rt.trace(sourcePos, rightEar, walls, bvh, params_.nRays, 0.5f, 100, 1e-6f, &headCenter, HEAD_RADIUS, params_.airAbsorption);
             qInfo() << "  Ray tracing:" << phaseTimer.elapsed() << "ms"
                     << "(left:" << rayLeft.size() << "right:" << rayRight.size() << "contributions)";
 

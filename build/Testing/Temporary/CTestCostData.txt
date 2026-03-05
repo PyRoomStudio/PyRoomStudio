@@ -1,9 +1,17 @@
-test_core 2 0.107381
-test_scene_manager 2 0.101586
-test_audio 2 0.108075
-test_mesh 2 0.101819
-test_rendering 2 0.099424
-test_acoustics 2 0.118192
-test_project_file 2 0.100648
-test_gui 2 0.148417
+test_core 0 0
+test_scene_manager 0 0
+test_audio 0 0
+test_mesh 0 0
+test_rendering 0 0
+test_acoustics 0 0
+test_project_file 0 0
+test_gui 0 0
 ---
+test_core
+test_scene_manager
+test_audio
+test_mesh
+test_rendering
+test_acoustics
+test_project_file
+test_gui

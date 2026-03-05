@@ -21,10 +21,12 @@ std::vector<RayContribution> RayTracer::trace(
     int maxBounces,
     float minEnergy,
     const Vec3f* headCenter,
-    float headRadius)
+    float headRadius,
+    bool airAbsorption)
 {
     std::vector<RayContribution> contributions;
     bool useBvh = !bvh.empty();
+    const float airAbsCoeff = airAbsorption ? 0.005f : 0.0f;
 
 #ifdef _OPENMP
     #pragma omp parallel
@@ -81,8 +83,8 @@ std::vector<RayContribution> RayTracer::trace(
                 rayDir = reflectDirection(rayDir, walls[wallIdx].normal(), walls[wallIdx].scattering);
                 rayOrigin = hitPoint + rayDir * 1e-4f;
 
-                float airAbsCoeff = 0.001f;
-                energy *= std::exp(-airAbsCoeff * wallT);
+                if (airAbsCoeff > 0.0f)
+                    energy *= std::exp(-airAbsCoeff * wallT);
             }
         }
 
@@ -139,8 +141,8 @@ std::vector<RayContribution> RayTracer::trace(
             rayDir = reflectDirection(rayDir, walls[wallIdx].normal(), walls[wallIdx].scattering);
             rayOrigin = hitPoint + rayDir * 1e-4f;
 
-            float airAbsCoeff = 0.001f;
-            energy *= std::exp(-airAbsCoeff * wallT);
+            if (airAbsCoeff > 0.0f)
+                energy *= std::exp(-airAbsCoeff * wallT);
         }
     }
 #endif

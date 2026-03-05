@@ -4,20 +4,20 @@
 	"CMAKE_BINARY_DIR" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build",
 	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/lapack",
 	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/lapack",
-	"CMAKE_EXECUTABLE" : "C:/Qt/Tools/CMake_64/bin/cmake.exe",
+	"CMAKE_EXECUTABLE" : "C:/Strawberry/c/bin/cmake.exe",
 	"CMAKE_LIST_FILES" : 
 	[
 		"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/lapack/CMakeLists.txt",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CheckLanguage.cmake",
-		"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.30.5/CMakeFortranCompiler.cmake",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFortranInformation.cmake",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GNU-Fortran.cmake",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GNU.cmake",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-Fortran.cmake",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU.cmake",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-Fortran-ABI.cmake",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCommonLanguageInclude.cmake"
+		"C:/Strawberry/c/share/cmake-3.29/Modules/CheckLanguage.cmake",
+		"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.29.2/CMakeFortranCompiler.cmake",
+		"C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFortranInformation.cmake",
+		"C:/Strawberry/c/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake",
+		"C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/GNU-Fortran.cmake",
+		"C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/GNU.cmake",
+		"C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-GNU-Fortran.cmake",
+		"C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-GNU.cmake",
+		"C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-GNU-Fortran-ABI.cmake",
+		"C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake"
 	],
 	"CMAKE_SOURCE_DIR" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp",
 	"CROSS_CONFIG" : false,
@@ -64,7 +64,7 @@
 		"-dM",
 		"-E",
 		"-c",
-		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXCompilerABI.cpp"
+		"C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCXXCompilerABI.cpp"
 	],
 	"MOC_PREDEFS_FILE" : "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/lapack/eigen_lapack_autogen/moc_predefs.h",
 	"MOC_RELAXED_MODE" : false,

@@ -6,6 +6,7 @@
 #include "GLHeaders.h"
 
 #include <QPainter>
+#include <QSettings>
 
 namespace prs {
 
@@ -21,6 +22,16 @@ Viewport3D::Viewport3D(QWidget* parent)
 {
     setFocusPolicy(Qt::StrongFocus);
     setMinimumSize(200, 200);
+    applyDisplaySettings();
+}
+
+void Viewport3D::applyDisplaySettings() {
+    QSettings s("PyRoomStudio", "PyRoomStudio");
+    gridVisible_       = s.value("display/gridVisible", true).toBool();
+    gridSpacing_       = static_cast<float>(s.value("display/gridSpacing", 1.0).toDouble());
+    transparencyAlpha_ = static_cast<float>(s.value("display/transparencyAlpha", 0.55).toDouble());
+    markerSize_        = s.value("display/markerSize", 15).toInt();
+    update();
 }
 
 bool Viewport3D::loadModel(const QString& filepath) {
@@ -162,6 +173,7 @@ void Viewport3D::clearPlacedPoints() {
     placedPoints_.clear();
     activePointIndex_ = -1;
     nextPointColorIndex_ = 0;
+    selectedPointIndices_.clear();
     emit pointDeselected();
     update();
 }
@@ -170,6 +182,29 @@ void Viewport3D::restorePlacedPoints(const std::vector<PlacedPoint>& points) {
     placedPoints_ = points;
     nextPointColorIndex_ = static_cast<int>(points.size());
     activePointIndex_ = -1;
+    selectedPointIndices_.clear();
+    update();
+}
+
+// ==================== Multi-Selection ====================
+
+void Viewport3D::selectAllPoints() {
+    selectedPointIndices_.clear();
+    for (int i = 0; i < static_cast<int>(placedPoints_.size()); ++i)
+        selectedPointIndices_.insert(i);
+    update();
+}
+
+void Viewport3D::clearPointSelection() {
+    selectedPointIndices_.clear();
+    update();
+}
+
+// ==================== Move Mode ====================
+
+void Viewport3D::setMoveMode(bool enabled) {
+    moveMode_ = enabled;
+    movingPointIndex_ = -1;
     update();
 }
 
@@ -408,6 +443,8 @@ void Viewport3D::drawPlaceholder() {
 }
 
 void Viewport3D::drawMeasurementGrid() {
+    if (!gridVisible_) return;
+
     glPushMatrix();
     camera_.applyViewMatrix();
     glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
@@ -420,7 +457,7 @@ void Viewport3D::drawMeasurementGrid() {
     float cy = (mn.y() + mx.y()) * 0.5f;
     float extent = std::max(mx.x() - mn.x(), mx.y() - mn.y()) * 0.75f;
 
-    float meterInOrigUnits = 1.0f / scaleFactor_;
+    float meterInOrigUnits = gridSpacing_ / scaleFactor_;
     float minorSpacing = meterInOrigUnits;
     int numLines = static_cast<int>(extent / minorSpacing) + 1;
 
@@ -457,7 +494,7 @@ void Viewport3D::drawModel() {
     const auto& tris = mesh_.triangles();
     Vec3f mn = mesh_.minBound();
     Vec3f mx = mesh_.maxBound();
-    float alpha = transparentMode_ ? 0.55f : 1.0f;  // Semi-transparent so points inside remain visible
+    float alpha = transparentMode_ ? transparencyAlpha_ : 1.0f;
 
     // Draw textured surfaces first (if texture loaded)
     if (textureId_ != 0) {
@@ -524,7 +561,7 @@ void Viewport3D::drawPointMarkers() {
     glDisable(GL_TEXTURE_2D);
     if (transparentMode_) glDisable(GL_DEPTH_TEST);
 
-    float baseSize = 0.15f / scaleFactor_;
+    float baseSize = (markerSize_ / 100.0f) / scaleFactor_;
 
     GLfloat modelview[16];
     glGetFloatv(GL_MODELVIEW_MATRIX, modelview);
@@ -533,8 +570,9 @@ void Viewport3D::drawPointMarkers() {
         auto& pt = placedPoints_[i];
         Vec3f pos = pt.getPosition();
         bool isActive = (i == activePointIndex_);
+        bool isSelected = selectedPointIndices_.count(i) > 0;
         float size = isActive ? baseSize * 1.3f : baseSize;
-        float alpha = isActive ? 1.0f : 0.8f;
+        float alpha = (isActive || isSelected) ? 1.0f : 0.8f;
 
         glPushMatrix();
         glTranslatef(pos.x(), pos.y(), pos.z());
@@ -567,6 +605,7 @@ void Viewport3D::drawPointMarkers() {
 
         // Outline
         if (isActive) { glColor4f(1, 1, 1, 1); glLineWidth(3); }
+        else if (isSelected) { glColor4f(1, 1, 0, 1); glLineWidth(3); }
         else          { glColor4f(color[0]*0.5f, color[1]*0.5f, color[2]*0.5f, alpha); glLineWidth(2); }
         glBegin(GL_LINE_LOOP);
         for (int s = 0; s < segs; ++s) {
@@ -769,6 +808,14 @@ void Viewport3D::mousePressEvent(QMouseEvent* event) {
         mouseDown_ = true;
         lastMousePos_ = event->pos();
         mouseDownPos_ = event->pos();
+
+        if (moveMode_ && hasModel()) {
+            auto idx = getPointAtMouse(event->pos());
+            if (idx) {
+                movingPointIndex_ = *idx;
+                moveOriginal_ = placedPoints_[movingPointIndex_];
+            }
+        }
     } else if (event->button() == Qt::RightButton && hasModel()) {
         // Right click: random color change on surface
         makeCurrent();
@@ -801,6 +848,17 @@ void Viewport3D::mousePressEvent(QMouseEvent* event) {
 void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
         mouseDown_ = false;
+
+        if (moveMode_ && movingPointIndex_ >= 0) {
+            PlacedPoint newState = placedPoints_[movingPointIndex_];
+            if (moveOriginal_.surfacePoint != newState.surfacePoint ||
+                moveOriginal_.normal != newState.normal) {
+                emit moveFinished(movingPointIndex_, moveOriginal_, newState);
+            }
+            movingPointIndex_ = -1;
+            QOpenGLWidget::mouseReleaseEvent(event);
+            return;
+        }
 
         QPoint delta = event->pos() - mouseDownPos_;
         float dragDist = std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
@@ -835,10 +893,19 @@ void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
 
 void Viewport3D::mouseMoveEvent(QMouseEvent* event) {
     if (mouseDown_) {
-        QPoint delta = event->pos() - lastMousePos_;
-        camera_.orbit(delta.x(), delta.y());
-        lastMousePos_ = event->pos();
-        update();
+        if (moveMode_ && movingPointIndex_ >= 0) {
+            auto result = getIntersectionPoint(event->pos());
+            if (result) {
+                placedPoints_[movingPointIndex_].surfacePoint = result->point;
+                placedPoints_[movingPointIndex_].normal = result->normal;
+                update();
+            }
+        } else {
+            QPoint delta = event->pos() - lastMousePos_;
+            camera_.orbit(delta.x(), delta.y());
+            lastMousePos_ = event->pos();
+            update();
+        }
     }
     QOpenGLWidget::mouseMoveEvent(event);
 }

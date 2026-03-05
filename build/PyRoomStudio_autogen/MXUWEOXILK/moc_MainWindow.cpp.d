@@ -6,6 +6,7 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/PyRoomStudio_autoge
   C:/Qt/6.10.2/mingw_64/include/QtCore/QSize \
   C:/Qt/6.10.2/mingw_64/include/QtCore/QSizeF \
   C:/Qt/6.10.2/mingw_64/include/QtCore/QString \
+  C:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
   C:/Qt/6.10.2/mingw_64/include/QtCore/q17memory.h \
   C:/Qt/6.10.2/mingw_64/include/QtCore/q20functional.h \
   C:/Qt/6.10.2/mingw_64/include/QtCore/q20iterator.h \
@@ -127,6 +128,7 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/PyRoomStudio_autoge
   C:/Qt/6.10.2/mingw_64/include/QtCore/qtenvironmentvariables.h \
   C:/Qt/6.10.2/mingw_64/include/QtCore/qtextstream.h \
   C:/Qt/6.10.2/mingw_64/include/QtCore/qtformat_impl.h \
+  C:/Qt/6.10.2/mingw_64/include/QtCore/qtimer.h \
   C:/Qt/6.10.2/mingw_64/include/QtCore/qtmetamacros.h \
   C:/Qt/6.10.2/mingw_64/include/QtCore/qtnoop.h \
   C:/Qt/6.10.2/mingw_64/include/QtCore/qtpreprocessorsupport.h \

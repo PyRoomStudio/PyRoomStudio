@@ -15,6 +15,7 @@ test_gui_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QSizeF \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QString \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QStringList \
+	C:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QVariant \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QVector \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QtCore \
@@ -307,6 +308,7 @@ test_gui_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QPixmap \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QSurfaceFormat \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QTransform \
+	C:/Qt/6.10.2/mingw_64/include/QtGui/QUndoCommand \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QUndoStack \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/QWheelEvent \
 	C:/Qt/6.10.2/mingw_64/include/QtGui/qaction.h \

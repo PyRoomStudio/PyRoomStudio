@@ -10,6 +10,7 @@
 #include <QToolBar>
 #include <QSplitter>
 #include <QUndoStack>
+#include <QTimer>
 #include <QString>
 #include <memory>
 #include <optional>
@@ -70,6 +71,8 @@ private:
     void saveProjectToFile(const QString& filepath);
     void addRecentProject(const QString& filepath);
     void updateRecentProjectsMenu();
+    QString defaultProjectDir() const;
+    void configureAutoSaveTimer();
 
     Viewport3D*    viewport_     = nullptr;
     LibraryPanel*  libraryPanel_ = nullptr;
@@ -119,6 +122,7 @@ private:
     SceneManager sceneManager_;
     QUndoStack* undoStack_ = nullptr;
     std::optional<PlacedPoint> clipboardPoint_;
+    QTimer* autoSaveTimer_ = nullptr;
 };
 
 } // namespace prs

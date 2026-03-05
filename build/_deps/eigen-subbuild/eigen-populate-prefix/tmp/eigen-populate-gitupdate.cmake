@@ -3,22 +3,12 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-# Even at VERBOSE level, we don't want to see the commands executed, but
-# enabling them to be shown for DEBUG may be useful to help diagnose problems.
-cmake_language(GET_MESSAGE_LOG_LEVEL active_log_level)
-if(active_log_level MATCHES "DEBUG|TRACE")
-  set(maybe_show_command COMMAND_ECHO STDOUT)
-else()
-  set(maybe_show_command "")
-endif()
-
 function(do_fetch)
   message(VERBOSE "Fetching latest from the remote origin")
   execute_process(
     COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git fetch --tags --force "origin"
     WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
     COMMAND_ERROR_IS_FATAL LAST
-    ${maybe_show_command}
   )
 endfunction()
 
@@ -44,9 +34,6 @@ if(head_sha STREQUAL "")
   message(FATAL_ERROR "Failed to get the hash for HEAD:\n${error_msg}")
 endif()
 
-if("${can_fetch}" STREQUAL "")
-  set(can_fetch "YES")
-endif()
 
 execute_process(
   COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git show-ref "3.4.0"
@@ -70,7 +57,7 @@ elseif(show_ref_output MATCHES "^[a-z0-9]+[ \\t]+refs/tags/")
   # FIXME: We should provide an option to always fetch for this case
   get_hash_for_ref("3.4.0" tag_sha error_msg)
   if(tag_sha STREQUAL head_sha)
-    message(VERBOSE "Already at requested tag: 3.4.0")
+    message(VERBOSE "Already at requested tag: ${tag_sha}")
     return()
   endif()
 
@@ -110,7 +97,7 @@ else()
     # because it can be confusing for users to see a failed git command.
     # That failure is being handled here, so it isn't an error.
     if(NOT error_msg STREQUAL "")
-      message(DEBUG "${error_msg}")
+      message(VERBOSE "${error_msg}")
     endif()
     do_fetch()
     set(checkout_name "3.4.0")
@@ -194,7 +181,6 @@ if(need_stash)
     COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git stash save --quiet;--include-untracked
     WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
     COMMAND_ERROR_IS_FATAL ANY
-    ${maybe_show_command}
   )
 endif()
 
@@ -203,7 +189,6 @@ if(git_update_strategy STREQUAL "CHECKOUT")
     COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git checkout "${checkout_name}"
     WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
     COMMAND_ERROR_IS_FATAL ANY
-    ${maybe_show_command}
   )
 else()
   execute_process(
@@ -218,7 +203,6 @@ else()
     execute_process(
       COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git rebase --abort
       WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
-      ${maybe_show_command}
     )
 
     if(NOT git_update_strategy STREQUAL "REBASE_CHECKOUT")
@@ -227,7 +211,6 @@ else()
         execute_process(
           COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git stash pop --index --quiet
           WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
-          ${maybe_show_command}
           )
       endif()
       message(FATAL_ERROR "\nFailed to rebase in: 'C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src'."
@@ -253,14 +236,12 @@ else()
               ${tag_name}
       WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
       COMMAND_ERROR_IS_FATAL ANY
-      ${maybe_show_command}
     )
 
     execute_process(
       COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git checkout "${checkout_name}"
       WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
       COMMAND_ERROR_IS_FATAL ANY
-      ${maybe_show_command}
     )
   endif()
 endif()
@@ -271,32 +252,27 @@ if(need_stash)
     COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git stash pop --index --quiet
     WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
     RESULT_VARIABLE error_code
-    ${maybe_show_command}
     )
   if(error_code)
     # Stash pop --index failed: Try again dropping the index
     execute_process(
       COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git reset --hard --quiet
       WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
-      ${maybe_show_command}
     )
     execute_process(
       COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git stash pop --quiet
       WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
       RESULT_VARIABLE error_code
-      ${maybe_show_command}
     )
     if(error_code)
       # Stash pop failed: Restore previous state.
       execute_process(
         COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git reset --hard --quiet ${head_sha}
         WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
-        ${maybe_show_command}
       )
       execute_process(
         COMMAND "C:/Program Files/Git/mingw64/bin/git.exe" --git-dir=.git stash pop --index --quiet
         WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
-        ${maybe_show_command}
       )
       message(FATAL_ERROR "\nFailed to unstash changes in: 'C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src'."
                           "\nYou will have to resolve the conflicts manually")
@@ -312,6 +288,5 @@ if(init_submodules)
             submodule update --recursive --init 
     WORKING_DIRECTORY "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src"
     COMMAND_ERROR_IS_FATAL ANY
-    ${maybe_show_command}
   )
 endif()

@@ -47,7 +47,17 @@ template <> constexpr inline auto TestGUI::qt_create_metaobjectdata<qt_meta_tag_
         "testBottomToolbarButtons",
         "testColorSwatchSignal",
         "testLibraryPanelSignals",
-        "testWindowTitleUpdates"
+        "testWindowTitleUpdates",
+        "testDisplaySettingsApplied",
+        "testDisplaySettingsSignalEmitted",
+        "testDefaultProjectDirPreference",
+        "testAutoSaveTimerSetup",
+        "testAutoSaveTimerDisabled",
+        "testSelectAllPoints",
+        "testSelectAllClearedOnRestore",
+        "testMoveMode",
+        "testMovePointCommand",
+        "testMoveToolEnabled"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -69,6 +79,26 @@ template <> constexpr inline auto TestGUI::qt_create_metaobjectdata<qt_meta_tag_
         QtMocHelpers::SlotData<void()>(9, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'testWindowTitleUpdates'
         QtMocHelpers::SlotData<void()>(10, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'testDisplaySettingsApplied'
+        QtMocHelpers::SlotData<void()>(11, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'testDisplaySettingsSignalEmitted'
+        QtMocHelpers::SlotData<void()>(12, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'testDefaultProjectDirPreference'
+        QtMocHelpers::SlotData<void()>(13, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'testAutoSaveTimerSetup'
+        QtMocHelpers::SlotData<void()>(14, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'testAutoSaveTimerDisabled'
+        QtMocHelpers::SlotData<void()>(15, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'testSelectAllPoints'
+        QtMocHelpers::SlotData<void()>(16, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'testSelectAllClearedOnRestore'
+        QtMocHelpers::SlotData<void()>(17, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'testMoveMode'
+        QtMocHelpers::SlotData<void()>(18, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'testMovePointCommand'
+        QtMocHelpers::SlotData<void()>(19, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'testMoveToolEnabled'
+        QtMocHelpers::SlotData<void()>(20, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -101,6 +131,16 @@ void TestGUI::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, voi
         case 6: _t->testColorSwatchSignal(); break;
         case 7: _t->testLibraryPanelSignals(); break;
         case 8: _t->testWindowTitleUpdates(); break;
+        case 9: _t->testDisplaySettingsApplied(); break;
+        case 10: _t->testDisplaySettingsSignalEmitted(); break;
+        case 11: _t->testDefaultProjectDirPreference(); break;
+        case 12: _t->testAutoSaveTimerSetup(); break;
+        case 13: _t->testAutoSaveTimerDisabled(); break;
+        case 14: _t->testSelectAllPoints(); break;
+        case 15: _t->testSelectAllClearedOnRestore(); break;
+        case 16: _t->testMoveMode(); break;
+        case 17: _t->testMovePointCommand(); break;
+        case 18: _t->testMoveToolEnabled(); break;
         default: ;
         }
     }
@@ -126,14 +166,14 @@ int TestGUI::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 9)
+        if (_id < 19)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 9;
+        _id -= 19;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 9)
+        if (_id < 19)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 9;
+        _id -= 19;
     }
     return _id;
 }

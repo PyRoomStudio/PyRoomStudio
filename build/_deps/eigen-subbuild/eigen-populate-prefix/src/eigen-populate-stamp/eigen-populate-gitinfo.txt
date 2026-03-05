@@ -3,7 +3,7 @@
 # No other meaning or use of this file is supported.
 
 method=git
-command=C:/Qt/Tools/CMake_64/bin/cmake.exe;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-subbuild/eigen-populate-prefix/tmp/eigen-populate-gitclone.cmake
+command=C:/Strawberry/c/bin/cmake.exe;-P;C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-subbuild/eigen-populate-prefix/tmp/eigen-populate-gitclone.cmake
 source_dir=C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src
 work_dir=C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps
 repository=https://gitlab.com/libeigen/eigen.git
@@ -12,4 +12,4 @@ init_submodules=TRUE
 recurse_submodules=--recursive
 submodules=
 CMP0097=NEW
-      
+

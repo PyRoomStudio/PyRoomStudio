@@ -6,6 +6,7 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QSize \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QSizeF \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QString \
+	C:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/QVector \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/q17memory.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/q20functional.h \
@@ -132,6 +133,7 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qtenvironmentvariables.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qtextstream.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qtformat_impl.h \
+	C:/Qt/6.10.2/mingw_64/include/QtCore/qtimer.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qtmetamacros.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qtnoop.h \
 	C:/Qt/6.10.2/mingw_64/include/QtCore/qtpreprocessorsupport.h \
@@ -272,7 +274,6 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgetsglobal.h \
 	C:/Qt/6.10.2/mingw_64/include/QtWidgets/qwidget.h \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/FindWrapAtomic.cmake \
-	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/FindWrapVulkanHeaders.cmake \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/Qt6Config.cmake \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/Qt6ConfigExtras.cmake \
 	C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6/Qt6ConfigVersion.cmake \
@@ -673,34 +674,99 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/vadefs.h \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wctype.h \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCXXCompiler.cmake.in \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCXXCompilerABI.cpp \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCXXInformation.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeCompilerIdDetection.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCXXCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompileFeatures.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineRCCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineSystem.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFindBinUtils.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFindDependencyMacro.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeGenericSystem.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeInitializeConfigs.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeNinjaFindMake.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeParseImplicitIncludeInfo.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeParseImplicitLinkInfo.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeParseLibraryArchitecture.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeRCCompiler.cmake.in \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeRCInformation.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeSystem.cmake.in \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeSystemSpecificInformation.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeSystemSpecificInitialize.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeTestCXXCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeTestCompilerCommon.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/CMakeTestRCCompiler.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CheckCXXCompilerFlag.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CheckCXXSourceCompiles.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CheckIncludeFileCXX.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/CheckLibraryExists.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/ADSP-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/ARMCC-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/ARMClang-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/AppleClang-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/Borland-DetermineCompiler.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/CMakeCommonCompilerMacros.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/Clang-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/Clang-DetermineCompilerInternal.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/Compaq-CXX-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/Cray-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/CrayClang-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/Embarcadero-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/Fujitsu-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/FujitsuClang-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/GHS-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/GNU-CXX-DetermineCompiler.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/GNU-CXX.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/GNU-FindBinUtils.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/GNU.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/HP-CXX-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/IAR-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/IBMCPP-CXX-DetermineVersionInternal.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/IBMClang-CXX-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/Intel-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/IntelLLVM-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/LCC-CXX-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/MSVC-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/NVHPC-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/NVIDIA-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/OpenWatcom-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/OrangeC-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/PGI-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/PathScale-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/SCO-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/SunPro-CXX-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/TI-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/TIClang-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/Tasking-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/VisualAge-CXX-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/Watcom-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/XL-CXX-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/XLClang-CXX-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Compiler/zOS-CXX-DetermineCompiler.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/ExternalProject/shared_internal_commands.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/FetchContent.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/FetchContent/CMakeLists.cmake.in \
+	C:/Strawberry/c/share/cmake-3.29/Modules/FindGit.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/FindOpenMP.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/FindPackageHandleStandardArgs.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/FindPackageMessage.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/FindPkgConfig.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/FindThreads.cmake \
-	C:/Strawberry/c/share/cmake-3.29/Modules/FindVulkan.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/GNUInstallDirs.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Internal/CMakeDetermineLinkerId.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/Internal/CheckCompilerFlag.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/Internal/CheckFlagCommonConfig.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/Internal/CheckSourceCompiles.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Internal/FeatureTesting.cmake \
+	C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-Determine-CXX.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX-ABI.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX.cmake \
 	C:/Strawberry/c/share/cmake-3.29/Modules/Platform/Windows-GNU.cmake \
@@ -713,9 +779,6 @@ PyRoomStudio_autogen/timestamp: \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.29.2/CMakeRCCompiler.cmake \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/CMakeFiles/3.29.2/CMakeSystem.cmake \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/PyRoomStudio_autogen/moc_predefs.h \
-	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/Eigen3Config.cmake \
-	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/Eigen3ConfigVersion.cmake \
-	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/Eigen3Targets.cmake \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/Cholesky \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/Core \
 	C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/Eigen/Geometry \

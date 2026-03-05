@@ -55,7 +55,12 @@ template <> constexpr inline auto prs::Viewport3D::qt_create_metaobjectdata<qt_m
         "scaleChanged",
         "factor",
         "measurementResult",
-        "distance"
+        "distance",
+        "moveFinished",
+        "pointIndex",
+        "PlacedPoint",
+        "oldState",
+        "newState"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -95,6 +100,10 @@ template <> constexpr inline auto prs::Viewport3D::qt_create_metaobjectdata<qt_m
         QtMocHelpers::SignalData<void(float)>(16, 2, QMC::AccessPublic, QMetaType::Void, {{
             { QMetaType::Float, 17 },
         }}),
+        // Signal 'moveFinished'
+        QtMocHelpers::SignalData<void(int, const PlacedPoint &, const PlacedPoint &)>(18, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Int, 19 }, { 0x80000000 | 20, 21 }, { 0x80000000 | 20, 22 },
+        }}),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -128,6 +137,7 @@ void prs::Viewport3D::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
         case 7: _t->placementModeChanged((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
         case 8: _t->scaleChanged((*reinterpret_cast<std::add_pointer_t<float>>(_a[1]))); break;
         case 9: _t->measurementResult((*reinterpret_cast<std::add_pointer_t<float>>(_a[1]))); break;
+        case 10: _t->moveFinished((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<PlacedPoint>>(_a[2])),(*reinterpret_cast<std::add_pointer_t<PlacedPoint>>(_a[3]))); break;
         default: ;
         }
     }
@@ -151,6 +161,8 @@ void prs::Viewport3D::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
         if (QtMocHelpers::indexOfMethod<void (Viewport3D::*)(float )>(_a, &Viewport3D::scaleChanged, 8))
             return;
         if (QtMocHelpers::indexOfMethod<void (Viewport3D::*)(float )>(_a, &Viewport3D::measurementResult, 9))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (Viewport3D::*)(int , const PlacedPoint & , const PlacedPoint & )>(_a, &Viewport3D::moveFinished, 10))
             return;
     }
 }
@@ -176,14 +188,14 @@ int prs::Viewport3D::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 10)
+        if (_id < 11)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 10;
+        _id -= 11;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 10)
+        if (_id < 11)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 10;
+        _id -= 11;
     }
     return _id;
 }
@@ -246,5 +258,11 @@ void prs::Viewport3D::scaleChanged(float _t1)
 void prs::Viewport3D::measurementResult(float _t1)
 {
     QMetaObject::activate<void>(this, &staticMetaObject, 9, nullptr, _t1);
+}
+
+// SIGNAL 10
+void prs::Viewport3D::moveFinished(int _t1, const PlacedPoint & _t2, const PlacedPoint & _t3)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 10, nullptr, _t1, _t2, _t3);
 }
 QT_WARNING_POP

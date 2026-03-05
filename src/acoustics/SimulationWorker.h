@@ -25,6 +25,7 @@ public:
         int nRays = DEFAULT_N_RAYS;
         float energyAbsorption = DEFAULT_ENERGY_ABSORPTION;
         float scattering = DEFAULT_SCATTERING;
+        bool airAbsorption = true;
     };
 
     explicit SimulationWorker(const Params& params, QObject* parent = nullptr);

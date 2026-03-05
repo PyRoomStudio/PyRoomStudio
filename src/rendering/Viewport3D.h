@@ -90,6 +90,22 @@ public:
     const std::vector<std::set<int>>& surfaces() const { return surfaces_; }
     const std::vector<Color3f>& surfaceColors() const { return surfaceColors_; }
 
+    // Display settings
+    void applyDisplaySettings();
+    bool gridVisible() const { return gridVisible_; }
+    float gridSpacing() const { return gridSpacing_; }
+    float transparencyAlpha() const { return transparencyAlpha_; }
+    int markerSize() const { return markerSize_; }
+
+    // Select all / multi-selection
+    void selectAllPoints();
+    void clearPointSelection();
+    const std::set<int>& selectedPointIndices() const { return selectedPointIndices_; }
+
+    // Move mode
+    void setMoveMode(bool enabled);
+    bool moveMode() const { return moveMode_; }
+
     // Mesh data access
     const MeshData& meshData() const { return mesh_; }
 
@@ -104,6 +120,7 @@ signals:
     void placementModeChanged(bool enabled);
     void scaleChanged(float factor);
     void measurementResult(float distance);
+    void moveFinished(int pointIndex, const PlacedPoint& oldState, const PlacedPoint& newState);
 
 protected:
     void initializeGL() override;
@@ -161,6 +178,14 @@ private:
     // Surface selection
     int selectedSurfaceIndex_ = -1;
 
+    // Multi-selection
+    std::set<int> selectedPointIndices_;
+
+    // Move mode
+    bool moveMode_ = false;
+    int movingPointIndex_ = -1;
+    PlacedPoint moveOriginal_;
+
     // Mouse state
     bool mouseDown_ = false;
     QPoint lastMousePos_;
@@ -169,6 +194,12 @@ private:
     bool measureMode_ = false;
     std::optional<Vec3f> measurePoint1_;
     std::optional<Vec3f> measurePoint2_;
+
+    // Display settings (read from QSettings)
+    bool gridVisible_ = true;
+    float gridSpacing_ = 1.0f;
+    float transparencyAlpha_ = 0.55f;
+    int markerSize_ = 15;
 
     Color3f defaultSurfaceColor_ = {0.6f, 0.8f, 1.0f};
     unsigned int textureId_ = 0;

@@ -26,7 +26,8 @@ public:
         int maxBounces = 100,
         float minEnergy = 1e-6f,
         const Vec3f* headCenter = nullptr,
-        float headRadius = 0.0f);
+        float headRadius = 0.0f,
+        bool airAbsorption = true);
 
 private:
     Vec3f randomDirectionOnSphere() const;

@@ -170,5 +170,15 @@ install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+if(WIN32)
+    find_program(WINDEPLOYQT NAMES windeployqt6 windeployqt HINTS "${CMAKE_PREFIX_PATH}/bin")
+    if(WINDEPLOYQT)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND "${WINDEPLOYQT}" "$<TARGET_FILE:${PROJECT_NAME}>"
+            COMMENT "Running windeployqt..."
+        )
+    endif()
+endif()
+
 enable_testing()
 add_subdirectory(tests)

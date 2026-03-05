@@ -239,7 +239,7 @@ KeyboardShortcutsDialog::KeyboardShortcutsDialog(QWidget* parent)
 
     struct SC { const char* action; const char* shortcut; };
     SC shortcuts[] = {
-        {"New Project",          ""},
+        {"New Project",          "Ctrl+N"},
         {"Open Project",         "Ctrl+O"},
         {"Save Project",         "Ctrl+S"},
         {"Save As",              "Ctrl+Shift+S"},

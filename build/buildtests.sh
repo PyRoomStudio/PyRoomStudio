@@ -14,9 +14,9 @@ targets_to_make=$(echo "$TESTSLIST" | grep -E "$1" | xargs echo)
 
 if [ -n "${EIGEN_MAKE_ARGS:+x}" ]
 then
-  C:/Qt/Tools/Ninja/ninja.exe $targets_to_make ${EIGEN_MAKE_ARGS}
+  C:/Strawberry/c/bin/ninja.exe $targets_to_make ${EIGEN_MAKE_ARGS}
 else
-  C:/Qt/Tools/Ninja/ninja.exe $targets_to_make 
+  C:/Strawberry/c/bin/ninja.exe $targets_to_make 
 fi
 exit $?
 

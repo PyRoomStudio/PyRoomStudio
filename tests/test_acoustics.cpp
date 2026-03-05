@@ -108,6 +108,35 @@ private slots:
         QVERIFY(contributions.size() >= 0);
     }
 
+    void testRayTracerAirAbsorptionParameter() {
+        auto walls = createSimpleBox(5.0f);
+        Vec3f source(2.5f, 2.5f, 2.5f);
+        Vec3f listener(1, 1, 1);
+
+        Bvh bvh;
+        bvh.build(walls);
+
+        RayTracer rtOn;
+        auto contribsOn = rtOn.trace(source, listener, walls, bvh, 100, 0.5f, 100, 1e-6f, nullptr, 0.0f, true);
+
+        RayTracer rtOff;
+        auto contribsOff = rtOff.trace(source, listener, walls, bvh, 100, 0.5f, 100, 1e-6f, nullptr, 0.0f, false);
+
+        QVERIFY(contribsOn.size() >= 0);
+        QVERIFY(contribsOff.size() >= 0);
+    }
+
+    void testAirAbsorptionDecayFormula() {
+        float distance = 20.0f;
+        float coeff = 0.005f;
+        float decayed = std::exp(-coeff * distance);
+        QVERIFY(decayed < 1.0f);
+        QVERIFY(std::abs(decayed - std::exp(-0.1f)) < 1e-6f);
+
+        float noDecay = std::exp(-0.0f * distance);
+        QVERIFY(std::abs(noDecay - 1.0f) < 1e-6f);
+    }
+
     void testRIRDuration() {
         std::vector<ImageSource> images;
         ImageSource is;

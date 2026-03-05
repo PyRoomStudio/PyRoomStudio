@@ -79,7 +79,8 @@ QString AcousticSimulator::simulateScene(
     int maxOrder,
     int nRays,
     float energyAbsorption,
-    float scattering)
+    float scattering,
+    bool airAbsorption)
 {
     Q_UNUSED(roomCenter);
 
@@ -189,7 +190,7 @@ QString AcousticSimulator::simulateScene(
             // Ray tracing with BVH
             phaseTimer.restart();
             RayTracer rt;
-            auto rayContributions = rt.trace(sourcePos, listenerPos, walls, bvh, nRays);
+            auto rayContributions = rt.trace(sourcePos, listenerPos, walls, bvh, nRays, 0.5f, 100, 1e-6f, nullptr, 0.0f, airAbsorption);
             qInfo() << "  Ray tracing:" << phaseTimer.elapsed() << "ms (" << rayContributions.size() << "contributions)";
 
             // Compute RIR

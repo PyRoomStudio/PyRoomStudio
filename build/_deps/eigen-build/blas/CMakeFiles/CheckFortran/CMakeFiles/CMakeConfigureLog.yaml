@@ -4,17 +4,17 @@ events:
   -
     kind: "message-v1"
     backtrace:
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineSystem.cmake:205 (message)"
-      - "CMakeLists.txt:3 (project)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineSystem.cmake:205 (message)"
+      - "CMakeLists.txt:2 (project)"
     message: |
-      The system is: Windows - 10.0.26100 - AMD64
+      The system is: Windows - 6.2.9200 - AMD64
   -
     kind: "message-v1"
     backtrace:
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineFortranCompiler.cmake:186 (CMAKE_DETERMINE_COMPILER_ID)"
-      - "CMakeLists.txt:3 (project)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineFortranCompiler.cmake:186 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
     message: |
       Compiling the Fortran compiler identification source file "CMakeFortranCompilerId.F" succeeded.
       Compiler: C:/Strawberry/c/bin/gfortran.exe 
@@ -34,7 +34,7 @@ events:
       Supported LTO compression algorithms: zlib zstd
       gcc version 13.2.0 (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r8) 
       COLLECT_GCC_OPTIONS='-v' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'a-'
-       C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/f951.exe CMakeFortranCompilerId.F -ffixed-form -cpp=C:\\Users\\Ematt\\AppData\\Local\\Temp\\cc6Xeg2f.f90 -quiet -v -iprefix C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/ -D_REENTRANT CMakeFortranCompilerId.F -quiet -dumpdir a- -dumpbase CMakeFortranCompilerId.F -dumpbase-ext .F -mtune=generic -march=x86-64 -version -fintrinsic-modules-path C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/finclude -o C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccGyM3Wl.s
+       C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/f951.exe CMakeFortranCompilerId.F -ffixed-form -cpp=C:\\Users\\Ematt\\AppData\\Local\\Temp\\cchhWDMj.f90 -quiet -v -iprefix C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/ -D_REENTRANT CMakeFortranCompilerId.F -quiet -dumpdir a- -dumpbase CMakeFortranCompilerId.F -dumpbase-ext .F -mtune=generic -march=x86-64 -version -fintrinsic-modules-path C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/finclude -o C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccu3lAKt.s
       GNU Fortran (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r8) version 13.2.0 (x86_64-w64-mingw32)
       	compiled by GNU C version 13.2.0, GMP version 6.3.0, MPFR version 4.2.1, MPC version 1.3.1, isl version isl-0.26-GMP
       
@@ -54,7 +54,7 @@ events:
        C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/include
       End of search list.
       COLLECT_GCC_OPTIONS='-v' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'a-'
-       C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o C:\\Users\\Ematt\\AppData\\Local\\Temp\\cc650qhL.o C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccGyM3Wl.s
+       C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -o C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccem0ncM.o C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccu3lAKt.s
       GNU assembler version 2.42 (x86_64-w64-mingw32) using BFD version (Binutils for MinGW-W64 x86_64, built by Brecht Sanders, r8) 2.42
       Reading specs from C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib/libgfortran.spec
       rename spec lib to liborig
@@ -62,39 +62,38 @@ events:
       COMPILER_PATH=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/;C:/Strawberry/c/bin/../libexec/gcc/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/
       LIBRARY_PATH=C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/;C:/Strawberry/c/bin/../lib/gcc/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../
       COLLECT_GCC_OPTIONS='-v' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'a.'
-       C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/collect2.exe -plugin C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/liblto_plugin.dll -plugin-opt=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\Ematt\\AppData\\Local\\Temp\\cc6BPH0i.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtbegin.o -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0 -LC:/Strawberry/c/bin/../lib/gcc -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../.. C:\\Users\\Ematt\\AppData\\Local\\Temp\\cc650qhL.o -lgfortran -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lquadmath -lm -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtend.o
+       C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/collect2.exe -plugin C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/liblto_plugin.dll -plugin-opt=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccsgKEga.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtbegin.o -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0 -LC:/Strawberry/c/bin/../lib/gcc -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../.. C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccem0ncM.o -lgfortran -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lquadmath -lm -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtend.o
       COLLECT_GCC_OPTIONS='-v' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'a.'
       
       
       Compilation of the Fortran compiler identification source "CMakeFortranCompilerId.F" produced "a.exe"
       
       The Fortran compiler identification is GNU, found in:
-        C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/blas/CMakeFiles/CheckFortran/CMakeFiles/3.30.5/CompilerIdFortran/a.exe
+        C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/blas/CMakeFiles/CheckFortran/CMakeFiles/3.29.2/CompilerIdFortran/a.exe
       
   -
     kind: "try_compile-v1"
     backtrace:
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
-      - "CMakeLists.txt:3 (project)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:64 (try_compile)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
     checks:
       - "Detecting Fortran compiler ABI info"
     directories:
-      source: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/blas/CMakeFiles/CheckFortran/CMakeFiles/CMakeScratch/TryCompile-ki6hbf"
-      binary: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/blas/CMakeFiles/CheckFortran/CMakeFiles/CMakeScratch/TryCompile-ki6hbf"
+      source: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/blas/CMakeFiles/CheckFortran/CMakeFiles/CMakeScratch/TryCompile-nsxhbr"
+      binary: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/blas/CMakeFiles/CheckFortran/CMakeFiles/CMakeScratch/TryCompile-nsxhbr"
     cmakeVariables:
       CMAKE_EXE_LINKER_FLAGS: ""
       CMAKE_Fortran_FLAGS: ""
       CMAKE_Fortran_FLAGS_DEBUG: "-g"
-      CMAKE_MODULE_PATH: "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src/cmake"
     buildResult:
       variable: "CMAKE_Fortran_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/blas/CMakeFiles/CheckFortran/CMakeFiles/CMakeScratch/TryCompile-ki6hbf'
+        Change Dir: 'C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/blas/CMakeFiles/CheckFortran/CMakeFiles/CMakeScratch/TryCompile-nsxhbr'
         
-        Run Build Command(s): C:/Qt/Tools/Ninja/ninja.exe -v cmTC_d3cfc
-        [1/4] C:\\WINDOWS\\system32\\cmd.exe /C "C:\\Strawberry\\c\\bin\\gfortran.exe -cpp   -v -E C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFortranCompilerABI.F90 -o CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 && C:\\Qt\\Tools\\CMake_64\\bin\\cmake.exe -E cmake_ninja_depends --tdi=CMakeFiles\\cmTC_d3cfc.dir\\FortranDependInfo.json --lang=Fortran --src=CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 --out=CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 --dep=CMakeFiles\\cmTC_d3cfc.dir\\CMakeFortranCompilerABI.F90-pp.f90.d --obj=CMakeFiles\\cmTC_d3cfc.dir\\CMakeFortranCompilerABI.F90.obj --ddi=CMakeFiles\\cmTC_d3cfc.dir\\CMakeFortranCompilerABI.F90.obj.ddi --src-orig=C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFortranCompilerABI.F90"
+        Run Build Command(s): C:/Strawberry/c/bin/ninja.exe -v cmTC_e4645
+        [1/4] C:\\WINDOWS\\system32\\cmd.exe /C "C:\\Strawberry\\c\\bin\\gfortran.exe -cpp   -v -E C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFortranCompilerABI.F90 -o CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 && C:\\Strawberry\\c\\bin\\cmake.exe -E cmake_ninja_depends --tdi=CMakeFiles\\cmTC_e4645.dir\\FortranDependInfo.json --lang=Fortran --src=CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 --out=CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 --dep=CMakeFiles\\cmTC_e4645.dir\\CMakeFortranCompilerABI.F90-pp.f90.d --obj=CMakeFiles\\cmTC_e4645.dir\\CMakeFortranCompilerABI.F90.obj --ddi=CMakeFiles\\cmTC_e4645.dir\\CMakeFortranCompilerABI.F90.obj.ddi --src-orig=C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFortranCompilerABI.F90"
         Using built-in specs.
         COLLECT_GCC=C:\\Strawberry\\c\\bin\\gfortran.exe
         OFFLOAD_TARGET_NAMES=nvptx-none
@@ -103,8 +102,8 @@ events:
         Thread model: posix
         Supported LTO compression algorithms: zlib zstd
         gcc version 13.2.0 (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r8) 
-        COLLECT_GCC_OPTIONS='-cpp' '-v' '-E' '-o' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_d3cfc.dir/'
-         C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/f951.exe C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFortranCompilerABI.F90 -cpp=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccd3xSCs.f90 -E -quiet -v -iprefix C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/ -D_REENTRANT C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFortranCompilerABI.F90 -o CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 -dumpdir CMakeFiles/cmTC_d3cfc.dir/ -dumpbase CMakeFortranCompilerABI.F90-pp.F90 -dumpbase-ext .F90 -mtune=generic -march=x86-64 -fsyntax-only
+        COLLECT_GCC_OPTIONS='-cpp' '-v' '-E' '-o' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_e4645.dir/'
+         C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/f951.exe C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFortranCompilerABI.F90 -cpp=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccOlNCBc.f90 -E -quiet -v -iprefix C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/ -D_REENTRANT C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFortranCompilerABI.F90 -o CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 -dumpdir CMakeFiles/cmTC_e4645.dir/ -dumpbase CMakeFortranCompilerABI.F90-pp.F90 -dumpbase-ext .F90 -mtune=generic -march=x86-64 -fsyntax-only
         ignoring duplicate directory "C:/Strawberry/c/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.2.0/include"
         ignoring nonexistent directory "R:/winlibs64ucrt_stage/inst_gcc-13.2.0/share/gcc/include"
         ignoring nonexistent directory "/R/winlibs64ucrt_stage/inst_gcc-13.2.0/share/gcc/include"
@@ -120,9 +119,9 @@ events:
         End of search list.
         COMPILER_PATH=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/;C:/Strawberry/c/bin/../libexec/gcc/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/
         LIBRARY_PATH=C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/;C:/Strawberry/c/bin/../lib/gcc/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../
-        COLLECT_GCC_OPTIONS='-cpp' '-v' '-E' '-o' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.'\x0d
-        [2/4] C:\\Qt\\Tools\\CMake_64\\bin\\cmake.exe -E cmake_ninja_dyndep --tdi=CMakeFiles\\cmTC_d3cfc.dir\\FortranDependInfo.json --lang=Fortran --dd=CMakeFiles/cmTC_d3cfc.dir/Fortran.dd @CMakeFiles/cmTC_d3cfc.dir/Fortran.dd.rsp
-        [3/4] C:\\Strawberry\\c\\bin\\gfortran.exe -IC:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules -v -fpreprocessed -c CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 -o CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj
+        COLLECT_GCC_OPTIONS='-cpp' '-v' '-E' '-o' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.'\x0d
+        [2/4] C:\\Strawberry\\c\\bin\\cmake.exe -E cmake_ninja_dyndep --tdi=CMakeFiles\\cmTC_e4645.dir\\FortranDependInfo.json --lang=Fortran --dd=CMakeFiles/cmTC_e4645.dir/Fortran.dd @CMakeFiles/cmTC_e4645.dir/Fortran.dd.rsp
+        [3/4] C:\\Strawberry\\c\\bin\\gfortran.exe -IC:\\Strawberry\\c\\share\\cmake-3.29\\Modules -v -fpreprocessed -c CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 -o CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj
         Using built-in specs.
         COLLECT_GCC=C:\\Strawberry\\c\\bin\\gfortran.exe
         OFFLOAD_TARGET_NAMES=nvptx-none
@@ -131,20 +130,20 @@ events:
         Thread model: posix
         Supported LTO compression algorithms: zlib zstd
         gcc version 13.2.0 (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r8) 
-        COLLECT_GCC_OPTIONS='-I' 'C:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_d3cfc.dir/'
-         C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/f951.exe CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 -I C:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules -quiet -dumpdir CMakeFiles/cmTC_d3cfc.dir/ -dumpbase CMakeFortranCompilerABI.F90.f90 -dumpbase-ext .f90 -mtune=generic -march=x86-64 -version -fpreprocessed -fintrinsic-modules-path C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/finclude -o C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccbyrG5x.s
+        COLLECT_GCC_OPTIONS='-I' 'C:\\Strawberry\\c\\share\\cmake-3.29\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_e4645.dir/'
+         C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/f951.exe CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 -I C:\\Strawberry\\c\\share\\cmake-3.29\\Modules -quiet -dumpdir CMakeFiles/cmTC_e4645.dir/ -dumpbase CMakeFortranCompilerABI.F90.f90 -dumpbase-ext .f90 -mtune=generic -march=x86-64 -version -fpreprocessed -fintrinsic-modules-path C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/finclude -o C:\\Users\\Ematt\\AppData\\Local\\Temp\\cc3IAxmb.s
         GNU Fortran (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r8) version 13.2.0 (x86_64-w64-mingw32)
         	compiled by GNU C version 13.2.0, GMP version 6.3.0, MPFR version 4.2.1, MPC version 1.3.1, isl version isl-0.26-GMP
         
         GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
-        COLLECT_GCC_OPTIONS='-I' 'C:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_d3cfc.dir/'
-         C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -I C:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules -o CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccbyrG5x.s
+        COLLECT_GCC_OPTIONS='-I' 'C:\\Strawberry\\c\\share\\cmake-3.29\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_e4645.dir/'
+         C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -I C:\\Strawberry\\c\\share\\cmake-3.29\\Modules -o CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj C:\\Users\\Ematt\\AppData\\Local\\Temp\\cc3IAxmb.s
         GNU assembler version 2.42 (x86_64-w64-mingw32) using BFD version (Binutils for MinGW-W64 x86_64, built by Brecht Sanders, r8) 2.42
         COMPILER_PATH=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/;C:/Strawberry/c/bin/../libexec/gcc/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/
         LIBRARY_PATH=C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/;C:/Strawberry/c/bin/../lib/gcc/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../
-        COLLECT_GCC_OPTIONS='-I' 'C:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.'\x0d
-        [4/4] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\Strawberry\\c\\bin\\gfortran.exe  -v -Wl,-v CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj -o cmTC_d3cfc.exe -Wl,--out-implib,libcmTC_d3cfc.dll.a -Wl,--major-image-version,0,--minor-image-version,0   && cd ."
-        Driving: C:\\Strawberry\\c\\bin\\gfortran.exe -v -Wl,-v CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj -o cmTC_d3cfc.exe -Wl,--out-implib,libcmTC_d3cfc.dll.a -Wl,--major-image-version,0,--minor-image-version,0 -l gfortran -shared-libgcc
+        COLLECT_GCC_OPTIONS='-I' 'C:\\Strawberry\\c\\share\\cmake-3.29\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.'\x0d
+        [4/4] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\Strawberry\\c\\bin\\gfortran.exe  -v -Wl,-v CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj -o cmTC_e4645.exe -Wl,--out-implib,libcmTC_e4645.dll.a -Wl,--major-image-version,0,--minor-image-version,0   && cd ."
+        Driving: C:\\Strawberry\\c\\bin\\gfortran.exe -v -Wl,-v CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj -o cmTC_e4645.exe -Wl,--out-implib,libcmTC_e4645.dll.a -Wl,--major-image-version,0,--minor-image-version,0 -l gfortran -shared-libgcc
         Using built-in specs.
         COLLECT_GCC=C:\\Strawberry\\c\\bin\\gfortran.exe
         COLLECT_LTO_WRAPPER=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/lto-wrapper.exe
@@ -156,23 +155,23 @@ events:
         gcc version 13.2.0 (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r8) 
         Reading specs from C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib/libgfortran.spec
         rename spec lib to liborig
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_d3cfc.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_d3cfc-'
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_e4645.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_e4645-'
         COMPILER_PATH=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/;C:/Strawberry/c/bin/../libexec/gcc/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/
         LIBRARY_PATH=C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/;C:/Strawberry/c/bin/../lib/gcc/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/;C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_d3cfc.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_d3cfc.'
-         C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/collect2.exe -plugin C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/liblto_plugin.dll -plugin-opt=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccDQgJKF.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_d3cfc.exe C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtbegin.o -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0 -LC:/Strawberry/c/bin/../lib/gcc -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../.. -v CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj --out-implib libcmTC_d3cfc.dll.a --major-image-version 0 --minor-image-version 0 -lgfortran -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lquadmath -lm -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtend.o
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_e4645.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_e4645.'
+         C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/collect2.exe -plugin C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/liblto_plugin.dll -plugin-opt=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccTlRD2e.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_e4645.exe C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtbegin.o -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0 -LC:/Strawberry/c/bin/../lib/gcc -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../.. -v CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj --out-implib libcmTC_e4645.dll.a --major-image-version 0 --minor-image-version 0 -lgfortran -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lquadmath -lm -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtend.o
         collect2 version 13.2.0
-        C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe -plugin C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/liblto_plugin.dll -plugin-opt=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccDQgJKF.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_d3cfc.exe C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtbegin.o -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0 -LC:/Strawberry/c/bin/../lib/gcc -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../.. -v CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj --out-implib libcmTC_d3cfc.dll.a --major-image-version 0 --minor-image-version 0 -lgfortran -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lquadmath -lm -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtend.o\x0d
+        C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe -plugin C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/liblto_plugin.dll -plugin-opt=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccTlRD2e.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_e4645.exe C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtbegin.o -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0 -LC:/Strawberry/c/bin/../lib/gcc -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../.. -v CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj --out-implib libcmTC_e4645.dll.a --major-image-version 0 --minor-image-version 0 -lgfortran -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lquadmath -lm -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtend.o\x0d
         GNU ld (Binutils for MinGW-W64 x86_64, built by Brecht Sanders, r8) 2.42\x0d
-        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_d3cfc.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_d3cfc.'\x0d
+        COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_e4645.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_e4645.'\x0d
         
       exitCode: 0
   -
     kind: "message-v1"
     backtrace:
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:182 (message)"
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
-      - "CMakeLists.txt:3 (project)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:134 (message)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
     message: |
       Parsed Fortran implicit include dir info: rv=done
         found start of include info
@@ -192,17 +191,17 @@ events:
   -
     kind: "message-v1"
     backtrace:
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
-      - "CMakeLists.txt:3 (project)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:170 (message)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
     message: |
       Parsed Fortran implicit link information:
         link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
         linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?))("|,| |$)]
-        ignore line: [Change Dir: 'C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/blas/CMakeFiles/CheckFortran/CMakeFiles/CMakeScratch/TryCompile-ki6hbf']
+        ignore line: [Change Dir: 'C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-build/blas/CMakeFiles/CheckFortran/CMakeFiles/CMakeScratch/TryCompile-nsxhbr']
         ignore line: []
-        ignore line: [Run Build Command(s): C:/Qt/Tools/Ninja/ninja.exe -v cmTC_d3cfc]
-        ignore line: [[1/4] C:\\WINDOWS\\system32\\cmd.exe /C "C:\\Strawberry\\c\\bin\\gfortran.exe -cpp   -v -E C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFortranCompilerABI.F90 -o CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 && C:\\Qt\\Tools\\CMake_64\\bin\\cmake.exe -E cmake_ninja_depends --tdi=CMakeFiles\\cmTC_d3cfc.dir\\FortranDependInfo.json --lang=Fortran --src=CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 --out=CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 --dep=CMakeFiles\\cmTC_d3cfc.dir\\CMakeFortranCompilerABI.F90-pp.f90.d --obj=CMakeFiles\\cmTC_d3cfc.dir\\CMakeFortranCompilerABI.F90.obj --ddi=CMakeFiles\\cmTC_d3cfc.dir\\CMakeFortranCompilerABI.F90.obj.ddi --src-orig=C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFortranCompilerABI.F90"]
+        ignore line: [Run Build Command(s): C:/Strawberry/c/bin/ninja.exe -v cmTC_e4645]
+        ignore line: [[1/4] C:\\WINDOWS\\system32\\cmd.exe /C "C:\\Strawberry\\c\\bin\\gfortran.exe -cpp   -v -E C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFortranCompilerABI.F90 -o CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 && C:\\Strawberry\\c\\bin\\cmake.exe -E cmake_ninja_depends --tdi=CMakeFiles\\cmTC_e4645.dir\\FortranDependInfo.json --lang=Fortran --src=CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 --out=CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 --dep=CMakeFiles\\cmTC_e4645.dir\\CMakeFortranCompilerABI.F90-pp.f90.d --obj=CMakeFiles\\cmTC_e4645.dir\\CMakeFortranCompilerABI.F90.obj --ddi=CMakeFiles\\cmTC_e4645.dir\\CMakeFortranCompilerABI.F90.obj.ddi --src-orig=C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFortranCompilerABI.F90"]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=C:\\Strawberry\\c\\bin\\gfortran.exe]
         ignore line: [OFFLOAD_TARGET_NAMES=nvptx-none]
@@ -211,8 +210,8 @@ events:
         ignore line: [Thread model: posix]
         ignore line: [Supported LTO compression algorithms: zlib zstd]
         ignore line: [gcc version 13.2.0 (MinGW-W64 x86_64-ucrt-posix-seh  built by Brecht Sanders  r8) ]
-        ignore line: [COLLECT_GCC_OPTIONS='-cpp' '-v' '-E' '-o' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_d3cfc.dir/']
-        ignore line: [ C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/f951.exe C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFortranCompilerABI.F90 -cpp=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccd3xSCs.f90 -E -quiet -v -iprefix C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/ -D_REENTRANT C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFortranCompilerABI.F90 -o CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 -dumpdir CMakeFiles/cmTC_d3cfc.dir/ -dumpbase CMakeFortranCompilerABI.F90-pp.F90 -dumpbase-ext .F90 -mtune=generic -march=x86-64 -fsyntax-only]
+        ignore line: [COLLECT_GCC_OPTIONS='-cpp' '-v' '-E' '-o' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_e4645.dir/']
+        ignore line: [ C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/f951.exe C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFortranCompilerABI.F90 -cpp=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccOlNCBc.f90 -E -quiet -v -iprefix C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/ -D_REENTRANT C:/Strawberry/c/share/cmake-3.29/Modules/CMakeFortranCompilerABI.F90 -o CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 -dumpdir CMakeFiles/cmTC_e4645.dir/ -dumpbase CMakeFortranCompilerABI.F90-pp.F90 -dumpbase-ext .F90 -mtune=generic -march=x86-64 -fsyntax-only]
         ignore line: [ignoring duplicate directory "C:/Strawberry/c/lib/gcc/../../lib/gcc/x86_64-w64-mingw32/13.2.0/include"]
         ignore line: [ignoring nonexistent directory "R:/winlibs64ucrt_stage/inst_gcc-13.2.0/share/gcc/include"]
         ignore line: [ignoring nonexistent directory "/R/winlibs64ucrt_stage/inst_gcc-13.2.0/share/gcc/include"]
@@ -235,9 +234,9 @@ events:
         ignore line: [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib/]
         ignore line: [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/]
         ignore line: [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../]
-        ignore line: [COLLECT_GCC_OPTIONS='-cpp' '-v' '-E' '-o' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.'\x0d]
-        ignore line: [[2/4] C:\\Qt\\Tools\\CMake_64\\bin\\cmake.exe -E cmake_ninja_dyndep --tdi=CMakeFiles\\cmTC_d3cfc.dir\\FortranDependInfo.json --lang=Fortran --dd=CMakeFiles/cmTC_d3cfc.dir/Fortran.dd @CMakeFiles/cmTC_d3cfc.dir/Fortran.dd.rsp]
-        ignore line: [[3/4] C:\\Strawberry\\c\\bin\\gfortran.exe -IC:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules -v -fpreprocessed -c CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 -o CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj]
+        ignore line: [COLLECT_GCC_OPTIONS='-cpp' '-v' '-E' '-o' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.'\x0d]
+        ignore line: [[2/4] C:\\Strawberry\\c\\bin\\cmake.exe -E cmake_ninja_dyndep --tdi=CMakeFiles\\cmTC_e4645.dir\\FortranDependInfo.json --lang=Fortran --dd=CMakeFiles/cmTC_e4645.dir/Fortran.dd @CMakeFiles/cmTC_e4645.dir/Fortran.dd.rsp]
+        ignore line: [[3/4] C:\\Strawberry\\c\\bin\\gfortran.exe -IC:\\Strawberry\\c\\share\\cmake-3.29\\Modules -v -fpreprocessed -c CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 -o CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=C:\\Strawberry\\c\\bin\\gfortran.exe]
         ignore line: [OFFLOAD_TARGET_NAMES=nvptx-none]
@@ -246,14 +245,14 @@ events:
         ignore line: [Thread model: posix]
         ignore line: [Supported LTO compression algorithms: zlib zstd]
         ignore line: [gcc version 13.2.0 (MinGW-W64 x86_64-ucrt-posix-seh  built by Brecht Sanders  r8) ]
-        ignore line: [COLLECT_GCC_OPTIONS='-I' 'C:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_d3cfc.dir/']
-        ignore line: [ C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/f951.exe CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90-pp.f90 -I C:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules -quiet -dumpdir CMakeFiles/cmTC_d3cfc.dir/ -dumpbase CMakeFortranCompilerABI.F90.f90 -dumpbase-ext .f90 -mtune=generic -march=x86-64 -version -fpreprocessed -fintrinsic-modules-path C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/finclude -o C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccbyrG5x.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-I' 'C:\\Strawberry\\c\\share\\cmake-3.29\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_e4645.dir/']
+        ignore line: [ C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/f951.exe CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90-pp.f90 -I C:\\Strawberry\\c\\share\\cmake-3.29\\Modules -quiet -dumpdir CMakeFiles/cmTC_e4645.dir/ -dumpbase CMakeFortranCompilerABI.F90.f90 -dumpbase-ext .f90 -mtune=generic -march=x86-64 -version -fpreprocessed -fintrinsic-modules-path C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/finclude -o C:\\Users\\Ematt\\AppData\\Local\\Temp\\cc3IAxmb.s]
         ignore line: [GNU Fortran (MinGW-W64 x86_64-ucrt-posix-seh  built by Brecht Sanders  r8) version 13.2.0 (x86_64-w64-mingw32)]
         ignore line: [	compiled by GNU C version 13.2.0  GMP version 6.3.0  MPFR version 4.2.1  MPC version 1.3.1  isl version isl-0.26-GMP]
         ignore line: []
         ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
-        ignore line: [COLLECT_GCC_OPTIONS='-I' 'C:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_d3cfc.dir/']
-        ignore line: [ C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -I C:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules -o CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccbyrG5x.s]
+        ignore line: [COLLECT_GCC_OPTIONS='-I' 'C:\\Strawberry\\c\\share\\cmake-3.29\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_e4645.dir/']
+        ignore line: [ C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/as.exe -v -I C:\\Strawberry\\c\\share\\cmake-3.29\\Modules -o CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj C:\\Users\\Ematt\\AppData\\Local\\Temp\\cc3IAxmb.s]
         ignore line: [GNU assembler version 2.42 (x86_64-w64-mingw32) using BFD version (Binutils for MinGW-W64 x86_64  built by Brecht Sanders  r8) 2.42]
         ignore line: [COMPILER_PATH=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/]
         ignore line: [C:/Strawberry/c/bin/../libexec/gcc/]
@@ -264,9 +263,9 @@ events:
         ignore line: [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib/]
         ignore line: [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/]
         ignore line: [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../]
-        ignore line: [COLLECT_GCC_OPTIONS='-I' 'C:\\Qt\\Tools\\CMake_64\\share\\cmake-3.30\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.'\x0d]
-        ignore line: [[4/4] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\Strawberry\\c\\bin\\gfortran.exe  -v -Wl -v CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj -o cmTC_d3cfc.exe -Wl --out-implib libcmTC_d3cfc.dll.a -Wl --major-image-version 0 --minor-image-version 0   && cd ."]
-        ignore line: [Driving: C:\\Strawberry\\c\\bin\\gfortran.exe -v -Wl -v CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj -o cmTC_d3cfc.exe -Wl --out-implib libcmTC_d3cfc.dll.a -Wl --major-image-version 0 --minor-image-version 0 -l gfortran -shared-libgcc]
+        ignore line: [COLLECT_GCC_OPTIONS='-I' 'C:\\Strawberry\\c\\share\\cmake-3.29\\Modules' '-v' '-fpreprocessed' '-c' '-o' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.'\x0d]
+        ignore line: [[4/4] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && C:\\Strawberry\\c\\bin\\gfortran.exe  -v -Wl -v CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj -o cmTC_e4645.exe -Wl --out-implib libcmTC_e4645.dll.a -Wl --major-image-version 0 --minor-image-version 0   && cd ."]
+        ignore line: [Driving: C:\\Strawberry\\c\\bin\\gfortran.exe -v -Wl -v CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj -o cmTC_e4645.exe -Wl --out-implib libcmTC_e4645.dll.a -Wl --major-image-version 0 --minor-image-version 0 -l gfortran -shared-libgcc]
         ignore line: [Using built-in specs.]
         ignore line: [COLLECT_GCC=C:\\Strawberry\\c\\bin\\gfortran.exe]
         ignore line: [COLLECT_LTO_WRAPPER=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/lto-wrapper.exe]
@@ -278,7 +277,7 @@ events:
         ignore line: [gcc version 13.2.0 (MinGW-W64 x86_64-ucrt-posix-seh  built by Brecht Sanders  r8) ]
         ignore line: [Reading specs from C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib/libgfortran.spec]
         ignore line: [rename spec lib to liborig]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_d3cfc.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_d3cfc-']
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_e4645.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_e4645-']
         ignore line: [COMPILER_PATH=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/]
         ignore line: [C:/Strawberry/c/bin/../libexec/gcc/]
         ignore line: [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/]
@@ -288,13 +287,13 @@ events:
         ignore line: [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib/]
         ignore line: [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/]
         ignore line: [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../]
-        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_d3cfc.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_d3cfc.']
-        link line: [ C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/collect2.exe -plugin C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/liblto_plugin.dll -plugin-opt=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccDQgJKF.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_d3cfc.exe C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtbegin.o -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0 -LC:/Strawberry/c/bin/../lib/gcc -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../.. -v CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj --out-implib libcmTC_d3cfc.dll.a --major-image-version 0 --minor-image-version 0 -lgfortran -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lquadmath -lm -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtend.o]
+        ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_e4645.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_e4645.']
+        link line: [ C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/collect2.exe -plugin C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/liblto_plugin.dll -plugin-opt=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccTlRD2e.res -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lpthread -plugin-opt=-pass-through=-ladvapi32 -plugin-opt=-pass-through=-lshell32 -plugin-opt=-pass-through=-luser32 -plugin-opt=-pass-through=-lkernel32 -plugin-opt=-pass-through=-lmingw32 -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lmoldname -plugin-opt=-pass-through=-lmingwex -plugin-opt=-pass-through=-lmsvcrt -plugin-opt=-pass-through=-lkernel32 -m i386pep -Bdynamic -o cmTC_e4645.exe C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtbegin.o -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0 -LC:/Strawberry/c/bin/../lib/gcc -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib -LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../.. -v CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj --out-implib libcmTC_e4645.dll.a --major-image-version 0 --minor-image-version 0 -lgfortran -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lquadmath -lm -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtend.o]
           arg [C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/collect2.exe] ==> ignore
           arg [-plugin] ==> ignore
           arg [C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/liblto_plugin.dll] ==> ignore
           arg [-plugin-opt=C:/Strawberry/c/bin/../libexec/gcc/x86_64-w64-mingw32/13.2.0/lto-wrapper.exe] ==> ignore
-          arg [-plugin-opt=-fresolution=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccDQgJKF.res] ==> ignore
+          arg [-plugin-opt=-fresolution=C:\\Users\\Ematt\\AppData\\Local\\Temp\\ccTlRD2e.res] ==> ignore
           arg [-plugin-opt=-pass-through=-lmingw32] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
           arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
@@ -327,7 +326,7 @@ events:
           arg [i386pep] ==> ignore
           arg [-Bdynamic] ==> search dynamic
           arg [-o] ==> ignore
-          arg [cmTC_d3cfc.exe] ==> ignore
+          arg [cmTC_e4645.exe] ==> ignore
           arg [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o] ==> obj [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib/../lib/crt2.o]
           arg [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtbegin.o] ==> obj [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/crtbegin.o]
           arg [-LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0] ==> dir [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0]
@@ -337,9 +336,9 @@ events:
           arg [-LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib] ==> dir [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/lib]
           arg [-LC:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../..] ==> dir [C:/Strawberry/c/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../..]
           arg [-v] ==> ignore
-          arg [CMakeFiles/cmTC_d3cfc.dir/CMakeFortranCompilerABI.F90.obj] ==> ignore
+          arg [CMakeFiles/cmTC_e4645.dir/CMakeFortranCompilerABI.F90.obj] ==> ignore
           arg [--out-implib] ==> ignore
-          arg [libcmTC_d3cfc.dll.a] ==> ignore
+          arg [libcmTC_e4645.dll.a] ==> ignore
           arg [--major-image-version] ==> ignore
           arg [0] ==> ignore
           arg [--minor-image-version] ==> ignore
@@ -396,30 +395,30 @@ events:
   -
     kind: "message-v1"
     backtrace:
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
-      - "CMakeLists.txt:3 (project)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:207 (cmake_determine_linker_id)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
     message: |
       Running the Fortran compiler's linker: "Configured with: ../configure --prefix=/R/winlibs64ucrt_stage/inst_gcc-13.2.0/share/gcc --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --enable-offload-targets=nvptx-none --with-pkgversion='MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r8' --with-tune=generic --enable-checking=release --enable-threads=posix --disable-sjlj-exceptions --disable-libunwind-exceptions --disable-serial-configure --disable-bootstrap --enable-host-shared --enable-plugin --disable-default-ssp --disable-rpath --disable-libstdcxx-debug --disable-version-specific-runtime-libs --with-stabs --disable-symvers --enable-languages=c,c++,fortran,lto,objc,obj-c++ --disable-gold --disable-nls --disable-stage1-checking --disable-win32-registry --disable-multilib --enable-ld --enable-libquadmath --enable-libada --enable-libssp --enable-libstdcxx --enable-lto --enable-fully-dynamic-string --enable-libgomp --enable-graphite --enable-mingw-wildcard --enable-libstdcxx-time --enable-libstdcxx-pch --with-mpc=/d/Prog/winlibs64ucrt_stage/custombuilt --with-mpfr=/d/Prog/winlibs64ucrt_stage/custombuilt --with-gmp=/d/Prog/winlibs64ucrt_stage/custombuilt --with-isl=/d/Prog/winlibs64ucrt_stage/custombuilt --disable-libstdcxx-backtrace --enable-install-libiberty --enable-__cxa_atexit --without-included-gettext --with-diagnostics-color=auto --enable-clocale=generic --with-libiconv --with-system-zlib --with-build-sysroot=/R/winlibs64ucrt_stage/gcc-13.2.0/build_mingw/mingw-w64 CFLAGS='-I/d/Prog/winlibs64ucrt_stage/custombuilt/include/libdl-win32   -march=nocona -msahf -mtune=generic -O2' CXXFLAGS='-Wno-int-conversion  -march=nocona -msahf -mtune=generic -O2' LDFLAGS='-pthread -Wl,--no-insert-timestamp -Wl,--dynamicbase -Wl,--high-entropy-va -Wl,--nxcompat -Wl,--tsaware' LD=/d/Prog/winlibs64ucrt_stage/custombuilt/share/binutils/bin/ld.exe" "-v"
       
   -
     kind: "message-v1"
     backtrace:
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
-      - "CMakeLists.txt:3 (project)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:207 (cmake_determine_linker_id)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
     message: |
       Running the Fortran compiler's linker: "Configured with: ../configure --prefix=/R/winlibs64ucrt_stage/inst_gcc-13.2.0/share/gcc --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --enable-offload-targets=nvptx-none --with-pkgversion='MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r8' --with-tune=generic --enable-checking=release --enable-threads=posix --disable-sjlj-exceptions --disable-libunwind-exceptions --disable-serial-configure --disable-bootstrap --enable-host-shared --enable-plugin --disable-default-ssp --disable-rpath --disable-libstdcxx-debug --disable-version-specific-runtime-libs --with-stabs --disable-symvers --enable-languages=c,c++,fortran,lto,objc,obj-c++ --disable-gold --disable-nls --disable-stage1-checking --disable-win32-registry --disable-multilib --enable-ld --enable-libquadmath --enable-libada --enable-libssp --enable-libstdcxx --enable-lto --enable-fully-dynamic-string --enable-libgomp --enable-graphite --enable-mingw-wildcard --enable-libstdcxx-time --enable-libstdcxx-pch --with-mpc=/d/Prog/winlibs64ucrt_stage/custombuilt --with-mpfr=/d/Prog/winlibs64ucrt_stage/custombuilt --with-gmp=/d/Prog/winlibs64ucrt_stage/custombuilt --with-isl=/d/Prog/winlibs64ucrt_stage/custombuilt --disable-libstdcxx-backtrace --enable-install-libiberty --enable-__cxa_atexit --without-included-gettext --with-diagnostics-color=auto --enable-clocale=generic --with-libiconv --with-system-zlib --with-build-sysroot=/R/winlibs64ucrt_stage/gcc-13.2.0/build_mingw/mingw-w64 CFLAGS='-I/d/Prog/winlibs64ucrt_stage/custombuilt/include/libdl-win32   -march=nocona -msahf -mtune=generic -O2' CXXFLAGS='-Wno-int-conversion  -march=nocona -msahf -mtune=generic -O2' LDFLAGS='-pthread -Wl,--no-insert-timestamp -Wl,--dynamicbase -Wl,--high-entropy-va -Wl,--nxcompat -Wl,--tsaware' LD=/d/Prog/winlibs64ucrt_stage/custombuilt/share/binutils/bin/ld.exe" "-V"
       
   -
     kind: "message-v1"
     backtrace:
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:255 (cmake_determine_linker_id)"
-      - "C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
-      - "CMakeLists.txt:3 (project)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/Internal/CMakeDetermineLinkerId.cmake:40 (message)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeDetermineCompilerABI.cmake:207 (cmake_determine_linker_id)"
+      - "C:/Strawberry/c/share/cmake-3.29/Modules/CMakeTestFortranCompiler.cmake:20 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
     message: |
       Running the Fortran compiler's linker: "Configured with: ../configure --prefix=/R/winlibs64ucrt_stage/inst_gcc-13.2.0/share/gcc --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --enable-offload-targets=nvptx-none --with-pkgversion='MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r8' --with-tune=generic --enable-checking=release --enable-threads=posix --disable-sjlj-exceptions --disable-libunwind-exceptions --disable-serial-configure --disable-bootstrap --enable-host-shared --enable-plugin --disable-default-ssp --disable-rpath --disable-libstdcxx-debug --disable-version-specific-runtime-libs --with-stabs --disable-symvers --enable-languages=c,c++,fortran,lto,objc,obj-c++ --disable-gold --disable-nls --disable-stage1-checking --disable-win32-registry --disable-multilib --enable-ld --enable-libquadmath --enable-libada --enable-libssp --enable-libstdcxx --enable-lto --enable-fully-dynamic-string --enable-libgomp --enable-graphite --enable-mingw-wildcard --enable-libstdcxx-time --enable-libstdcxx-pch --with-mpc=/d/Prog/winlibs64ucrt_stage/custombuilt --with-mpfr=/d/Prog/winlibs64ucrt_stage/custombuilt --with-gmp=/d/Prog/winlibs64ucrt_stage/custombuilt --with-isl=/d/Prog/winlibs64ucrt_stage/custombuilt --disable-libstdcxx-backtrace --enable-install-libiberty --enable-__cxa_atexit --without-included-gettext --with-diagnostics-color=auto --enable-clocale=generic --with-libiconv --with-system-zlib --with-build-sysroot=/R/winlibs64ucrt_stage/gcc-13.2.0/build_mingw/mingw-w64 CFLAGS='-I/d/Prog/winlibs64ucrt_stage/custombuilt/include/libdl-win32   -march=nocona -msahf -mtune=generic -O2' CXXFLAGS='-Wno-int-conversion  -march=nocona -msahf -mtune=generic -O2' LDFLAGS='-pthread -Wl,--no-insert-timestamp -Wl,--dynamicbase -Wl,--high-entropy-va -Wl,--nxcompat -Wl,--tsaware' LD=/d/Prog/winlibs64ucrt_stage/custombuilt/share/binutils/bin/ld.exe" "--version"
       

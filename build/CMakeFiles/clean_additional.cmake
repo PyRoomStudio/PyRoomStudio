@@ -1,11 +1,23 @@
 # Additional clean files
 cmake_minimum_required(VERSION 3.16)
 
-if("${CONFIG}" STREQUAL "" OR "${CONFIG}" STREQUAL "")
+if("${CONFIG}" STREQUAL "" OR "${CONFIG}" STREQUAL "Release")
   file(REMOVE_RECURSE
   "CMakeFiles\\PyRoomStudio_autogen.dir\\AutogenUsed.txt"
   "CMakeFiles\\PyRoomStudio_autogen.dir\\ParseCache.txt"
   "PyRoomStudio_autogen"
+  "_deps\\eigen-build\\blas\\CMakeFiles\\eigen_blas_autogen.dir\\AutogenUsed.txt"
+  "_deps\\eigen-build\\blas\\CMakeFiles\\eigen_blas_autogen.dir\\ParseCache.txt"
+  "_deps\\eigen-build\\blas\\CMakeFiles\\eigen_blas_static_autogen.dir\\AutogenUsed.txt"
+  "_deps\\eigen-build\\blas\\CMakeFiles\\eigen_blas_static_autogen.dir\\ParseCache.txt"
+  "_deps\\eigen-build\\blas\\eigen_blas_autogen"
+  "_deps\\eigen-build\\blas\\eigen_blas_static_autogen"
+  "_deps\\eigen-build\\lapack\\CMakeFiles\\eigen_lapack_autogen.dir\\AutogenUsed.txt"
+  "_deps\\eigen-build\\lapack\\CMakeFiles\\eigen_lapack_autogen.dir\\ParseCache.txt"
+  "_deps\\eigen-build\\lapack\\CMakeFiles\\eigen_lapack_static_autogen.dir\\AutogenUsed.txt"
+  "_deps\\eigen-build\\lapack\\CMakeFiles\\eigen_lapack_static_autogen.dir\\ParseCache.txt"
+  "_deps\\eigen-build\\lapack\\eigen_lapack_autogen"
+  "_deps\\eigen-build\\lapack\\eigen_lapack_static_autogen"
   "tests\\CMakeFiles\\test_acoustics_autogen.dir\\AutogenUsed.txt"
   "tests\\CMakeFiles\\test_acoustics_autogen.dir\\ParseCache.txt"
   "tests\\CMakeFiles\\test_audio_autogen.dir\\AutogenUsed.txt"

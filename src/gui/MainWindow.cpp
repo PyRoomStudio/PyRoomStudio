@@ -40,18 +40,27 @@ MainWindow::MainWindow(QWidget* parent)
         updateTitle();
     });
 
+    autoSaveTimer_ = new QTimer(this);
+    connect(autoSaveTimer_, &QTimer::timeout, this, [this]() {
+        if (projectDirty_ && !currentProjectFile_.isEmpty()) {
+            saveProjectToFile(currentProjectFile_);
+            statusBar()->showMessage("Auto-saved", 3000);
+        }
+    });
+
     setupMenus();
     setupToolbars();
     setupCentralWidget();
     connectSignals();
     updateRecentProjectsMenu();
+    configureAutoSaveTimer();
 
     statusBar()->showMessage("Ready");
 }
 
 void MainWindow::setupMenus() {
     auto* fileMenu = menuBar()->addMenu("&File");
-    actNewProject_    = fileMenu->addAction("&New Project",  this, &MainWindow::onNewProject);
+    actNewProject_    = fileMenu->addAction("&New Project", QKeySequence::New, this, &MainWindow::onNewProject);
     actOpenProject_   = fileMenu->addAction("&Open Project...", QKeySequence::Open, this, &MainWindow::onOpenProject);
     actSaveProject_   = fileMenu->addAction("&Save Project", QKeySequence::Save, this, &MainWindow::onSaveProject);
     actSaveAsProject_ = fileMenu->addAction("Save Project &As...", QKeySequence("Ctrl+Shift+S"), this, &MainWindow::onSaveProjectAs);
@@ -84,20 +93,36 @@ void MainWindow::setupMenus() {
             undoStack_->push(new AddPointCommand(viewport_, *clipboardPoint_));
     });
     actDelete_ = editMenu->addAction("&Delete", QKeySequence::Delete, this, [this]() {
-        if (viewport_->activePointIndex() >= 0)
+        auto& sel = viewport_->selectedPointIndices();
+        if (!sel.empty()) {
+            undoStack_->beginMacro("Delete Selected Points");
+            std::vector<int> sorted(sel.rbegin(), sel.rend());
+            for (int idx : sorted)
+                undoStack_->push(new RemovePointCommand(viewport_, idx));
+            undoStack_->endMacro();
+            viewport_->clearPointSelection();
+        } else if (viewport_->activePointIndex() >= 0) {
             undoStack_->push(new RemovePointCommand(viewport_, viewport_->activePointIndex()));
+        }
     });
     editMenu->addSeparator();
-    actSelectAll_ = editMenu->addAction("Select &All", QKeySequence::SelectAll, this, []{});
-    actSelectAll_->setEnabled(false);
+    actSelectAll_ = editMenu->addAction("Select &All", QKeySequence::SelectAll, this, [this]() {
+        if (viewport_->hasModel() && !viewport_->placedPoints().empty()) {
+            viewport_->selectAllPoints();
+        }
+    });
 
     settingsMenu_ = menuBar()->addMenu("&Settings");
     actPreferences_ = settingsMenu_->addAction("&Preferences...", this, [this]() {
         PreferencesDialog dlg(this);
         dlg.exec();
+        configureAutoSaveTimer();
     });
     actDisplaySettings_ = settingsMenu_->addAction("&Display Settings...", this, [this]() {
         DisplaySettingsDialog dlg(this);
+        connect(&dlg, &DisplaySettingsDialog::settingsChanged, this, [this]() {
+            viewport_->applyDisplaySettings();
+        });
         dlg.exec();
     });
     actAudioSettings_ = settingsMenu_->addAction("&Audio Settings...", this, [this]() {
@@ -120,8 +145,11 @@ void MainWindow::setupToolbars() {
     topToolbar_->setMovable(false);
 
     actToolMove_ = topToolbar_->addAction("Move");
-    actToolMove_->setEnabled(false);
-    actToolMove_->setToolTip("Move tool (coming soon)");
+    actToolMove_->setCheckable(true);
+    actToolMove_->setToolTip("Drag placed points to new positions");
+    connect(actToolMove_, &QAction::toggled, [this](bool checked) {
+        viewport_->setMoveMode(checked);
+    });
 
     actToolCopy_ = topToolbar_->addAction("Copy");
     connect(actToolCopy_, &QAction::triggered, [this]() {
@@ -215,6 +243,11 @@ void MainWindow::connectSignals() {
         statusBar()->showMessage(QString("Distance: %1 m").arg(dist, 0, 'f', 3));
     });
 
+    connect(viewport_, &Viewport3D::moveFinished,
+        [this](int index, const PlacedPoint& oldState, const PlacedPoint& newState) {
+            undoStack_->push(new MovePointCommand(viewport_, index, oldState, newState));
+        });
+
     // Assets panel -> viewport (surface selection from gallery click)
     connect(assetsPanel_, &AssetsPanel::surfaceClicked, [this](int surfIdx, const QString&) {
         viewport_->selectSurface(surfIdx);
@@ -279,7 +312,7 @@ void MainWindow::connectSignals() {
         int idx = viewport_->activePointIndex();
         if (idx < 0) return;
         QString path = QFileDialog::getOpenFileName(this,
-            "Select Audio File", QString(),
+            "Select Audio File", defaultProjectDir(),
             "Audio files (*.wav *.mp3 *.flac *.ogg);;All files (*.*)");
         if (path.isEmpty()) return;
         viewport_->placedPoints()[idx].audioFile = path.toStdString();
@@ -345,7 +378,7 @@ void MainWindow::onNewProject() {
 
 void MainWindow::onOpenProject() {
     QString path = QFileDialog::getOpenFileName(this,
-        "Open Project", QString(),
+        "Open Project", defaultProjectDir(),
         "Room Projects (*.room);;STL files (*.stl);;All files (*.*)");
     if (path.isEmpty()) return;
 
@@ -400,7 +433,7 @@ void MainWindow::onSaveProject() {
 
 void MainWindow::onSaveProjectAs() {
     QString path = QFileDialog::getSaveFileName(this,
-        "Save Project As", QString(), "Room Projects (*.room)");
+        "Save Project As", defaultProjectDir(), "Room Projects (*.room)");
     if (path.isEmpty()) return;
     if (!path.endsWith(".room", Qt::CaseInsensitive))
         path += ".room";
@@ -501,7 +534,7 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 
 void MainWindow::onImportRoom() {
     QString path = QFileDialog::getOpenFileName(this,
-        "Open STL File", QString(), "STL files (*.stl);;All files (*.*)");
+        "Open STL File", defaultProjectDir(), "STL files (*.stl);;All files (*.*)");
     if (path.isEmpty()) return;
 
     if (viewport_->loadModel(path)) {
@@ -514,7 +547,7 @@ void MainWindow::onImportRoom() {
 void MainWindow::onImportSound() {
     QString path = QFileDialog::getOpenFileName(this,
         "Select Sound Source",
-        QString(),
+        defaultProjectDir(),
         "Audio files (*.wav *.mp3 *.flac *.ogg);;WAV files (*.wav);;All files (*.*)");
     if (path.isEmpty()) return;
     soundSourceFile_ = path;
@@ -570,6 +603,7 @@ void MainWindow::onRender() {
     params.nRays = settings.value("sim/numRays", DEFAULT_N_RAYS).toInt();
     params.energyAbsorption = settings.value("sim/absorption", DEFAULT_ENERGY_ABSORPTION).toFloat();
     params.scattering = settings.value("sim/scattering", DEFAULT_SCATTERING).toFloat();
+    params.airAbsorption = settings.value("sim/airAbsorption", true).toBool();
 
     auto* thread = new QThread;
     auto* worker = new SimulationWorker(params);
@@ -682,6 +716,21 @@ void MainWindow::updateTitle() {
         title += " [" + fi.fileName() + "]";
     }
     setWindowTitle(title);
+}
+
+QString MainWindow::defaultProjectDir() const {
+    QSettings s("PyRoomStudio", "PyRoomStudio");
+    return s.value("defaultProjectDir", "").toString();
+}
+
+void MainWindow::configureAutoSaveTimer() {
+    QSettings s("PyRoomStudio", "PyRoomStudio");
+    int minutes = s.value("autoSaveInterval", 0).toInt();
+    if (minutes > 0) {
+        autoSaveTimer_->start(minutes * 60 * 1000);
+    } else {
+        autoSaveTimer_->stop();
+    }
 }
 
 void MainWindow::populateAssetsFromRenderer(const QString& filepath) {

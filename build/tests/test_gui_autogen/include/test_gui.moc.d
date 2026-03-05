@@ -11,10 +11,12 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_gui_auto
   C:/Qt/6.10.2/mingw_64/include/QtCore/QMutex \
   C:/Qt/6.10.2/mingw_64/include/QtCore/QObject \
   C:/Qt/6.10.2/mingw_64/include/QtCore/QRect \
+  C:/Qt/6.10.2/mingw_64/include/QtCore/QSettings \
   C:/Qt/6.10.2/mingw_64/include/QtCore/QSize \
   C:/Qt/6.10.2/mingw_64/include/QtCore/QSizeF \
   C:/Qt/6.10.2/mingw_64/include/QtCore/QString \
   C:/Qt/6.10.2/mingw_64/include/QtCore/QStringList \
+  C:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
   C:/Qt/6.10.2/mingw_64/include/QtCore/QVariant \
   C:/Qt/6.10.2/mingw_64/include/QtCore/QVector \
   C:/Qt/6.10.2/mingw_64/include/QtCore/QtCore \
@@ -307,6 +309,7 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_gui_auto
   C:/Qt/6.10.2/mingw_64/include/QtGui/QPixmap \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QSurfaceFormat \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QTransform \
+  C:/Qt/6.10.2/mingw_64/include/QtGui/QUndoCommand \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QUndoStack \
   C:/Qt/6.10.2/mingw_64/include/QtGui/QWheelEvent \
   C:/Qt/6.10.2/mingw_64/include/QtGui/qaction.h \
@@ -395,6 +398,10 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_gui_auto
   C:/Qt/6.10.2/mingw_64/include/QtTest/qttestlib-config.h \
   C:/Qt/6.10.2/mingw_64/include/QtTest/qttestversion.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QApplication \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/QCheckBox \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/QComboBox \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/QDialog \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/QDoubleSpinBox \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QLabel \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QLineEdit \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QListWidget \
@@ -404,8 +411,10 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_gui_auto
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QPushButton \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QSizePolicy \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QSlider \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/QSpinBox \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QSplitter \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QTabWidget \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/QTableWidget \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QToolBar \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/QWidget \
@@ -417,6 +426,9 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_gui_auto
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractspinbox.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qapplication.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/qcheckbox.h \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/qcombobox.h \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/qdialog.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qlabel.h \
@@ -432,10 +444,13 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_gui_auto
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qrubberband.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qsizepolicy.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qslider.h \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/qspinbox.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qsplitter.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qstyle.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qstyleoption.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabbar.h \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtableview.h \
+  C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtablewidget.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabwidget.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtestsupport_widgets.h \
   C:/Qt/6.10.2/mingw_64/include/QtWidgets/qtoolbar.h \
@@ -976,6 +991,8 @@ C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/tests/test_gui_auto
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/LibraryPanel.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/MainWindow.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/PropertyPanel.h \
+  C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/UndoCommands.h \
+  C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/dialogs/SettingsDialogs.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/gui/widgets/ColorSwatch.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/Camera.h \
   C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src/rendering/MeshData.h \

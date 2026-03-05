@@ -70,6 +70,18 @@ private:
     float newScale_;
 };
 
+class MovePointCommand : public QUndoCommand {
+public:
+    MovePointCommand(Viewport3D* vp, int index, const PlacedPoint& oldState, const PlacedPoint& newState);
+    void undo() override;
+    void redo() override;
+private:
+    Viewport3D* vp_;
+    int index_;
+    PlacedPoint oldState_;
+    PlacedPoint newState_;
+};
+
 class ClearAllPointsCommand : public QUndoCommand {
 public:
     ClearAllPointsCommand(Viewport3D* vp);
