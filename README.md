@@ -66,6 +66,7 @@ The latest build of PyRoomStudio is running on C++17 with Qt6 and Eigen3 depende
     $ cmake --build build
     $ ./build/PyRoomStudio
     ```
+Once cmake has build the Ninja files, follow-up compilations will only need `cmake --build build`.
 
 <!------------------------------------------------------------------->
 
@@ -83,6 +84,6 @@ The latest build of PyRoomStudio is running on C++17 with Qt6 and Eigen3 depende
 
 <!------------------------------------------------------------------->
 
-<p align="center">
+<!-- <p align="center">
   <img width="700" src="assets/screenshot.png" alt="PyRoomStudio">
-</p>
+</p> -->

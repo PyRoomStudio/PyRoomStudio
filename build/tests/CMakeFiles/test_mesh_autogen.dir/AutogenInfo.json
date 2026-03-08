@@ -221,7 +221,6 @@
 	"MOC_INCLUDES" : 
 	[
 		"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/src",
-		"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src",
 		"C:/Qt/6.10.2/mingw_64/include/QtTest",
 		"C:/Qt/6.10.2/mingw_64/include",
 		"C:/Qt/6.10.2/mingw_64/include/QtCore",
@@ -230,6 +229,7 @@
 		"C:/Qt/6.10.2/mingw_64/include/QtGui",
 		"C:/Qt/6.10.2/mingw_64/include/QtOpenGL",
 		"C:/Qt/6.10.2/mingw_64/include/QtOpenGLWidgets",
+		"C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/build/_deps/eigen-src",
 		"C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++",
 		"C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32",
 		"C:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward",
