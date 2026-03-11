@@ -50,23 +50,30 @@ The latest build of PyRoomStudio is running on C++17 with Qt6 and Eigen3 depende
 1. Clone the repository
 
     ```
-    $ git clone https://github.com/ematth/PyRoomStudio.git
+    $ git clone https://github.com/PyRoomStudio/PyRoomStudio.git
     ```
 
 2. Install [Qt6](https://doc.qt.io/qt-6/qt-online-installation.html) (the open individual license is enough to compile the software). During installation, make sure to include the **MinGW** toolchain component under *Qt > Developer and Designer Tools*.
 
-3. Compile and run the app with CMake. You **must** point CMake at both the Qt6 libraries and Qt's bundled MinGW compiler to avoid ABI mismatches with other GCC installations on your system:
+3. Compiling the software is done through Cmake/Ninja. The provided commands work on Windows/MacOS, but will require your system's specific Qt path.
 
     ```
-    $ cmake -S . -B build \
-        -DCMAKE_PREFIX_PATH="<path/to/Qt/<version>/mingw_64" \
-        -DCMAKE_CXX_COMPILER="<path/to/Qt>/Tools/mingw1310_64/bin/g++.exe" \
+    cmake -S . -B build \
+        -DCMAKE_PREFIX_PATH="C:/Qt/6.10.2/mingw_64" \
         -DCMAKE_BUILD_TYPE=Release \
         -G Ninja
-    $ cmake --build build
-    $ ./build/PyRoomStudio
+        
+    cmake --build build
     ```
-Once cmake has build the Ninja files, follow-up compilations will only need `cmake --build build`.
+
+The version number can be different, although Qt >6 is expected. For MacOS specifically, replace `/mingw_64` with `/macos`.
+Once Cmake has built the Ninja files, follow-up compilations will only need `cmake --build build`.
+
+4. Run the `PyRoomStudio` executable.
+
+```bash
+$ ./build/PyRoomStudio
+```
 
 <!------------------------------------------------------------------->
 
