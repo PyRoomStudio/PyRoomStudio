@@ -1,1 +1,1 @@
-Placeholder for icon assets. Copy icons from pyroomstudio/assets/ as needed.
+Placeholder for icon assets.

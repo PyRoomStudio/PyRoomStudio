@@ -4,7 +4,7 @@
 </p> -->
 
 <p align="center">
-  <img width="400" src="assets/Logo_v3_color.svg" alt="PyRoomStudio">
+  <img width="400" src="assets/Logo_Color.svg" alt="PyRoomStudio">
 </p>
 
 ---
@@ -16,15 +16,21 @@ The project is inspired by [pyroomacoustics](https://github.com/LCAV/pyroomacous
 > [!NOTE]
 > PyRoomStudio is in the process of transition tech stacks from Python to C++ for improved performance. As such, the project/repo will be under a new name in the future.
 
+<p align="center">
+  <img width="700" src="assets/screenshot.png" alt="PyRoomStudio">
+</p>
+
 ## **Get Involved!**
 
 #### [Discord](https://discord.gg/Q9ZtTcZZvH)
 
 #### Contacts:
 
-William (Zhiwen) Chen (willc@illinois.edu), *Co-Founder & Designer*
+William (Zhiwen) Chen (willc@illinois.edu, [LinkedIn](https://www.linkedin.com/in/william-chen-821300149/)), *Co-Founder & Designer*
 
-Evan M. Matthews (evanmm3@illinois.edu), *Co-Founder & Progammer*
+Evan M. Matthews (evanmm3@illinois.edu, [LinkedIn](https://www.linkedin.com/in/ematth)), *Co-Founder & Progammer*
+
+Aslan Wang (aslanwang187@gmail.com, [LinkedIn](https://www.linkedin.com/in/aslan-wang-b00473326)), *Programmer*
 
 
 <!------------------------------------------------------------------->
@@ -39,9 +45,8 @@ PyRoomStudio has two missions:
 By accomplishing these missions, we hope to increase the usage of acoustic tools in the design community and make light of sound as a necessary consideration for future spaces.
 
 <p align="center">
-  <img width="600" src="assets/readme-image.png" alt="">
+  <img width="700" src="assets/readme-image.png" alt="Mission Statement visual">
 </p>
-
 
 ## Setup
 
@@ -49,7 +54,7 @@ The latest build of PyRoomStudio is running on C++17 with Qt6 and Eigen3 depende
 
 1. Clone the repository
 
-    ```
+    ```bash
     $ git clone https://github.com/PyRoomStudio/PyRoomStudio.git
     ```
 
@@ -57,13 +62,13 @@ The latest build of PyRoomStudio is running on C++17 with Qt6 and Eigen3 depende
 
 3. Compiling the software is done through Cmake/Ninja. The provided commands work on Windows/MacOS, but will require your system's specific Qt path.
 
-    ```
-    cmake -S . -B build \
+    ```bash
+    $ cmake -S . -B build \
         -DCMAKE_PREFIX_PATH="C:/Qt/6.10.2/mingw_64" \
         -DCMAKE_BUILD_TYPE=Release \
         -G Ninja
         
-    cmake --build build
+    $ cmake --build build
     ```
 
 The version number can be different, although Qt >6 is expected. For MacOS specifically, replace `/mingw_64` with `/macos`.
@@ -91,6 +96,4 @@ $ ./build/PyRoomStudio
 
 <!------------------------------------------------------------------->
 
-<!-- <p align="center">
-  <img width="700" src="assets/screenshot.png" alt="PyRoomStudio">
-</p> -->
+
