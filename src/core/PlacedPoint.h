@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include <string>
+#include <cmath>
 
 namespace prs {
 
@@ -14,9 +15,15 @@ struct PlacedPoint {
     std::string name;
     float volume = 1.0f;
     std::string audioFile;
+    float orientationYaw = 0.0f; // degrees, listener facing direction (rotation around Y axis)
 
     Vec3f getPosition() const {
         return surfacePoint + normal * distance;
+    }
+
+    Vec3f getForwardDirection() const {
+        float rad = orientationYaw * static_cast<float>(M_PI) / 180.0f;
+        return Vec3f(std::cos(rad), std::sin(rad), 0.0f);
     }
 };
 

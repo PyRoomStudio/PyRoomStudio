@@ -74,7 +74,7 @@ public:
     // Acoustic simulation helpers
     std::pair<int, int> countSourcesAndListeners() const;
     struct SourceData { Vec3f position; std::string audioFile; std::string name; float volume; };
-    struct ListenerData { Vec3f position; std::string name; };
+    struct ListenerData { Vec3f position; std::string name; Vec3f orientation; };
     std::pair<std::vector<SourceData>, std::vector<ListenerData>>
         getSourcesAndListeners(const std::string& audioFile) const;
 
@@ -111,6 +111,7 @@ public:
 
 signals:
     void modelLoaded(const QString& filepath);
+    void meshOpenWarning(int boundaryEdges);
     void pointPlaced(int index);
     void pointSelected(int index);
     void pointDeselected();

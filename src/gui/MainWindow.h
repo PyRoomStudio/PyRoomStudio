@@ -2,6 +2,7 @@
 
 #include "rendering/Viewport3D.h"
 #include "scene/SceneManager.h"
+#include "acoustics/SimulationQueue.h"
 #include "core/PlacedPoint.h"
 
 #include <QMainWindow>
@@ -21,6 +22,7 @@ class LibraryPanel;
 class PropertyPanel;
 class AssetsPanel;
 class BottomToolbar;
+class SimulationQueuePanel;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -123,6 +125,8 @@ private:
     QUndoStack* undoStack_ = nullptr;
     std::optional<PlacedPoint> clipboardPoint_;
     QTimer* autoSaveTimer_ = nullptr;
+    SimulationQueue* simQueue_ = nullptr;
+    SimulationQueuePanel* simQueuePanel_ = nullptr;
 };
 
 } // namespace prs

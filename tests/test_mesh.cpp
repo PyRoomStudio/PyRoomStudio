@@ -121,6 +121,34 @@ private slots:
         QCOMPARE(totalTris, 12);
     }
 
+    void testIsClosedBox() {
+        QTemporaryFile tmp;
+        tmp.setAutoRemove(true);
+        tmp.setFileTemplate(QDir::tempPath() + "/testXXXXXX.stl");
+        QVERIFY(tmp.open());
+        tmp.write(createBoxSTL());
+        tmp.close();
+
+        MeshData mesh;
+        QVERIFY(mesh.loadSTL(tmp.fileName()));
+        QVERIFY(mesh.isClosed());
+        QCOMPARE(mesh.boundaryEdgeCount(), 0);
+    }
+
+    void testIsOpenSingleTriangle() {
+        QTemporaryFile tmp;
+        tmp.setAutoRemove(true);
+        tmp.setFileTemplate(QDir::tempPath() + "/testXXXXXX.stl");
+        QVERIFY(tmp.open());
+        tmp.write(createMinimalSTL());
+        tmp.close();
+
+        MeshData mesh;
+        QVERIFY(mesh.loadSTL(tmp.fileName()));
+        QVERIFY(!mesh.isClosed());
+        QVERIFY(mesh.boundaryEdgeCount() > 0);
+    }
+
     void testFilePath() {
         QTemporaryFile tmp;
         tmp.setAutoRemove(true);

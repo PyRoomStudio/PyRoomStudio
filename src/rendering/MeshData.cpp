@@ -1,11 +1,22 @@
 #include "MeshData.h"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QDataStream>
+#include <QTextStream>
 #include <cstdint>
 #include <limits>
+#include <map>
+#include <sstream>
 
 namespace prs {
+
+bool MeshData::load(const QString& filepath) {
+    QString ext = QFileInfo(filepath).suffix().toLower();
+    if (ext == "obj")
+        return loadOBJ(filepath);
+    return loadSTL(filepath);
+}
 
 bool MeshData::loadSTL(const QString& filepath) {
     QFile file(filepath);
@@ -50,6 +61,75 @@ bool MeshData::loadSTL(const QString& filepath) {
     return true;
 }
 
+bool MeshData::loadOBJ(const QString& filepath) {
+    QFile file(filepath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+
+    std::vector<Vec3f> vertices;
+    triangles_.clear();
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+        if (line.isEmpty() || line[0] == '#')
+            continue;
+
+        std::string sline = line.toStdString();
+        std::istringstream iss(sline);
+        std::string token;
+        iss >> token;
+
+        if (token == "v") {
+            float x, y, z;
+            if (iss >> x >> y >> z)
+                vertices.emplace_back(x, y, z);
+        } else if (token == "f") {
+            std::vector<int> faceIndices;
+            std::string vert;
+            while (iss >> vert) {
+                int idx = 0;
+                std::istringstream vis(vert);
+                vis >> idx;
+                if (idx > 0)
+                    faceIndices.push_back(idx - 1);
+                else if (idx < 0)
+                    faceIndices.push_back(static_cast<int>(vertices.size()) + idx);
+            }
+
+            // Triangulate convex polygon (fan from first vertex)
+            for (size_t i = 2; i < faceIndices.size(); ++i) {
+                int i0 = faceIndices[0];
+                int i1 = faceIndices[i - 1];
+                int i2 = faceIndices[i];
+                if (i0 < 0 || i0 >= static_cast<int>(vertices.size()) ||
+                    i1 < 0 || i1 >= static_cast<int>(vertices.size()) ||
+                    i2 < 0 || i2 >= static_cast<int>(vertices.size()))
+                    continue;
+
+                Triangle tri;
+                tri.v0 = vertices[i0];
+                tri.v1 = vertices[i1];
+                tri.v2 = vertices[i2];
+                Vec3f e1 = tri.v1 - tri.v0;
+                Vec3f e2 = tri.v2 - tri.v0;
+                tri.normal = e1.cross(e2);
+                float len = tri.normal.norm();
+                if (len > 1e-8f)
+                    tri.normal /= len;
+                triangles_.push_back(tri);
+            }
+        }
+    }
+
+    if (triangles_.empty())
+        return false;
+
+    filePath_ = filepath;
+    computeBounds();
+    return true;
+}
+
 void MeshData::computeBounds() {
     if (triangles_.empty()) {
         center_ = Vec3f::Zero();
@@ -74,6 +154,29 @@ void MeshData::computeBounds() {
 
     center_ = (min_ + max_) * 0.5f;
     size_   = (max_ - min_).norm();
+}
+
+int MeshData::boundaryEdgeCount() const {
+    if (triangles_.empty()) return 0;
+
+    std::map<Edge, int> edgeFaceCount;
+    for (const auto& tri : triangles_) {
+        const Vec3f* verts[3] = {&tri.v0, &tri.v1, &tri.v2};
+        for (int j = 0; j < 3; ++j) {
+            Edge e = makeEdge(*verts[j], *verts[(j + 1) % 3]);
+            edgeFaceCount[e]++;
+        }
+    }
+
+    int boundary = 0;
+    for (const auto& [edge, count] : edgeFaceCount) {
+        if (count != 2) ++boundary;
+    }
+    return boundary;
+}
+
+bool MeshData::isClosed() const {
+    return !triangles_.empty() && boundaryEdgeCount() == 0;
 }
 
 std::vector<Vec3f> MeshData::flatVertices() const {

@@ -26,6 +26,7 @@ public:
         float energyAbsorption = DEFAULT_ENERGY_ABSORPTION;
         float scattering = DEFAULT_SCATTERING;
         bool airAbsorption = true;
+        std::vector<int> selectedListenerIndices;
     };
 
     explicit SimulationWorker(const Params& params, QObject* parent = nullptr);

@@ -1,4 +1,4 @@
-find_package(Qt6 REQUIRED COMPONENTS Test Widgets OpenGL OpenGLWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Test Widgets OpenGL OpenGLWidgets Multimedia)
 
 set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/core/Material.cpp
@@ -18,6 +18,7 @@ set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/acoustics/RayTracer.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/RoomImpulseResponse.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/AcousticSimulator.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/AcousticMetrics.cpp
     ${CMAKE_SOURCE_DIR}/src/audio/AudioFile.cpp
     ${CMAKE_SOURCE_DIR}/src/audio/SignalProcessing.cpp
 )
@@ -64,18 +65,22 @@ set(GUI_TEST_EXTRA
     ${CMAKE_SOURCE_DIR}/src/gui/BottomToolbar.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/UndoCommands.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/dialogs/SettingsDialogs.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/dialogs/AudioComparisonDialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/dialogs/RenderOptionsDialog.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/widgets/MaterialGallery.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/widgets/SurfaceGallery.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/widgets/ColorSwatch.cpp
     ${CMAKE_SOURCE_DIR}/src/utils/ResourcePath.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationWorker.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationQueue.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/SimulationQueuePanel.cpp
     ${CMAKE_SOURCE_DIR}/src/rendering/Viewport3D.cpp
 )
 qt6_add_resources(TEST_RESOURCES ${CMAKE_SOURCE_DIR}/resources/resources.qrc)
 add_executable(test_gui test_gui.cpp ${TEST_COMMON_SOURCES} ${GUI_TEST_EXTRA} ${TEST_RESOURCES})
 target_include_directories(test_gui PRIVATE ${TEST_INCLUDE_DIRS})
 target_link_libraries(test_gui PRIVATE
-    Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Eigen3::Eigen)
+    Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Multimedia Eigen3::Eigen)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(test_gui PRIVATE OpenMP::OpenMP_CXX)
 endif()

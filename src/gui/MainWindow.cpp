@@ -6,8 +6,12 @@
 #include "BottomToolbar.h"
 #include "acoustics/AcousticSimulator.h"
 #include "acoustics/SimulationWorker.h"
+#include "acoustics/SimulationQueue.h"
+#include "SimulationQueuePanel.h"
 #include "core/ProjectFile.h"
 #include "dialogs/SettingsDialogs.h"
+#include "dialogs/AudioComparisonDialog.h"
+#include "dialogs/RenderOptionsDialog.h"
 
 #include <QMenuBar>
 #include <QToolBar>
@@ -47,6 +51,8 @@ MainWindow::MainWindow(QWidget* parent)
             statusBar()->showMessage("Auto-saved", 3000);
         }
     });
+
+    simQueue_ = new SimulationQueue(this);
 
     setupMenus();
     setupToolbars();
@@ -221,6 +227,11 @@ void MainWindow::setupCentralWidget() {
 
     mainLayout->addWidget(splitter, 1);
 
+    // Simulation queue panel
+    simQueuePanel_ = new SimulationQueuePanel(simQueue_);
+    simQueuePanel_->setMaximumHeight(180);
+    mainLayout->addWidget(simQueuePanel_);
+
     // Bottom toolbar
     bottomToolbar_ = new BottomToolbar;
     mainLayout->addWidget(bottomToolbar_);
@@ -231,6 +242,12 @@ void MainWindow::setupCentralWidget() {
 void MainWindow::connectSignals() {
     // Viewport signals
     connect(viewport_, &Viewport3D::modelLoaded,           this, &MainWindow::onModelLoaded);
+    connect(viewport_, &Viewport3D::meshOpenWarning, this, [this](int boundaryEdges) {
+        QMessageBox::warning(this, "Open Mesh Detected",
+            QString("The loaded mesh has %1 non-manifold/boundary edge(s) and is not watertight.\n\n"
+                    "Acoustic simulation results may be inaccurate for open meshes.")
+            .arg(boundaryEdges));
+    });
     connect(viewport_, &Viewport3D::pointPlaced,           this, &MainWindow::onPointSelected);
     connect(viewport_, &Viewport3D::pointSelected,         this, &MainWindow::onPointSelected);
     connect(viewport_, &Viewport3D::pointDeselected,       this, &MainWindow::onPointDeselected);
@@ -259,6 +276,33 @@ void MainWindow::connectSignals() {
     connect(bottomToolbar_, &BottomToolbar::placePointClicked,  this, &MainWindow::onPlacePoint);
     connect(bottomToolbar_, &BottomToolbar::renderClicked,      this, &MainWindow::onRender);
 
+    // Simulation queue
+    connect(simQueue_, &SimulationQueue::jobFinished, this, [this](int, const QString& outputDir) {
+        updateTitle();
+        auto answer = QMessageBox::question(this, "Simulation Complete",
+            "Output saved to:\n" + outputDir + "\n\nCompare audio files?",
+            QMessageBox::Yes | QMessageBox::No);
+        if (answer == QMessageBox::Yes) {
+            auto* dlg = new AudioComparisonDialog(outputDir, this);
+            dlg->setAttribute(Qt::WA_DeleteOnClose);
+            dlg->show();
+        }
+        statusBar()->showMessage("Simulation complete: " + outputDir);
+    });
+    connect(simQueuePanel_, &SimulationQueuePanel::openResults, this, [this](const QString& outputDir) {
+        auto* dlg = new AudioComparisonDialog(outputDir, this);
+        dlg->setAttribute(Qt::WA_DeleteOnClose);
+        dlg->show();
+    });
+
+    connect(simQueue_, &SimulationQueue::jobError, this, [this](int, const QString& msg) {
+        updateTitle();
+        if (msg != "Cancelled")
+            QMessageBox::warning(this, "Simulation Failed", msg);
+        else
+            statusBar()->showMessage("Simulation cancelled");
+    });
+
     // Property panel -> viewport
     connect(propertyPanel_, &PropertyPanel::scaleChanged, [this](float v) {
         viewport_->setScaleFactor(v);
@@ -268,11 +312,23 @@ void MainWindow::connectSignals() {
     });
     connect(propertyPanel_, &PropertyPanel::setPointSource, [this]() {
         viewport_->setActivePointType(POINT_TYPE_SOURCE);
+        propertyPanel_->setOrientationControlsVisible(false);
         viewport_->update();
     });
     connect(propertyPanel_, &PropertyPanel::setPointListener, [this]() {
         viewport_->setActivePointType(POINT_TYPE_LISTENER);
+        propertyPanel_->setOrientationControlsVisible(true);
+        int idx = viewport_->activePointIndex();
+        if (idx >= 0 && idx < static_cast<int>(viewport_->placedPoints().size()))
+            propertyPanel_->setPointOrientationYaw(viewport_->placedPoints()[idx].orientationYaw);
         viewport_->update();
+    });
+    connect(propertyPanel_, &PropertyPanel::pointOrientationYawChanged, [this](float yaw) {
+        int idx = viewport_->activePointIndex();
+        if (idx >= 0 && idx < static_cast<int>(viewport_->placedPoints().size())) {
+            viewport_->placedPoints()[idx].orientationYaw = yaw;
+            viewport_->update();
+        }
     });
     connect(propertyPanel_, &PropertyPanel::deletePoint, [this]() {
         viewport_->removeActivePoint();
@@ -366,27 +422,39 @@ void MainWindow::onNewProject() {
         if (res == QMessageBox::Save) onSaveProject();
     }
 
+    QString path = QFileDialog::getOpenFileName(this,
+        "Select Room Model for New Project", defaultProjectDir(),
+        "3D Models (*.stl *.obj);;STL files (*.stl);;OBJ files (*.obj);;All files (*.*)");
+    if (path.isEmpty()) return;
+
     sceneManager_.clearAll();
     soundSourceFile_.clear();
     currentProjectFile_.clear();
     projectDirty_ = false;
     viewport_->clearPlacedPoints();
     assetsPanel_->clearSurfaces();
-    updateTitle();
-    statusBar()->showMessage("New project created");
+
+    if (viewport_->loadModel(path)) {
+        updateTitle();
+        statusBar()->showMessage("New project created with: " + QFileInfo(path).fileName());
+    } else {
+        QMessageBox::warning(this, "Error", "Failed to load 3D model: " + path);
+        updateTitle();
+        statusBar()->showMessage("New project created (no model)");
+    }
 }
 
 void MainWindow::onOpenProject() {
     QString path = QFileDialog::getOpenFileName(this,
         "Open Project", defaultProjectDir(),
-        "Room Projects (*.room);;STL files (*.stl);;All files (*.*)");
+        "Room Projects (*.room);;3D Models (*.stl *.obj);;All files (*.*)");
     if (path.isEmpty()) return;
 
-    if (path.endsWith(".stl", Qt::CaseInsensitive)) {
+    if (path.endsWith(".stl", Qt::CaseInsensitive) || path.endsWith(".obj", Qt::CaseInsensitive)) {
         if (viewport_->loadModel(path))
             statusBar()->showMessage("Loaded: " + path);
         else
-            QMessageBox::warning(this, "Error", "Failed to load STL file: " + path);
+            QMessageBox::warning(this, "Error", "Failed to load 3D model: " + path);
         return;
     }
 
@@ -402,7 +470,7 @@ void MainWindow::onOpenProject() {
             stlPath = QFileInfo(path).dir().filePath(stlPath);
 
         if (!viewport_->loadModel(stlPath)) {
-            QMessageBox::warning(this, "Error", "Failed to load STL model: " + stlPath);
+            QMessageBox::warning(this, "Error", "Failed to load 3D model: " + stlPath);
             return;
         }
     }
@@ -493,7 +561,7 @@ void MainWindow::updateRecentProjectsMenu() {
                 if (QFileInfo(stlPath).isRelative())
                     stlPath = QFileInfo(path).dir().filePath(stlPath);
                 if (!viewport_->loadModel(stlPath)) {
-                    QMessageBox::warning(this, "Error", "Failed to load STL model: " + stlPath);
+                    QMessageBox::warning(this, "Error", "Failed to load 3D model: " + stlPath);
                     return;
                 }
             }
@@ -534,13 +602,14 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 
 void MainWindow::onImportRoom() {
     QString path = QFileDialog::getOpenFileName(this,
-        "Open STL File", defaultProjectDir(), "STL files (*.stl);;All files (*.*)");
+        "Import Room Model", defaultProjectDir(),
+        "3D Models (*.stl *.obj);;STL files (*.stl);;OBJ files (*.obj);;All files (*.*)");
     if (path.isEmpty()) return;
 
     if (viewport_->loadModel(path)) {
         statusBar()->showMessage("Loaded: " + path);
     } else {
-        QMessageBox::warning(this, "Error", "Failed to load STL file: " + path);
+        QMessageBox::warning(this, "Error", "Failed to load 3D model: " + path);
     }
 }
 
@@ -578,18 +647,43 @@ void MainWindow::onRender() {
         QMessageBox::warning(this, "Error", "No listeners placed.\nPlace a point and set its type to Listener.");
         return;
     }
-    if (soundSourceFile_.isEmpty()) {
-        QMessageBox::warning(this, "Error", "No sound file loaded.\nUse Import Sound first.");
+
+    std::string fallbackAudio = soundSourceFile_.toStdString();
+    auto [sources, listeners] = viewport_->getSourcesAndListeners(fallbackAudio);
+
+    QStringList missingAudio;
+    for (auto& s : sources) {
+        if (s.audioFile.empty())
+            missingAudio << QString::fromStdString(s.name);
+    }
+    if (!missingAudio.isEmpty()) {
+        QMessageBox::warning(this, "Error",
+            QString("The following source(s) have no audio file assigned:\n  %1\n\n"
+                    "Assign audio files to each source, or use Import Sound to set a default.")
+            .arg(missingAudio.join(", ")));
         return;
     }
 
-    auto [sources, listeners] = viewport_->getSourcesAndListeners(soundSourceFile_.toStdString());
+    // Show render options dialog for listener selection
+    std::vector<RenderOptionsDialog::ListenerEntry> listenerEntries;
+    for (auto& l : listeners)
+        listenerEntries.push_back({l.name, true});
+
+    RenderOptionsDialog renderDlg(listenerEntries, this);
+    if (renderDlg.exec() != QDialog::Accepted)
+        return;
+
+    std::vector<int> selectedListeners = renderDlg.selectedListenerIndices();
+    if (selectedListeners.empty()) {
+        QMessageBox::warning(this, "Error", "No listeners selected for rendering.");
+        return;
+    }
 
     SceneManager simScene;
     for (auto& s : sources)
         simScene.addSoundSource(s.position, s.audioFile, s.volume, s.name);
     for (auto& l : listeners)
-        simScene.addListener(l.position, l.name);
+        simScene.addListener(l.position, l.name, l.orientation);
 
     QSettings settings("PyRoomStudio", "PyRoomStudio");
 
@@ -604,53 +698,12 @@ void MainWindow::onRender() {
     params.energyAbsorption = settings.value("sim/absorption", DEFAULT_ENERGY_ABSORPTION).toFloat();
     params.scattering = settings.value("sim/scattering", DEFAULT_SCATTERING).toFloat();
     params.airAbsorption = settings.value("sim/airAbsorption", true).toBool();
+    params.selectedListenerIndices = selectedListeners;
 
-    auto* thread = new QThread;
-    auto* worker = new SimulationWorker(params);
-    worker->moveToThread(thread);
-
-    auto* progress = new QProgressDialog("Simulating...", "Cancel", 0, 100, this);
-    progress->setWindowModality(Qt::WindowModal);
-    progress->setMinimumDuration(0);
-    progress->setValue(0);
-
-    connect(thread,   &QThread::started,  worker, &SimulationWorker::process);
-    connect(worker,   &SimulationWorker::progressChanged, this, [progress](int pct, const QString& msg) {
-        progress->setValue(pct);
-        progress->setLabelText(msg);
-    });
-    connect(progress, &QProgressDialog::canceled, worker, &SimulationWorker::cancel);
-    connect(worker, &SimulationWorker::finished, this, [this, thread, worker, progress](const QString& outputDir) {
-        progress->close();
-        updateTitle();
-
-        auto answer = QMessageBox::information(this, "Simulation Complete",
-            "Output saved to:\n" + outputDir + "\n\nOpen output folder?",
-            QMessageBox::Yes | QMessageBox::No);
-        if (answer == QMessageBox::Yes)
-            QDesktopServices::openUrl(QUrl::fromLocalFile(outputDir));
-
-        statusBar()->showMessage("Simulation complete: " + outputDir);
-        thread->quit();
-        thread->wait();
-        worker->deleteLater();
-        thread->deleteLater();
-    });
-    connect(worker, &SimulationWorker::error, this, [this, thread, worker, progress](const QString& msg) {
-        progress->close();
-        updateTitle();
-        if (msg != "Cancelled")
-            QMessageBox::warning(this, "Simulation Failed", msg);
-        else
-            statusBar()->showMessage("Simulation cancelled");
-        thread->quit();
-        thread->wait();
-        worker->deleteLater();
-        thread->deleteLater();
-    });
-
-    setWindowTitle("PyRoomStudio - Simulating...");
-    thread->start();
+    QString desc = QString("Sim: %1 src, %2 lst")
+        .arg(sources.size()).arg(selectedListeners.size());
+    simQueue_->enqueue(params, desc);
+    statusBar()->showMessage("Simulation queued: " + desc);
 }
 
 void MainWindow::onModelLoaded(const QString& filepath) {
@@ -674,6 +727,11 @@ void MainWindow::onPointSelected(int index) {
         propertyPanel_->setPointVolume(pt.volume);
         QFileInfo fi(QString::fromStdString(pt.audioFile));
         propertyPanel_->setPointAudioFile(fi.fileName());
+
+        bool isListener = (pt.pointType == POINT_TYPE_LISTENER);
+        propertyPanel_->setOrientationControlsVisible(isListener);
+        if (isListener)
+            propertyPanel_->setPointOrientationYaw(pt.orientationYaw);
     }
 }
 

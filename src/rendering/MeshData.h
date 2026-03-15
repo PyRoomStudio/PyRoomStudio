@@ -10,7 +10,9 @@ class MeshData {
 public:
     MeshData() = default;
 
+    bool load(const QString& filepath);
     bool loadSTL(const QString& filepath);
+    bool loadOBJ(const QString& filepath);
 
     const std::vector<Triangle>& triangles() const { return triangles_; }
     int triangleCount() const { return static_cast<int>(triangles_.size()); }
@@ -21,6 +23,9 @@ public:
 
     Vec3f minBound() const { return min_; }
     Vec3f maxBound() const { return max_; }
+
+    bool isClosed() const;
+    int  boundaryEdgeCount() const;
 
     std::vector<Vec3f> flatVertices() const;
     std::vector<Vec3f> scaledFlatVertices(float scaleFactor) const;

@@ -4,6 +4,7 @@
 #include "ImageSourceMethod.h"
 #include "RayTracer.h"
 #include "RoomImpulseResponse.h"
+#include "AcousticMetrics.h"
 #include "rendering/RayPicking.h"
 #include "rendering/MeshSimplifier.h"
 #include "audio/AudioFile.h"
@@ -13,6 +14,12 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QFile>
+
+#include <map>
 
 namespace prs {
 
@@ -26,16 +33,16 @@ constexpr float SIMPLIFICATION_TARGET_RATIO = 0.3f;
 void earPositions(const Listener* listener, Vec3f& headCenter, Vec3f& leftEar, Vec3f& rightEar) {
     if (!listener) return;
     headCenter = listener->position;
-    Vec3f forward(0.0f, 0.0f, -1.0f);
+    Vec3f forward(1.0f, 0.0f, 0.0f);
     if (listener->orientation.has_value()) {
         const Vec3f& o = listener->orientation.value();
         if (o.squaredNorm() > 1e-12f)
             forward = o.normalized();
     }
-    Vec3f up(0.0f, 1.0f, 0.0f);
+    Vec3f up(0.0f, 0.0f, 1.0f);
     Vec3f right = forward.cross(up);
     if (right.squaredNorm() < 1e-12f)
-        right = Vec3f(1.0f, 0.0f, 0.0f);
+        right = Vec3f(0.0f, 1.0f, 0.0f);
     else
         right.normalize();
     leftEar  = headCenter - EAR_OFFSET * right;
@@ -182,12 +189,21 @@ void SimulationWorker::process() {
     QDir().mkpath(outputDir);
     scene.saveToFile(QDir(outputDir).filePath("scene.json"));
 
-    int totalPairs = scene.soundSourceCount() * scene.listenerCount();
+    // Build list of listener indices to render
+    std::vector<int> listenerIndices = params_.selectedListenerIndices;
+    if (listenerIndices.empty()) {
+        for (int i = 0; i < scene.listenerCount(); ++i)
+            listenerIndices.push_back(i);
+    }
+    int numListeners = static_cast<int>(listenerIndices.size());
+
+    int totalPairs = scene.soundSourceCount() * numListeners;
     int pairsDone = 0;
     int mixedFs = 44100;
 
     struct MixedStereo { std::vector<float> left; std::vector<float> right; };
-    std::vector<MixedStereo> mixedPerListener(static_cast<size_t>(scene.listenerCount()));
+    std::map<int, MixedStereo> mixedPerListener;
+    QJsonArray metricsArray;
 
     for (int si = 0; si < scene.soundSourceCount(); ++si) {
         auto* source = scene.getSoundSource(si);
@@ -201,7 +217,7 @@ void SimulationWorker::process() {
         AudioFile audioFile;
         if (!audioFile.load(QString::fromStdString(source->audioFile))) {
             qWarning() << "Failed to load:" << QString::fromStdString(source->audioFile);
-            pairsDone += scene.listenerCount();
+            pairsDone += numListeners;
             continue;
         }
         audioFile.applyVolume(source->volume);
@@ -211,11 +227,11 @@ void SimulationWorker::process() {
         const std::vector<float>& inputSamples = audioFile.samples();
         if (inputSamples.empty()) {
             qWarning() << "No samples loaded for source, skipping";
-            pairsDone += scene.listenerCount();
+            pairsDone += numListeners;
             continue;
         }
 
-        for (int li = 0; li < scene.listenerCount(); ++li) {
+        for (int li : listenerIndices) {
             if (isCancelled()) { emit error("Cancelled"); return; }
 
             auto* listener = scene.getListener(li);
@@ -260,6 +276,32 @@ void SimulationWorker::process() {
             auto outRight = SignalProcessing::fftConvolve(inputSamples, impulseRight);
             qInfo() << "  RIR + convolution:" << phaseTimer.elapsed() << "ms";
 
+            // Compute acoustic metrics from left-ear RIR (representative)
+            auto rtResult = AcousticMetrics::computeRT(impulseLeft, fs);
+            auto splResult = AcousticMetrics::computeSPL(
+                source->volume, isLeft, rayLeft, params_.nRays);
+
+            QJsonObject pairMetrics;
+            pairMetrics["source"] = QString::fromStdString(source->name);
+            pairMetrics["listener"] = QString::fromStdString(listener->name);
+            if (rtResult.valid) {
+                QJsonObject rt;
+                rt["T20"] = static_cast<double>(rtResult.t20);
+                rt["T30"] = static_cast<double>(rtResult.t30);
+                rt["EDT"] = static_cast<double>(rtResult.edt);
+                pairMetrics["reverberation_time"] = rt;
+            }
+            if (splResult.valid) {
+                QJsonObject spl;
+                spl["direct_dB"]    = static_cast<double>(splResult.directSPL);
+                spl["reflected_dB"] = static_cast<double>(splResult.reflectedSPL);
+                spl["total_dB"]     = static_cast<double>(splResult.totalSPL);
+                pairMetrics["sound_pressure_level"] = spl;
+            }
+            metricsArray.append(pairMetrics);
+            qInfo() << "  Metrics: T20=" << rtResult.t20 << "s T30=" << rtResult.t30
+                    << "s SPL=" << splResult.totalSPL << "dB";
+
             if (outLeft.empty() && outRight.empty())
                 continue;
             if (outLeft.empty()) outLeft.resize(outRight.size(), 0.0f);
@@ -277,7 +319,7 @@ void SimulationWorker::process() {
             if (!AudioFile::saveStereo(QDir(outputDir).filePath(filename), fs, outLeft, outRight))
                 qWarning() << "Failed to write" << filename;
 
-            MixedStereo& mix = mixedPerListener[static_cast<size_t>(li)];
+            MixedStereo& mix = mixedPerListener[li];
             size_t n = std::max(mix.left.size(), outLen);
             mix.left.resize(n, 0.0f);
             mix.right.resize(n, 0.0f);
@@ -289,10 +331,11 @@ void SimulationWorker::process() {
     }
 
     if (scene.soundSourceCount() > 1) {
-        for (int li = 0; li < scene.listenerCount(); ++li) {
+        for (int li : listenerIndices) {
             auto* listener = scene.getListener(li);
-            if (!listener || (mixedPerListener[static_cast<size_t>(li)].left.empty())) continue;
-            MixedStereo& m = mixedPerListener[static_cast<size_t>(li)];
+            if (!listener || mixedPerListener.find(li) == mixedPerListener.end()
+                || mixedPerListener[li].left.empty()) continue;
+            MixedStereo& m = mixedPerListener[li];
             float maxVal = 0.0f;
             for (float s : m.left)  maxVal = std::max(maxVal, std::abs(s));
             for (float s : m.right) maxVal = std::max(maxVal, std::abs(s));
@@ -302,6 +345,21 @@ void SimulationWorker::process() {
             }
             QString listenerName = QString::fromStdString(listener->name).replace(' ', '_');
             AudioFile::saveStereo(QDir(outputDir).filePath(listenerName + "_mixed.wav"), mixedFs, m.left, m.right);
+        }
+    }
+
+    // Save metrics JSON
+    if (!metricsArray.isEmpty()) {
+        QJsonObject metricsRoot;
+        metricsRoot["version"] = "1.0";
+        metricsRoot["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
+        metricsRoot["sample_rate"] = params_.sampleRate;
+        metricsRoot["pairs"] = metricsArray;
+
+        QFile metricsFile(QDir(outputDir).filePath("metrics.json"));
+        if (metricsFile.open(QIODevice::WriteOnly)) {
+            metricsFile.write(QJsonDocument(metricsRoot).toJson(QJsonDocument::Indented));
+            qInfo() << "Saved metrics for" << metricsArray.size() << "source-listener pairs";
         }
     }
 

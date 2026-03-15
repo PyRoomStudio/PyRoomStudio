@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets Multimedia Svg)
 
 # Eigen3: try system install first, fall back to FetchContent
 find_package(Eigen3 3.3 QUIET)
@@ -65,6 +65,8 @@ set(SOURCES
     src/acoustics/RoomImpulseResponse.cpp
     src/acoustics/Wall.cpp
     src/acoustics/SimulationWorker.cpp
+    src/acoustics/SimulationQueue.cpp
+    src/acoustics/AcousticMetrics.cpp
     src/audio/AudioFile.cpp
     src/audio/SignalProcessing.cpp
     src/gui/MainWindow.cpp
@@ -73,7 +75,10 @@ set(SOURCES
     src/gui/AssetsPanel.cpp
     src/gui/BottomToolbar.cpp
     src/gui/UndoCommands.cpp
+    src/gui/SimulationQueuePanel.cpp
     src/gui/dialogs/SettingsDialogs.cpp
+    src/gui/dialogs/AudioComparisonDialog.cpp
+    src/gui/dialogs/RenderOptionsDialog.cpp
     src/gui/widgets/MaterialGallery.cpp
     src/gui/widgets/SurfaceGallery.cpp
     src/gui/widgets/ColorSwatch.cpp
@@ -102,6 +107,8 @@ set(HEADERS
     src/acoustics/RoomImpulseResponse.h
     src/acoustics/Wall.h
     src/acoustics/SimulationWorker.h
+    src/acoustics/SimulationQueue.h
+    src/acoustics/AcousticMetrics.h
     src/audio/AudioFile.h
     src/audio/SignalProcessing.h
     src/gui/MainWindow.h
@@ -110,7 +117,10 @@ set(HEADERS
     src/gui/AssetsPanel.h
     src/gui/BottomToolbar.h
     src/gui/UndoCommands.h
+    src/gui/SimulationQueuePanel.h
     src/gui/dialogs/SettingsDialogs.h
+    src/gui/dialogs/AudioComparisonDialog.h
+    src/gui/dialogs/RenderOptionsDialog.h
     src/gui/widgets/MaterialGallery.h
     src/gui/widgets/SurfaceGallery.h
     src/gui/widgets/ColorSwatch.h
@@ -119,7 +129,11 @@ set(HEADERS
 
 qt6_add_resources(RESOURCES resources/resources.qrc)
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
+if(WIN32)
+    set(APP_RC resources/app.rc)
+endif()
+
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -130,6 +144,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Widgets
     Qt6::OpenGL
     Qt6::OpenGLWidgets
+    Qt6::Multimedia
+    Qt6::Svg
     Eigen3::Eigen
 )
 

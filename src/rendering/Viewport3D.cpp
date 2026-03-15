@@ -35,7 +35,7 @@ void Viewport3D::applyDisplaySettings() {
 }
 
 bool Viewport3D::loadModel(const QString& filepath) {
-    if (!mesh_.loadSTL(filepath)) return false;
+    if (!mesh_.load(filepath)) return false;
 
     modelCenter_  = mesh_.center();
     originalSize_ = mesh_.diagonalSize();
@@ -61,6 +61,11 @@ bool Viewport3D::loadModel(const QString& filepath) {
 
     update();
     emit modelLoaded(filepath);
+
+    if (!mesh_.isClosed()) {
+        emit meshOpenWarning(mesh_.boundaryEdgeCount());
+    }
+
     return true;
 }
 
@@ -342,7 +347,7 @@ Viewport3D::getSourcesAndListeners(const std::string& audioFile) const {
         } else if (pt.pointType == POINT_TYPE_LISTENER) {
             ++lc;
             std::string name = pt.name.empty() ? "Listener " + std::to_string(lc) : pt.name;
-            listeners.push_back({pos, name});
+            listeners.push_back({pos, name, pt.getForwardDirection()});
         }
     }
     return {sources, listeners};
@@ -438,7 +443,7 @@ void Viewport3D::drawPlaceholder() {
     font.setPointSize(14);
     painter.setFont(font);
     painter.drawText(r, Qt::AlignCenter,
-        "No 3D Model Loaded\n\nFile \u2192 Open Project\nto load an STL file");
+        "No 3D Model Loaded\n\nFile \u2192 New Project\nto load an STL or OBJ file");
     painter.end();
 }
 
@@ -559,7 +564,12 @@ void Viewport3D::drawPointMarkers() {
     glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
 
     glDisable(GL_TEXTURE_2D);
-    if (transparentMode_) glDisable(GL_DEPTH_TEST);
+    if (transparentMode_) {
+        glDisable(GL_DEPTH_TEST);
+    } else {
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(-2.0f, -2.0f);
+    }
 
     float baseSize = (markerSize_ / 100.0f) / scaleFactor_;
 
@@ -574,10 +584,16 @@ void Viewport3D::drawPointMarkers() {
         float size = isActive ? baseSize * 1.3f : baseSize;
         float alpha = (isActive || isSelected) ? 1.0f : 0.8f;
 
+        Color3f color = pt.color;
+        if (pt.pointType == POINT_TYPE_SOURCE)
+            color = {0.8f, 0.2f, 0.2f};
+        else if (pt.pointType == POINT_TYPE_LISTENER)
+            color = {0.2f, 0.2f, 0.8f};
+
+        // Billboard circle
         glPushMatrix();
         glTranslatef(pos.x(), pos.y(), pos.z());
 
-        // Billboard: cancel camera rotation
         GLfloat billboard[16] = {
             modelview[0], modelview[4], modelview[8], 0,
             modelview[1], modelview[5], modelview[9], 0,
@@ -585,13 +601,6 @@ void Viewport3D::drawPointMarkers() {
             0, 0, 0, 1
         };
         glMultMatrixf(billboard);
-
-        // Draw colored dot
-        Color3f color = pt.color;
-        if (pt.pointType == POINT_TYPE_SOURCE)
-            color = {0.8f, 0.2f, 0.2f};
-        else if (pt.pointType == POINT_TYPE_LISTENER)
-            color = {0.2f, 0.2f, 0.8f};
 
         constexpr int segs = 24;
         glColor4f(color[0], color[1], color[2], alpha);
@@ -603,7 +612,6 @@ void Viewport3D::drawPointMarkers() {
         }
         glEnd();
 
-        // Outline
         if (isActive) { glColor4f(1, 1, 1, 1); glLineWidth(3); }
         else if (isSelected) { glColor4f(1, 1, 0, 1); glLineWidth(3); }
         else          { glColor4f(color[0]*0.5f, color[1]*0.5f, color[2]*0.5f, alpha); glLineWidth(2); }
@@ -615,9 +623,37 @@ void Viewport3D::drawPointMarkers() {
         glEnd();
 
         glPopMatrix();
+
+        // Direction arrow for listener points (always horizontal, parallel to grid floor)
+        if (pt.pointType == POINT_TYPE_LISTENER) {
+            Vec3f fwd = pt.getForwardDirection();
+            float arrowLen = size * 2.5f;
+            Vec3f tip = pos + fwd * arrowLen;
+
+            Vec3f right(-fwd.y(), fwd.x(), 0.0f);
+            float headSize = arrowLen * 0.3f;
+            Vec3f head1 = tip - fwd * headSize + right * headSize * 0.5f;
+            Vec3f head2 = tip - fwd * headSize - right * headSize * 0.5f;
+
+            glColor4f(1.0f, 1.0f, 1.0f, alpha);
+            glLineWidth(2);
+            glBegin(GL_LINES);
+            glVertex3f(pos.x(), pos.y(), pos.z());
+            glVertex3f(tip.x(), tip.y(), tip.z());
+            glEnd();
+
+            glBegin(GL_TRIANGLES);
+            glVertex3f(tip.x(), tip.y(), tip.z());
+            glVertex3f(head1.x(), head1.y(), head1.z());
+            glVertex3f(head2.x(), head2.y(), head2.z());
+            glEnd();
+        }
     }
 
-    if (transparentMode_) glEnable(GL_DEPTH_TEST);
+    if (transparentMode_)
+        glEnable(GL_DEPTH_TEST);
+    else
+        glDisable(GL_POLYGON_OFFSET_FILL);
     glPopMatrix();
 }
 

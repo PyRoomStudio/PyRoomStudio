@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QSlider>
+#include <QDial>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
@@ -25,6 +26,8 @@ public:
     void setPointName(const QString& name);
     void setPointVolume(float volume);
     void setPointAudioFile(const QString& filename);
+    void setPointOrientationYaw(float yaw);
+    void setOrientationControlsVisible(bool visible);
 
 signals:
     void scaleChanged(float value);
@@ -38,6 +41,7 @@ signals:
     void deselectSurface();
     void pointNameChanged(const QString& name);
     void pointVolumeChanged(float volume);
+    void pointOrientationYawChanged(float yaw);
     void selectPointAudioFile();
 
 private:
@@ -61,6 +65,9 @@ private:
     QPushButton* loadTextureBtn_      = nullptr;
     QPushButton* deselectSurfBtn_     = nullptr;
     QLabel*      materialLabel_       = nullptr;
+    QWidget*     orientationWidget_   = nullptr;
+    QDial*       orientationDial_     = nullptr;
+    QLabel*      orientationLabel_    = nullptr;
 
     bool updatingSlider_ = false;
 };

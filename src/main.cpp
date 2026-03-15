@@ -2,12 +2,14 @@
 
 #include <QApplication>
 #include <QSurfaceFormat>
+#include <QIcon>
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
     app.setApplicationName("PyRoomStudio");
     app.setApplicationVersion("1.0.0");
     app.setOrganizationName("PyRoomStudio");
+    app.setWindowIcon(QIcon(":/logo.svg"));
 
     // Request OpenGL context with depth buffer
     QSurfaceFormat format;

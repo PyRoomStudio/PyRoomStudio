@@ -6,6 +6,7 @@
 #include "acoustics/ImageSourceMethod.h"
 #include "acoustics/RayTracer.h"
 #include "acoustics/RoomImpulseResponse.h"
+#include "acoustics/AcousticMetrics.h"
 
 using namespace prs;
 
@@ -150,6 +151,67 @@ private slots:
         auto impulse = rir.compute(images, {}, 44100);
         QVERIFY(!impulse.empty());
         QVERIFY(impulse.size() > 44);
+    }
+
+    void testSchroederCurve() {
+        // Exponentially decaying impulse
+        int fs = 44100;
+        int len = fs;  // 1 second
+        std::vector<float> rir(len, 0.0f);
+        for (int i = 0; i < len; ++i)
+            rir[i] = std::exp(-3.0f * i / fs);
+
+        auto edc = AcousticMetrics::computeSchroederCurve(rir);
+        QCOMPARE(static_cast<int>(edc.size()), len);
+        QVERIFY(edc[0] > edc[len - 1]);
+        QVERIFY(edc[0] > 0.0f);
+
+        auto edcDb = AcousticMetrics::schroederCurveDb(rir);
+        QVERIFY(std::abs(edcDb[0]) < 0.01f);
+        QVERIFY(edcDb[len / 2] < 0.0f);
+    }
+
+    void testComputeRT() {
+        int fs = 44100;
+        int len = 2 * fs;
+        std::vector<float> rir(len, 0.0f);
+        for (int i = 0; i < len; ++i)
+            rir[i] = std::exp(-5.0f * i / fs);
+
+        auto rt = AcousticMetrics::computeRT(rir, fs);
+        QVERIFY(rt.valid);
+        QVERIFY(rt.t20 > 0.0f);
+        QVERIFY(rt.t30 > 0.0f);
+        QVERIFY(rt.t20 < 5.0f);
+        QVERIFY(rt.t30 < 5.0f);
+    }
+
+    void testComputeSPL() {
+        std::vector<ImageSource> images;
+        ImageSource direct;
+        direct.attenuation = 0.5f;
+        direct.order = 0;
+        direct.delay = 0.01f;
+        images.push_back(direct);
+
+        ImageSource reflected;
+        reflected.attenuation = 0.1f;
+        reflected.order = 1;
+        reflected.delay = 0.02f;
+        images.push_back(reflected);
+
+        auto spl = AcousticMetrics::computeSPL(1.0f, images, {}, 1000);
+        QVERIFY(spl.valid);
+        QVERIFY(spl.directSPL > 0.0f);
+        QVERIFY(spl.totalSPL >= spl.directSPL);
+    }
+
+    void testEmptyMetrics() {
+        auto rt = AcousticMetrics::computeRT({}, 44100);
+        QVERIFY(!rt.valid);
+
+        auto spl = AcousticMetrics::computeSPL(1.0f, {}, {}, 0);
+        QVERIFY(!spl.valid);
     }
 };
 

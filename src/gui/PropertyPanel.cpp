@@ -115,6 +115,34 @@ void PropertyPanel::setupUI() {
         gl->addWidget(pointAudioLabel_);
         connect(pointAudioBtn_, &QPushButton::clicked, this, &PropertyPanel::selectPointAudioFile);
 
+        // Listener orientation
+        orientationWidget_ = new QWidget;
+        auto* orientLayout = new QVBoxLayout(orientationWidget_);
+        orientLayout->setContentsMargins(0, 0, 0, 0);
+        orientLayout->setSpacing(2);
+        orientLayout->addWidget(new QLabel("Facing Direction:"));
+        auto* dialRow = new QHBoxLayout;
+        orientationDial_ = new QDial;
+        orientationDial_->setRange(0, 359);
+        orientationDial_->setWrapping(true);
+        orientationDial_->setNotchesVisible(true);
+        orientationDial_->setNotchTarget(45);
+        orientationDial_->setFixedSize(60, 60);
+        orientationLabel_ = new QLabel("0\u00B0");
+        orientationLabel_->setFixedWidth(36);
+        dialRow->addWidget(orientationDial_);
+        dialRow->addWidget(orientationLabel_);
+        dialRow->addStretch();
+        orientLayout->addLayout(dialRow);
+        gl->addWidget(orientationWidget_);
+        orientationWidget_->setVisible(false);
+
+        connect(orientationDial_, &QDial::valueChanged, [this](int v) {
+            if (updatingSlider_) return;
+            orientationLabel_->setText(QString("%1\u00B0").arg(v));
+            emit pointOrientationYawChanged(static_cast<float>(v));
+        });
+
         auto* actionRow = new QHBoxLayout;
         deletePointBtn_  = new QPushButton("Delete");
         deselectPointBtn_ = new QPushButton("Deselect");
@@ -206,9 +234,12 @@ void PropertyPanel::setPointControlsEnabled(bool enabled) {
         listenerBtn_->setText("Listener");
         pointNameEdit_->clear();
         pointAudioLabel_->setText("No audio file");
+        orientationWidget_->setVisible(false);
         updatingSlider_ = true;
         pointVolumeSlider_->setValue(100);
         pointVolumeLabel_->setText("1.00");
+        orientationDial_->setValue(0);
+        orientationLabel_->setText("0\u00B0");
         updatingSlider_ = false;
     }
 }
@@ -239,6 +270,17 @@ void PropertyPanel::setPointVolume(float volume) {
 
 void PropertyPanel::setPointAudioFile(const QString& filename) {
     pointAudioLabel_->setText(filename.isEmpty() ? "No audio file" : filename);
+}
+
+void PropertyPanel::setPointOrientationYaw(float yaw) {
+    updatingSlider_ = true;
+    orientationDial_->setValue(static_cast<int>(yaw));
+    orientationLabel_->setText(QString("%1\u00B0").arg(static_cast<int>(yaw)));
+    updatingSlider_ = false;
+}
+
+void PropertyPanel::setOrientationControlsVisible(bool visible) {
+    orientationWidget_->setVisible(visible);
 }
 
 } // namespace prs

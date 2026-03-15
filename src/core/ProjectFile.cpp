@@ -71,6 +71,7 @@ bool ProjectFile::save(const QString& filepath, const ProjectData& data) {
         po["name"] = QString::fromStdString(pt.name);
         po["volume"] = static_cast<double>(pt.volume);
         po["audioFile"] = QString::fromStdString(pt.audioFile);
+        po["orientationYaw"] = static_cast<double>(pt.orientationYaw);
         pointsArr.append(po);
     }
     root["placedPoints"] = pointsArr;
@@ -127,6 +128,7 @@ std::optional<ProjectData> ProjectFile::load(const QString& filepath) {
         pt.name         = po["name"].toString().toStdString();
         pt.volume       = static_cast<float>(po["volume"].toDouble(1.0));
         pt.audioFile    = po["audioFile"].toString().toStdString();
+        pt.orientationYaw = static_cast<float>(po["orientationYaw"].toDouble(0.0));
         data.placedPoints.push_back(pt);
     }
 
