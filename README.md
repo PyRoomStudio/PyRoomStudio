@@ -127,9 +127,7 @@ $ ./release_linux.sh --fresh
 
 ## Controls
 
-- Mouse: **[Left-click]** to select surfaces and points, **[Right-click]** to set surface color, **[Left-click + hold]** to rotate camera. 
-
-- **[T]**: Set transparency on *all* surfaces of a loaded mesh.
+Check `INSTRUCTIONS.md` for details on how to use the application.
 
 <!------------------------------------------------------------------->
 
