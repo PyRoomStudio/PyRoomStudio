@@ -1,0 +1,20 @@
+{
+    "name": "Glass wool or mineral wool over air space 25mm",
+    "category": "Mineral Wool Foams",
+    "thickness": "25mm",
+    "absorption": {
+        "125": 0.4,
+        "250": 0.0,
+        "500": 0.8,
+        "1000": 0.0,
+        "2000": 0.9,
+        "4000": 0.8
+    },
+    "scattering": 0.1,
+    "color": [
+        221,
+        211,
+        41
+    ],
+    "texture": ""
+}

@@ -1,0 +1,20 @@
+{
+    "name": "Glass wool 50mm 48 kg per m3",
+    "category": "Mineral Wool Foams",
+    "thickness": "50mm",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.8,
+        "500": 1.0,
+        "1000": 1.0,
+        "2000": 1.0,
+        "4000": 1.0
+    },
+    "scattering": 0.1,
+    "color": [
+        208,
+        198,
+        28
+    ],
+    "texture": ""
+}

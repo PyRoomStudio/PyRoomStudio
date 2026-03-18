@@ -1,0 +1,20 @@
+{
+    "name": "Woodblock linoleum rubber cork tiles thin on solid floor",
+    "category": "Floors",
+    "thickness": "",
+    "absorption": {
+        "125": 0.02,
+        "250": 0.04,
+        "500": 0.05,
+        "1000": 0.05,
+        "2000": 0.1,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        190,
+        180,
+        160
+    ],
+    "texture": ""
+}

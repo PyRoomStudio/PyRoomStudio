@@ -1,0 +1,20 @@
+{
+    "name": "Melamine based foam 25mm",
+    "category": "Mineral Wool Foams",
+    "thickness": "25mm",
+    "absorption": {
+        "125": 0.09,
+        "250": 0.22,
+        "500": 0.54,
+        "1000": 0.76,
+        "2000": 0.88,
+        "4000": 0.93
+    },
+    "scattering": 0.1,
+    "color": [
+        220,
+        210,
+        200
+    ],
+    "texture": ""
+}

@@ -1,0 +1,20 @@
+{
+    "name": "Double glazing 2-3mm glass 10mm air gap",
+    "category": "Glass Glazing",
+    "thickness": "",
+    "absorption": {
+        "125": 0.15,
+        "250": 0.05,
+        "500": 0.03,
+        "1000": 0.03,
+        "2000": 0.02,
+        "4000": 0.02
+    },
+    "scattering": 0.1,
+    "color": [
+        190,
+        220,
+        235
+    ],
+    "texture": ""
+}

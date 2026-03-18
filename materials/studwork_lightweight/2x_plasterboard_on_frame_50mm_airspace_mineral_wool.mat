@@ -1,0 +1,20 @@
+{
+    "name": "2x plasterboard on frame 50mm airspace mineral wool",
+    "category": "Studwork Lightweight",
+    "thickness": "2x13mm",
+    "absorption": {
+        "125": 0.15,
+        "250": 0.1,
+        "500": 0.06,
+        "1000": 0.04,
+        "2000": 0.04,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        225,
+        220,
+        210
+    ],
+    "texture": ""
+}

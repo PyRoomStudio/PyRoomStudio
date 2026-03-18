@@ -1,6 +1,7 @@
 #include <QtTest/QtTest>
 #include "core/Types.h"
 #include "core/Material.h"
+#include "core/MaterialLoader.h"
 #include "core/PlacedPoint.h"
 #include "core/SoundSource.h"
 #include "core/Listener.h"
@@ -12,28 +13,32 @@ class TestCore : public QObject {
 private slots:
     void testMaterialDefaults() {
         Material m;
-        QCOMPARE(m.energyAbsorption, 0.2f);
+        QCOMPARE(m.averageAbsorption(), 0.2f);
         QCOMPARE(m.scattering, 0.1f);
         QVERIFY(!m.name.empty() || m.name.empty());
     }
 
-    void testAcousticMaterialCategories() {
-        auto& cats = getAcousticMaterials();
-        QVERIFY(cats.size() >= 4);
-        QStringList names;
-        for (auto& c : cats) names << QString::fromStdString(c.name);
-        QVERIFY(names.contains("Wall Materials"));
-        QVERIFY(names.contains("Floor Materials"));
-        QVERIFY(names.contains("Ceiling Materials"));
-        QVERIFY(names.contains("Soft Furnish"));
+    void testMaterialAbsorptionAt() {
+        Material m;
+        m.absorption = {0.10f, 0.20f, 0.40f, 0.60f, 0.80f, 0.90f};
+        QVERIFY(std::abs(m.absorptionAt(125) - 0.10f) < 1e-5f);
+        QVERIFY(std::abs(m.absorptionAt(4000) - 0.90f) < 1e-5f);
+        QVERIFY(m.absorptionAt(500) > 0.30f && m.absorptionAt(500) < 0.50f);
+    }
 
-        for (auto& cat : cats) {
+    void testMaterialLoaderFromDirectory() {
+        auto categories = MaterialLoader::loadFromDirectory("materials");
+        QVERIFY(categories.size() >= 2);
+        int totalMats = 0;
+        for (auto& cat : categories) {
             QVERIFY(!cat.materials.empty());
             for (auto& mat : cat.materials) {
-                QVERIFY(mat.energyAbsorption >= 0.0f && mat.energyAbsorption <= 1.0f);
+                QVERIFY(mat.averageAbsorption() >= 0.0f && mat.averageAbsorption() <= 1.0f);
                 QVERIFY(mat.scattering >= 0.0f && mat.scattering <= 1.0f);
+                totalMats++;
             }
         }
+        QVERIFY(totalMats >= 100);
     }
 
     void testPlacedPointGetPosition() {

@@ -1,0 +1,20 @@
+{
+    "name": "Plasterboard on cellular core partition",
+    "category": "Studwork Lightweight",
+    "thickness": "",
+    "absorption": {
+        "125": 0.15,
+        "250": 0.0,
+        "500": 0.07,
+        "1000": 0.0,
+        "2000": 0.04,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        230,
+        226,
+        218
+    ],
+    "texture": ""
+}

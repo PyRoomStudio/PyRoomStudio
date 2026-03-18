@@ -1,0 +1,20 @@
+{
+    "name": "Smooth brickwork flush pointing",
+    "category": "Masonry Walls",
+    "thickness": "",
+    "absorption": {
+        "125": 0.02,
+        "250": 0.03,
+        "500": 0.03,
+        "1000": 0.04,
+        "2000": 0.05,
+        "4000": 0.07
+    },
+    "scattering": 0.1,
+    "color": [
+        178,
+        102,
+        85
+    ],
+    "texture": ""
+}

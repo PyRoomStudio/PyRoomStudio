@@ -1,0 +1,20 @@
+{
+    "name": "Children seated in plastic or metal chairs per child",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.28,
+        "250": 0.0,
+        "500": 0.33,
+        "1000": 0.0,
+        "2000": 0.37,
+        "4000": 0.37
+    },
+    "scattering": 0.1,
+    "color": [
+        195,
+        175,
+        155
+    ],
+    "texture": ""
+}

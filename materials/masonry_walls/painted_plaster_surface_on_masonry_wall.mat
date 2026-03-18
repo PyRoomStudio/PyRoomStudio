@@ -1,0 +1,20 @@
+{
+    "name": "Painted plaster surface on masonry wall",
+    "category": "Masonry Walls",
+    "thickness": "",
+    "absorption": {
+        "125": 0.02,
+        "250": 0.02,
+        "500": 0.02,
+        "1000": 0.02,
+        "2000": 0.02,
+        "4000": 0.02
+    },
+    "scattering": 0.1,
+    "color": [
+        240,
+        235,
+        225
+    ],
+    "texture": ""
+}

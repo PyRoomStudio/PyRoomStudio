@@ -51,8 +51,18 @@ bool ProjectFile::save(const QString& filepath, const ProjectData& data) {
         if (m.has_value()) {
             QJsonObject mo;
             mo["name"] = QString::fromStdString(m->name);
-            mo["energyAbsorption"] = static_cast<double>(m->energyAbsorption);
+            mo["category"] = QString::fromStdString(m->category);
             mo["scattering"] = static_cast<double>(m->scattering);
+            mo["texturePath"] = QString::fromStdString(m->texturePath);
+            QJsonObject absObj;
+            for (int i = 0; i < NUM_FREQ_BANDS; ++i)
+                absObj[QString::number(FREQ_BANDS[i])] = static_cast<double>(m->absorption[i]);
+            mo["absorption"] = absObj;
+            QJsonArray colorArr;
+            colorArr.append(m->color[0]);
+            colorArr.append(m->color[1]);
+            colorArr.append(m->color[2]);
+            mo["color"] = colorArr;
             matsArr.append(mo);
         } else {
             matsArr.append(QJsonValue());
@@ -111,8 +121,22 @@ std::optional<ProjectData> ProjectFile::load(const QString& filepath) {
             QJsonObject mo = val.toObject();
             Material m;
             m.name = mo["name"].toString().toStdString();
-            m.energyAbsorption = static_cast<float>(mo["energyAbsorption"].toDouble());
-            m.scattering = static_cast<float>(mo["scattering"].toDouble());
+            m.category = mo["category"].toString().toStdString();
+            m.scattering = static_cast<float>(mo["scattering"].toDouble(0.1));
+            m.texturePath = mo["texturePath"].toString().toStdString();
+            if (mo.contains("absorption") && mo["absorption"].isObject()) {
+                QJsonObject absObj = mo["absorption"].toObject();
+                for (int i = 0; i < NUM_FREQ_BANDS; ++i) {
+                    QString key = QString::number(FREQ_BANDS[i]);
+                    if (absObj.contains(key))
+                        m.absorption[i] = static_cast<float>(absObj[key].toDouble(0.2));
+                }
+            }
+            if (mo.contains("color") && mo["color"].isArray()) {
+                QJsonArray ca = mo["color"].toArray();
+                if (ca.size() >= 3)
+                    m.color = {ca[0].toInt(160), ca[1].toInt(160), ca[2].toInt(160)};
+            }
             data.surfaceMaterials.push_back(m);
         }
     }

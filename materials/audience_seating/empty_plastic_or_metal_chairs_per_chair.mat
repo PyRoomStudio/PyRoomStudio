@@ -1,0 +1,20 @@
+{
+    "name": "Empty plastic or metal chairs per chair",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.07,
+        "250": 0.0,
+        "500": 0.14,
+        "1000": 0.0,
+        "2000": 0.14,
+        "4000": 0.14
+    },
+    "scattering": 0.1,
+    "color": [
+        80,
+        80,
+        90
+    ],
+    "texture": ""
+}

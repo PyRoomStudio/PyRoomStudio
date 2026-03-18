@@ -1,0 +1,20 @@
+{
+    "name": "Plywood 12mm perforated 11 percent open with 60mm fibreglass",
+    "category": "Ceilings",
+    "thickness": "",
+    "absorption": {
+        "125": 0.4,
+        "250": 0.9,
+        "500": 0.8,
+        "1000": 0.5,
+        "2000": 0.4,
+        "4000": 0.3
+    },
+    "scattering": 0.1,
+    "color": [
+        164,
+        124,
+        74
+    ],
+    "texture": ""
+}

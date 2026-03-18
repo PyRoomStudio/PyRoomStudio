@@ -1,0 +1,20 @@
+{
+    "name": "Plaster on solid wall",
+    "category": "Masonry Walls",
+    "thickness": "",
+    "absorption": {
+        "125": 0.04,
+        "250": 0.05,
+        "500": 0.06,
+        "1000": 0.08,
+        "2000": 0.04,
+        "4000": 0.06
+    },
+    "scattering": 0.1,
+    "color": [
+        245,
+        240,
+        230
+    ],
+    "texture": ""
+}

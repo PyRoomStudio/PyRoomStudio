@@ -1,0 +1,20 @@
+{
+    "name": "Plasterboard 10mm perforated 14 percent open area 90mm battens",
+    "category": "Ceilings",
+    "thickness": "10mm",
+    "absorption": {
+        "125": 0.25,
+        "250": 0.7,
+        "500": 0.85,
+        "1000": 0.55,
+        "2000": 0.4,
+        "4000": 0.3
+    },
+    "scattering": 0.1,
+    "color": [
+        223,
+        218,
+        210
+    ],
+    "texture": ""
+}

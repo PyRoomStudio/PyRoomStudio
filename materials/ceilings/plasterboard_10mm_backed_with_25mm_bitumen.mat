@@ -1,0 +1,20 @@
+{
+    "name": "Plasterboard 10mm backed with 25mm bitumen",
+    "category": "Ceilings",
+    "thickness": "10mm",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.2,
+        "500": 0.15,
+        "1000": 0.05,
+        "2000": 0.05,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        225,
+        220,
+        212
+    ],
+    "texture": ""
+}

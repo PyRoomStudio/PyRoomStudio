@@ -1,0 +1,20 @@
+{
+    "name": "Floor and cloth-upholstered seats per m2",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.49,
+        "250": 0.66,
+        "500": 0.8,
+        "1000": 0.88,
+        "2000": 0.82,
+        "4000": 0.7
+    },
+    "scattering": 0.1,
+    "color": [
+        85,
+        105,
+        135
+    ],
+    "texture": ""
+}

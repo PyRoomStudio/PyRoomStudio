@@ -1,0 +1,20 @@
+{
+    "name": "Cork board 25mm on battens",
+    "category": "Wall Treatments",
+    "thickness": "25mm",
+    "absorption": {
+        "125": 0.15,
+        "250": 0.4,
+        "500": 0.65,
+        "1000": 0.35,
+        "2000": 0.35,
+        "4000": 0.3
+    },
+    "scattering": 0.1,
+    "color": [
+        156,
+        116,
+        56
+    ],
+    "texture": ""
+}

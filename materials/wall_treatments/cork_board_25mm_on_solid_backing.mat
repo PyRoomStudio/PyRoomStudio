@@ -1,0 +1,20 @@
+{
+    "name": "Cork board 25mm on solid backing",
+    "category": "Wall Treatments",
+    "thickness": "25mm",
+    "absorption": {
+        "125": 0.03,
+        "250": 0.05,
+        "500": 0.17,
+        "1000": 0.52,
+        "2000": 0.5,
+        "4000": 0.52
+    },
+    "scattering": 0.1,
+    "color": [
+        158,
+        118,
+        58
+    ],
+    "texture": ""
+}

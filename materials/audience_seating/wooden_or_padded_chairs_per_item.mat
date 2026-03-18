@@ -1,0 +1,20 @@
+{
+    "name": "Wooden or padded chairs per item",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.08,
+        "250": 0.0,
+        "500": 0.15,
+        "1000": 0.0,
+        "2000": 0.18,
+        "4000": 0.2
+    },
+    "scattering": 0.1,
+    "color": [
+        150,
+        100,
+        65
+    ],
+    "texture": ""
+}

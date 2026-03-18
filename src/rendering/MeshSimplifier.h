@@ -1,9 +1,11 @@
 #pragma once
 
 #include "core/Types.h"
+#include "core/Material.h"
 #include "acoustics/Wall.h"
 
 #include <vector>
+#include <array>
 
 namespace prs {
 
@@ -27,7 +29,7 @@ private:
     struct Face {
         int v[3]{-1, -1, -1};
         int surfaceId = -1;
-        float energyAbsorption = 0.2f;
+        std::array<float, NUM_FREQ_BANDS> absorption = {0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f};
         float scattering = 0.1f;
         bool removed = false;
     };

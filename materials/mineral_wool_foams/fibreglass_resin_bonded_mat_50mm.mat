@@ -1,0 +1,20 @@
+{
+    "name": "Fibreglass resin-bonded mat 50mm",
+    "category": "Mineral Wool Foams",
+    "thickness": "50mm",
+    "absorption": {
+        "125": 0.2,
+        "250": 0.5,
+        "500": 0.7,
+        "1000": 0.8,
+        "2000": 0.75,
+        "4000": 0.8
+    },
+    "scattering": 0.1,
+    "color": [
+        224,
+        224,
+        224
+    ],
+    "texture": ""
+}

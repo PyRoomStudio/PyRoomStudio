@@ -21,7 +21,6 @@ public:
         const std::vector<Vec3f>& modelVertices,
         int maxOrder = DEFAULT_MAX_ORDER,
         int nRays = DEFAULT_N_RAYS,
-        float energyAbsorption = DEFAULT_ENERGY_ABSORPTION,
         float scattering = DEFAULT_SCATTERING,
         bool airAbsorption = true);
 

@@ -1,0 +1,20 @@
+{
+    "name": "Hardwood mahogany",
+    "category": "Wood Panelling",
+    "thickness": "",
+    "absorption": {
+        "125": 0.19,
+        "250": 0.23,
+        "500": 0.25,
+        "1000": 0.3,
+        "2000": 0.37,
+        "4000": 0.42
+    },
+    "scattering": 0.1,
+    "color": [
+        100,
+        50,
+        20
+    ],
+    "texture": ""
+}

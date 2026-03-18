@@ -1,0 +1,20 @@
+{
+    "name": "Ventilation grille per m2",
+    "category": "Other",
+    "thickness": "",
+    "absorption": {
+        "125": 0.6,
+        "250": 0.6,
+        "500": 0.6,
+        "1000": 0.6,
+        "2000": 0.6,
+        "4000": 0.6
+    },
+    "scattering": 0.1,
+    "color": [
+        140,
+        140,
+        145
+    ],
+    "texture": ""
+}

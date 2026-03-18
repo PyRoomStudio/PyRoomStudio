@@ -1,0 +1,20 @@
+{
+    "name": "Sheet rubber hard 6mm",
+    "category": "Floors",
+    "thickness": "6mm",
+    "absorption": {
+        "125": 0.0,
+        "250": 0.05,
+        "500": 0.05,
+        "1000": 0.1,
+        "2000": 0.05,
+        "4000": 0.0
+    },
+    "scattering": 0.1,
+    "color": [
+        50,
+        50,
+        55
+    ],
+    "texture": ""
+}

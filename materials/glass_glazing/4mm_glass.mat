@@ -1,0 +1,20 @@
+{
+    "name": "4mm glass",
+    "category": "Glass Glazing",
+    "thickness": "4mm",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.2,
+        "500": 0.1,
+        "1000": 0.07,
+        "2000": 0.05,
+        "4000": 0.02
+    },
+    "scattering": 0.1,
+    "color": [
+        200,
+        230,
+        245
+    ],
+    "texture": ""
+}

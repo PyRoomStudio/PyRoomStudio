@@ -1,0 +1,20 @@
+{
+    "name": "Plaster on masonry wall with wallpaper",
+    "category": "Masonry Walls",
+    "thickness": "",
+    "absorption": {
+        "125": 0.02,
+        "250": 0.03,
+        "500": 0.04,
+        "1000": 0.05,
+        "2000": 0.07,
+        "4000": 0.08
+    },
+    "scattering": 0.1,
+    "color": [
+        225,
+        215,
+        200
+    ],
+    "texture": ""
+}

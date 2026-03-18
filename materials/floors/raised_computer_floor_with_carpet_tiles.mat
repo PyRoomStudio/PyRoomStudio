@@ -1,0 +1,20 @@
+{
+    "name": "Raised computer floor with carpet tiles",
+    "category": "Floors",
+    "thickness": "",
+    "absorption": {
+        "125": 0.27,
+        "250": 0.26,
+        "500": 0.52,
+        "1000": 0.43,
+        "2000": 0.51,
+        "4000": 0.58
+    },
+    "scattering": 0.1,
+    "color": [
+        140,
+        130,
+        145
+    ],
+    "texture": ""
+}

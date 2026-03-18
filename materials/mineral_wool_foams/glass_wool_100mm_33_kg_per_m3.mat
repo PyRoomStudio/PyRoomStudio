@@ -1,0 +1,20 @@
+{
+    "name": "Glass wool 100mm 33 kg per m3",
+    "category": "Mineral Wool Foams",
+    "thickness": "100mm",
+    "absorption": {
+        "125": 0.53,
+        "250": 0.92,
+        "500": 1.0,
+        "1000": 1.0,
+        "2000": 1.0,
+        "4000": 1.0
+    },
+    "scattering": 0.1,
+    "color": [
+        210,
+        200,
+        30
+    ],
+    "texture": ""
+}

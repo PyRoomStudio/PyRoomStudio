@@ -1,0 +1,20 @@
+{
+    "name": "Woodwool slabs unplastered on solid backing 25mm",
+    "category": "Wall Treatments",
+    "thickness": "25mm",
+    "absorption": {
+        "125": 0.1,
+        "250": 0.0,
+        "500": 0.4,
+        "1000": 0.0,
+        "2000": 0.6,
+        "4000": 0.6
+    },
+    "scattering": 0.1,
+    "color": [
+        180,
+        160,
+        120
+    ],
+    "texture": ""
+}

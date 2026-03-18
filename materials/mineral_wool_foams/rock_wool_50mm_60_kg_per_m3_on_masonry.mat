@@ -1,0 +1,20 @@
+{
+    "name": "Rock wool 50mm 60 kg per m3 on masonry",
+    "category": "Mineral Wool Foams",
+    "thickness": "50mm",
+    "absorption": {
+        "125": 0.11,
+        "250": 0.6,
+        "500": 0.96,
+        "1000": 0.94,
+        "2000": 0.92,
+        "4000": 0.82
+    },
+    "scattering": 0.1,
+    "color": [
+        176,
+        166,
+        136
+    ],
+    "texture": ""
+}

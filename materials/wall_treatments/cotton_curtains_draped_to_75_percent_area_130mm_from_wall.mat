@@ -1,0 +1,20 @@
+{
+    "name": "Cotton curtains draped to 75 percent area 130mm from wall",
+    "category": "Wall Treatments",
+    "thickness": "",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.45,
+        "500": 0.65,
+        "1000": 0.56,
+        "2000": 0.59,
+        "4000": 0.71
+    },
+    "scattering": 0.1,
+    "color": [
+        200,
+        180,
+        150
+    ],
+    "texture": ""
+}

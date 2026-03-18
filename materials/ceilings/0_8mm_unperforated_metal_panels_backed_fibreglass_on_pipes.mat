@@ -1,0 +1,20 @@
+{
+    "name": "0.8mm unperforated metal panels backed fibreglass on pipes",
+    "category": "Ceilings",
+    "thickness": "0.8mm",
+    "absorption": {
+        "125": 0.5,
+        "250": 0.35,
+        "500": 0.15,
+        "1000": 0.05,
+        "2000": 0.05,
+        "4000": 0.0
+    },
+    "scattering": 0.1,
+    "color": [
+        188,
+        192,
+        198
+    ],
+    "texture": ""
+}

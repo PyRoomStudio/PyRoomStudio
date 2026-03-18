@@ -1,0 +1,20 @@
+{
+    "name": "Seats leather covers per m2",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.4,
+        "250": 0.5,
+        "500": 0.58,
+        "1000": 0.61,
+        "2000": 0.58,
+        "4000": 0.5
+    },
+    "scattering": 0.1,
+    "color": [
+        60,
+        30,
+        20
+    ],
+    "texture": ""
+}

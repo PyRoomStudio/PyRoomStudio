@@ -1,0 +1,20 @@
+{
+    "name": "T and G board on frame 50mm airspace mineral wool",
+    "category": "Wood Panelling",
+    "thickness": "16mm",
+    "absorption": {
+        "125": 0.25,
+        "250": 0.15,
+        "500": 0.1,
+        "1000": 0.09,
+        "2000": 0.08,
+        "4000": 0.07
+    },
+    "scattering": 0.1,
+    "color": [
+        148,
+        108,
+        68
+    ],
+    "texture": ""
+}

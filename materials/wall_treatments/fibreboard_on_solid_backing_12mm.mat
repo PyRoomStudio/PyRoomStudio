@@ -1,0 +1,20 @@
+{
+    "name": "Fibreboard on solid backing 12mm",
+    "category": "Wall Treatments",
+    "thickness": "12mm",
+    "absorption": {
+        "125": 0.05,
+        "250": 0.1,
+        "500": 0.15,
+        "1000": 0.25,
+        "2000": 0.3,
+        "4000": 0.3
+    },
+    "scattering": 0.1,
+    "color": [
+        160,
+        130,
+        90
+    ],
+    "texture": ""
+}

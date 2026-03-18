@@ -1,0 +1,20 @@
+{
+    "name": "25mm expanded polystyrene on 50mm battens",
+    "category": "Mineral Wool Foams",
+    "thickness": "",
+    "absorption": {
+        "125": 0.1,
+        "250": 0.25,
+        "500": 0.55,
+        "1000": 0.2,
+        "2000": 0.1,
+        "4000": 0.15
+    },
+    "scattering": 0.1,
+    "color": [
+        243,
+        243,
+        243
+    ],
+    "texture": ""
+}

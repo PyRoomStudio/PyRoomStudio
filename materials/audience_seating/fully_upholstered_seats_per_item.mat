@@ -1,0 +1,20 @@
+{
+    "name": "Fully upholstered seats per item",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.12,
+        "250": 0.0,
+        "500": 0.28,
+        "1000": 0.0,
+        "2000": 0.32,
+        "4000": 0.37
+    },
+    "scattering": 0.1,
+    "color": [
+        100,
+        70,
+        50
+    ],
+    "texture": ""
+}

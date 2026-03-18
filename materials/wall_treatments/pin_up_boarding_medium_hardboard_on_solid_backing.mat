@@ -1,0 +1,20 @@
+{
+    "name": "Pin up boarding medium hardboard on solid backing",
+    "category": "Wall Treatments",
+    "thickness": "",
+    "absorption": {
+        "125": 0.05,
+        "250": 0.0,
+        "500": 0.1,
+        "1000": 0.0,
+        "2000": 0.1,
+        "4000": 0.1
+    },
+    "scattering": 0.1,
+    "color": [
+        150,
+        120,
+        80
+    ],
+    "texture": ""
+}

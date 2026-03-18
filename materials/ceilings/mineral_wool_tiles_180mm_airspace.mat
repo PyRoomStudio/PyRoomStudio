@@ -1,0 +1,20 @@
+{
+    "name": "Mineral wool tiles 180mm airspace",
+    "category": "Ceilings",
+    "thickness": "",
+    "absorption": {
+        "125": 0.42,
+        "250": 0.72,
+        "500": 0.83,
+        "1000": 0.88,
+        "2000": 0.89,
+        "4000": 0.8
+    },
+    "scattering": 0.1,
+    "color": [
+        230,
+        225,
+        215
+    ],
+    "texture": ""
+}

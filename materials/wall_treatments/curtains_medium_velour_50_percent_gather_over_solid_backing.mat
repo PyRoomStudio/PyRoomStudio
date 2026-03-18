@@ -1,0 +1,20 @@
+{
+    "name": "Curtains medium velour 50 percent gather over solid backing",
+    "category": "Wall Treatments",
+    "thickness": "",
+    "absorption": {
+        "125": 0.05,
+        "250": 0.25,
+        "500": 0.4,
+        "1000": 0.5,
+        "2000": 0.6,
+        "4000": 0.5
+    },
+    "scattering": 0.1,
+    "color": [
+        120,
+        40,
+        60
+    ],
+    "texture": ""
+}

@@ -1,0 +1,20 @@
+{
+    "name": "Rock wool 30mm 200 kg per m3 over 300mm air gap",
+    "category": "Mineral Wool Foams",
+    "thickness": "30mm",
+    "absorption": {
+        "125": 0.4,
+        "250": 0.75,
+        "500": 0.9,
+        "1000": 0.8,
+        "2000": 0.9,
+        "4000": 0.85
+    },
+    "scattering": 0.1,
+    "color": [
+        170,
+        160,
+        130
+    ],
+    "texture": ""
+}

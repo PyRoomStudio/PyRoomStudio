@@ -1,0 +1,20 @@
+{
+    "name": "Acoustic timber wall panelling",
+    "category": "Wood Panelling",
+    "thickness": "",
+    "absorption": {
+        "125": 0.18,
+        "250": 0.34,
+        "500": 0.42,
+        "1000": 0.59,
+        "2000": 0.83,
+        "4000": 0.68
+    },
+    "scattering": 0.1,
+    "color": [
+        130,
+        90,
+        50
+    ],
+    "texture": ""
+}

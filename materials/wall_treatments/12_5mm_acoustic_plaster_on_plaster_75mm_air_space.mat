@@ -1,0 +1,20 @@
+{
+    "name": "12.5mm acoustic plaster on plaster 75mm air space",
+    "category": "Wall Treatments",
+    "thickness": "12.5mm",
+    "absorption": {
+        "125": 0.35,
+        "250": 0.35,
+        "500": 0.4,
+        "1000": 0.55,
+        "2000": 0.7,
+        "4000": 0.7
+    },
+    "scattering": 0.1,
+    "color": [
+        229,
+        224,
+        214
+    ],
+    "texture": ""
+}

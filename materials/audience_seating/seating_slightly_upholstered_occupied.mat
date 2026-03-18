@@ -1,0 +1,20 @@
+{
+    "name": "Seating slightly upholstered occupied",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.32,
+        "250": 0.62,
+        "500": 0.74,
+        "1000": 0.76,
+        "2000": 0.81,
+        "4000": 0.9
+    },
+    "scattering": 0.1,
+    "color": [
+        150,
+        120,
+        90
+    ],
+    "texture": ""
+}

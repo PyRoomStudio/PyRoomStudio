@@ -1,0 +1,20 @@
+{
+    "name": "Standard brickwork",
+    "category": "Masonry Walls",
+    "thickness": "",
+    "absorption": {
+        "125": 0.05,
+        "250": 0.04,
+        "500": 0.02,
+        "1000": 0.04,
+        "2000": 0.05,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        170,
+        95,
+        75
+    ],
+    "texture": ""
+}

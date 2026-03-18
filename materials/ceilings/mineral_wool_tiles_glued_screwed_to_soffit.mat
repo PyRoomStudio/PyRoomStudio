@@ -1,0 +1,20 @@
+{
+    "name": "Mineral wool tiles glued screwed to soffit",
+    "category": "Ceilings",
+    "thickness": "",
+    "absorption": {
+        "125": 0.06,
+        "250": 0.4,
+        "500": 0.75,
+        "1000": 0.95,
+        "2000": 0.96,
+        "4000": 0.83
+    },
+    "scattering": 0.1,
+    "color": [
+        228,
+        223,
+        213
+    ],
+    "texture": ""
+}

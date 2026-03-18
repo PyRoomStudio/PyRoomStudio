@@ -1,0 +1,20 @@
+{
+    "name": "Linoleum or vinyl stuck to concrete",
+    "category": "Floors",
+    "thickness": "",
+    "absorption": {
+        "125": 0.02,
+        "250": 0.02,
+        "500": 0.03,
+        "1000": 0.04,
+        "2000": 0.04,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        180,
+        200,
+        170
+    ],
+    "texture": ""
+}

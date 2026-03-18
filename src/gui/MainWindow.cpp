@@ -397,15 +397,9 @@ void MainWindow::connectSignals() {
 
     // Library panel -> viewport (material selection)
     connect(libraryPanel_, &LibraryPanel::materialSelected,
-        [this](const QString& name, const Color3f& color, float absorption) {
+        [this](const Material& mat) {
             int si = viewport_->selectedSurfaceIndex();
             if (si >= 0) {
-                Material mat;
-                mat.name = name.toStdString();
-                mat.color = {static_cast<int>(color[0] * 255),
-                             static_cast<int>(color[1] * 255),
-                             static_cast<int>(color[2] * 255)};
-                mat.energyAbsorption = absorption;
                 viewport_->assignMaterial(si, mat);
             }
         });
@@ -695,13 +689,18 @@ void MainWindow::onRender() {
     params.sampleRate = settings.value("audio/sampleRate", DEFAULT_SAMPLE_RATE).toInt();
     params.maxOrder = settings.value("sim/maxOrder", DEFAULT_MAX_ORDER).toInt();
     params.nRays = settings.value("sim/numRays", DEFAULT_N_RAYS).toInt();
-    params.energyAbsorption = settings.value("sim/absorption", DEFAULT_ENERGY_ABSORPTION).toFloat();
     params.scattering = settings.value("sim/scattering", DEFAULT_SCATTERING).toFloat();
     params.airAbsorption = settings.value("sim/airAbsorption", true).toBool();
     params.selectedListenerIndices = selectedListeners;
+    params.method = renderDlg.selectedMethod();
+    params.dgPolyOrder = renderDlg.dgPolynomialOrder();
+    params.dgMaxFrequency = renderDlg.dgMaxFrequency();
 
-    QString desc = QString("Sim: %1 src, %2 lst")
-        .arg(sources.size()).arg(selectedListeners.size());
+    QString methodName = (params.method == SimMethod::DG_2D) ? "DG-2D"
+                       : (params.method == SimMethod::DG_3D) ? "DG-3D"
+                       : "Ray";
+    QString desc = QString("%1: %2 src, %3 lst")
+        .arg(methodName).arg(sources.size()).arg(selectedListeners.size());
     simQueue_->enqueue(params, desc);
     statusBar()->showMessage("Simulation queued: " + desc);
 }

@@ -2,8 +2,10 @@
 #include <algorithm>
 #include <complex>
 #include <valarray>
+#include <array>
 
 #include "SignalProcessing.h"
+#include "core/Material.h"
 
 namespace prs {
 namespace SignalProcessing {
@@ -98,6 +100,77 @@ std::vector<float> fftConvolve(const std::vector<float>& signal,
         result[i] = product[i].real();
 
     return result;
+}
+
+std::vector<float> bandpassFilter(const std::vector<float>& signal,
+                                   int sampleRate, float centerFreq) {
+    if (signal.empty()) return {};
+
+    // 2nd-order Butterworth bandpass via biquad
+    // Octave bandwidth: lower = center/sqrt(2), upper = center*sqrt(2)
+    float lowFreq  = centerFreq / std::sqrt(2.0f);
+    float highFreq = centerFreq * std::sqrt(2.0f);
+
+    // Clamp to Nyquist
+    float nyquist = sampleRate / 2.0f;
+    if (highFreq >= nyquist * 0.99f) highFreq = nyquist * 0.99f;
+    if (lowFreq < 1.0f) lowFreq = 1.0f;
+    if (lowFreq >= highFreq) {
+        // Passthrough for degenerate case
+        return signal;
+    }
+
+    float w0 = 2.0f * static_cast<float>(M_PI) * centerFreq / sampleRate;
+    float bw = std::log2(highFreq / lowFreq);
+    float alpha = std::sin(w0) * std::sinh(std::log(2.0f) / 2.0f * bw * w0 / std::sin(w0));
+
+    float b0 =  alpha;
+    float b1 =  0.0f;
+    float b2 = -alpha;
+    float a0 =  1.0f + alpha;
+    float a1 = -2.0f * std::cos(w0);
+    float a2 =  1.0f - alpha;
+
+    // Normalize
+    b0 /= a0; b1 /= a0; b2 /= a0;
+    a1 /= a0; a2 /= a0;
+
+    std::vector<float> out(signal.size(), 0.0f);
+    float x1 = 0.0f, x2 = 0.0f, y1 = 0.0f, y2 = 0.0f;
+    for (size_t i = 0; i < signal.size(); ++i) {
+        float x0 = signal[i];
+        float y0 = b0 * x0 + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+        out[i] = y0;
+        x2 = x1; x1 = x0;
+        y2 = y1; y1 = y0;
+    }
+
+    return out;
+}
+
+std::vector<float> combineMultibandRIR(
+    const std::array<std::vector<float>, NUM_FREQ_BANDS>& bandRIRs,
+    int sampleRate) {
+
+    size_t maxLen = 0;
+    for (auto& rir : bandRIRs)
+        maxLen = std::max(maxLen, rir.size());
+
+    if (maxLen == 0) return {};
+
+    std::vector<float> combined(maxLen, 0.0f);
+
+    for (int b = 0; b < NUM_FREQ_BANDS; ++b) {
+        if (bandRIRs[b].empty()) continue;
+
+        float centerFreq = static_cast<float>(FREQ_BANDS[b]);
+        auto filtered = bandpassFilter(bandRIRs[b], sampleRate, centerFreq);
+
+        for (size_t i = 0; i < filtered.size() && i < maxLen; ++i)
+            combined[i] += filtered[i];
+    }
+
+    return combined;
 }
 
 } // namespace SignalProcessing

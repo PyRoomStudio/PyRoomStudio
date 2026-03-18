@@ -1,0 +1,20 @@
+{
+    "name": "6mm glass",
+    "category": "Glass Glazing",
+    "thickness": "6mm",
+    "absorption": {
+        "125": 0.1,
+        "250": 0.06,
+        "500": 0.04,
+        "1000": 0.03,
+        "2000": 0.02,
+        "4000": 0.02
+    },
+    "scattering": 0.1,
+    "color": [
+        195,
+        225,
+        240
+    ],
+    "texture": ""
+}

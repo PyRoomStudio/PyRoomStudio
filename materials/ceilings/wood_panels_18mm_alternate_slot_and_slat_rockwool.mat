@@ -1,0 +1,20 @@
+{
+    "name": "Wood panels 18mm alternate slot and slat rockwool",
+    "category": "Ceilings",
+    "thickness": "18mm",
+    "absorption": {
+        "125": 0.1,
+        "250": 0.36,
+        "500": 0.74,
+        "1000": 0.91,
+        "2000": 0.61,
+        "4000": 0.5
+    },
+    "scattering": 0.1,
+    "color": [
+        150,
+        110,
+        70
+    ],
+    "texture": ""
+}

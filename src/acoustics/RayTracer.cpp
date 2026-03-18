@@ -11,6 +11,12 @@
 
 namespace prs {
 
+static bool allBelowThreshold(const std::array<float, NUM_FREQ_BANDS>& energy, float threshold) {
+    for (float e : energy)
+        if (e > threshold) return false;
+    return true;
+}
+
 std::vector<RayContribution> RayTracer::trace(
     const Vec3f& sourcePos,
     const Vec3f& listenerPos,
@@ -28,6 +34,9 @@ std::vector<RayContribution> RayTracer::trace(
     bool useBvh = !bvh.empty();
     const float airAbsCoeff = airAbsorption ? 0.005f : 0.0f;
 
+    std::array<float, NUM_FREQ_BANDS> initEnergy;
+    initEnergy.fill(1.0f);
+
 #ifdef _OPENMP
     #pragma omp parallel
     {
@@ -37,10 +46,10 @@ std::vector<RayContribution> RayTracer::trace(
         for (int r = 0; r < numRays; ++r) {
             Vec3f rayOrigin = sourcePos;
             Vec3f rayDir    = randomDirectionOnSphere();
-            float energy    = 1.0f;
+            auto energy     = initEnergy;
             float totalDist = 0.0f;
 
-            for (int bounce = 0; bounce < maxBounces && energy > minEnergy; ++bounce) {
+            for (int bounce = 0; bounce < maxBounces && !allBelowThreshold(energy, minEnergy); ++bounce) {
                 auto tListener = RayPicking::raySphereIntersect(
                     rayOrigin, rayDir, listenerPos, listenerRadius);
                 if (tListener) {
@@ -49,9 +58,11 @@ std::vector<RayContribution> RayTracer::trace(
                         RayPicking::segmentPassesThroughSphere(rayOrigin, hitPoint, *headCenter, headRadius));
                     if (!throughHead) {
                         float detDist = totalDist + *tListener;
+                        float geomAtten = 1.0f / (4.0f * static_cast<float>(M_PI) * detDist * detDist + 1e-8f);
                         RayContribution rc;
-                        rc.delay  = detDist / SPEED_OF_SOUND;
-                        rc.energy = energy / (4.0f * static_cast<float>(M_PI) * detDist * detDist + 1e-8f);
+                        rc.delay = detDist / SPEED_OF_SOUND;
+                        for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+                            rc.energy[b] = energy[b] * geomAtten;
                         localContribs.push_back(rc);
                     }
                 }
@@ -79,12 +90,16 @@ std::vector<RayContribution> RayTracer::trace(
 
                 totalDist += wallT;
                 Vec3f hitPoint = rayOrigin + rayDir * wallT;
-                energy *= (1.0f - walls[wallIdx].energyAbsorption);
+                for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+                    energy[b] *= (1.0f - walls[wallIdx].absorption[b]);
                 rayDir = reflectDirection(rayDir, walls[wallIdx].normal(), walls[wallIdx].scattering);
                 rayOrigin = hitPoint + rayDir * 1e-4f;
 
-                if (airAbsCoeff > 0.0f)
-                    energy *= std::exp(-airAbsCoeff * wallT);
+                if (airAbsCoeff > 0.0f) {
+                    float airFactor = std::exp(-airAbsCoeff * wallT);
+                    for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+                        energy[b] *= airFactor;
+                }
             }
         }
 
@@ -95,10 +110,10 @@ std::vector<RayContribution> RayTracer::trace(
     for (int r = 0; r < numRays; ++r) {
         Vec3f rayOrigin = sourcePos;
         Vec3f rayDir    = randomDirectionOnSphere();
-        float energy    = 1.0f;
+        auto energy     = initEnergy;
         float totalDist = 0.0f;
 
-        for (int bounce = 0; bounce < maxBounces && energy > minEnergy; ++bounce) {
+        for (int bounce = 0; bounce < maxBounces && !allBelowThreshold(energy, minEnergy); ++bounce) {
             auto tListener = RayPicking::raySphereIntersect(
                 rayOrigin, rayDir, listenerPos, listenerRadius);
             if (tListener) {
@@ -107,9 +122,11 @@ std::vector<RayContribution> RayTracer::trace(
                     RayPicking::segmentPassesThroughSphere(rayOrigin, hitPoint, *headCenter, headRadius));
                 if (!throughHead) {
                     float detDist = totalDist + *tListener;
+                    float geomAtten = 1.0f / (4.0f * static_cast<float>(M_PI) * detDist * detDist + 1e-8f);
                     RayContribution rc;
-                    rc.delay  = detDist / SPEED_OF_SOUND;
-                    rc.energy = energy / (4.0f * static_cast<float>(M_PI) * detDist * detDist + 1e-8f);
+                    rc.delay = detDist / SPEED_OF_SOUND;
+                    for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+                        rc.energy[b] = energy[b] * geomAtten;
                     contributions.push_back(rc);
                 }
             }
@@ -137,12 +154,16 @@ std::vector<RayContribution> RayTracer::trace(
 
             totalDist += wallT;
             Vec3f hitPoint = rayOrigin + rayDir * wallT;
-            energy *= (1.0f - walls[wallIdx].energyAbsorption);
+            for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+                energy[b] *= (1.0f - walls[wallIdx].absorption[b]);
             rayDir = reflectDirection(rayDir, walls[wallIdx].normal(), walls[wallIdx].scattering);
             rayOrigin = hitPoint + rayDir * 1e-4f;
 
-            if (airAbsCoeff > 0.0f)
-                energy *= std::exp(-airAbsCoeff * wallT);
+            if (airAbsCoeff > 0.0f) {
+                float airFactor = std::exp(-airAbsCoeff * wallT);
+                for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+                    energy[b] *= airFactor;
+            }
         }
     }
 #endif

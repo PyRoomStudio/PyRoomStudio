@@ -1,15 +1,17 @@
 #pragma once
 
+#include "core/Material.h"
 #include "ImageSourceMethod.h"
 #include "RayTracer.h"
 
 #include <vector>
+#include <array>
 
 namespace prs {
 
 class RoomImpulseResponse {
 public:
-    std::vector<float> compute(
+    std::array<std::vector<float>, NUM_FREQ_BANDS> computeMultiband(
         const std::vector<ImageSource>& imageSources,
         const std::vector<RayContribution>& rayContributions,
         int sampleRate);

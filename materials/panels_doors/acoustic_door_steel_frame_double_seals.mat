@@ -1,0 +1,20 @@
+{
+    "name": "Acoustic door steel frame double seals",
+    "category": "Panels Doors",
+    "thickness": "",
+    "absorption": {
+        "125": 0.35,
+        "250": 0.39,
+        "500": 0.44,
+        "1000": 0.49,
+        "2000": 0.54,
+        "4000": 0.57
+    },
+    "scattering": 0.1,
+    "color": [
+        100,
+        100,
+        105
+    ],
+    "texture": ""
+}

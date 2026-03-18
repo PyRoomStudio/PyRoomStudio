@@ -101,22 +101,29 @@ SPLResult computeSPL(
     if (imageSources.empty() && rayContributions.empty())
         return result;
 
-    // Sum squared attenuation from image sources
     double directEnergy = 0.0;
     double reflectedEnergy = 0.0;
 
     for (const auto& is : imageSources) {
-        double e = static_cast<double>(is.attenuation) * is.attenuation;
+        double bandAvg = 0.0;
+        for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+            bandAvg += is.attenuation[b];
+        bandAvg /= NUM_FREQ_BANDS;
+        double e = bandAvg * bandAvg;
         if (is.order == 0)
             directEnergy += e;
         else
             reflectedEnergy += e;
     }
 
-    // Ray tracing energy (scaled by number of rays to normalize)
     double rayEnergy = 0.0;
-    for (const auto& rc : rayContributions)
-        rayEnergy += static_cast<double>(rc.energy) * rc.energy;
+    for (const auto& rc : rayContributions) {
+        double bandAvg = 0.0;
+        for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+            bandAvg += rc.energy[b];
+        bandAvg /= NUM_FREQ_BANDS;
+        rayEnergy += bandAvg * bandAvg;
+    }
     if (numRaysEmitted > 0)
         rayEnergy *= (4.0 * M_PI) / numRaysEmitted;
 

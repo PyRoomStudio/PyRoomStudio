@@ -17,7 +17,7 @@ The project is inspired by [pyroomacoustics](https://github.com/LCAV/pyroomacous
 > PyRoomStudio is in the process of transition tech stacks from Python to C++ for improved performance. As such, the project/repo will be under a new name in the future.
 
 <p align="center">
-  <img width="700" src="assets/screenshot.png" alt="PyRoomStudio">
+  <img width="700" src="assets/screenshot.png" alt="PyRoomStudio ">
 </p>
 
 ## **Get Involved!**

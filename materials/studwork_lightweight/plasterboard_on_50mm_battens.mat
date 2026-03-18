@@ -1,0 +1,20 @@
+{
+    "name": "Plasterboard on 50mm battens",
+    "category": "Studwork Lightweight",
+    "thickness": "",
+    "absorption": {
+        "125": 0.29,
+        "250": 0.1,
+        "500": 0.05,
+        "1000": 0.04,
+        "2000": 0.07,
+        "4000": 0.09
+    },
+    "scattering": 0.1,
+    "color": [
+        228,
+        224,
+        216
+    ],
+    "texture": ""
+}

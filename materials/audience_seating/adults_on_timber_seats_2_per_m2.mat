@@ -1,0 +1,20 @@
+{
+    "name": "Adults on timber seats 2 per m2",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.24,
+        "250": 0.4,
+        "500": 0.78,
+        "1000": 0.98,
+        "2000": 0.96,
+        "4000": 0.87
+    },
+    "scattering": 0.1,
+    "color": [
+        142,
+        92,
+        57
+    ],
+    "texture": ""
+}

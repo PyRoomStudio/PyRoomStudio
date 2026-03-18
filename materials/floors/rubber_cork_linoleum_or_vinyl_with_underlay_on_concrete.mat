@@ -1,0 +1,20 @@
+{
+    "name": "Rubber cork linoleum or vinyl with underlay on concrete",
+    "category": "Floors",
+    "thickness": "",
+    "absorption": {
+        "125": 0.02,
+        "250": 0.02,
+        "500": 0.04,
+        "1000": 0.05,
+        "2000": 0.05,
+        "4000": 0.1
+    },
+    "scattering": 0.1,
+    "color": [
+        175,
+        165,
+        140
+    ],
+    "texture": ""
+}

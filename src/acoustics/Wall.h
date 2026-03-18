@@ -1,17 +1,26 @@
 #pragma once
 
 #include "core/Types.h"
+#include "core/Material.h"
+
+#include <array>
 
 namespace prs {
 
 struct Wall {
     Triangle triangle;
-    float energyAbsorption = 0.2f;
-    float scattering       = 0.1f;
+    std::array<float, NUM_FREQ_BANDS> absorption = {0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f};
+    float scattering = 0.1f;
 
     Vec3f normal() const { return triangle.normal.normalized(); }
     Vec3f centroid() const {
         return (triangle.v0 + triangle.v1 + triangle.v2) / 3.0f;
+    }
+
+    float averageAbsorption() const {
+        float sum = 0.0f;
+        for (float a : absorption) sum += a;
+        return sum / NUM_FREQ_BANDS;
     }
 
     Vec3f reflectPoint(const Vec3f& point) const;
@@ -24,8 +33,14 @@ struct AcousticSurface {
     Vec3f centroid;
     Vec3f planePoint;
     float area = 0.0f;
-    float energyAbsorption = 0.2f;
+    std::array<float, NUM_FREQ_BANDS> absorption = {0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f};
     float scattering = 0.1f;
+
+    float averageAbsorption() const {
+        float sum = 0.0f;
+        for (float a : absorption) sum += a;
+        return sum / NUM_FREQ_BANDS;
+    }
 
     Vec3f reflectPoint(const Vec3f& point) const {
         float d = normal.dot(point - planePoint);

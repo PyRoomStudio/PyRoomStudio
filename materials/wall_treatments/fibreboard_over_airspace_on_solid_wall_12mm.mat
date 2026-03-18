@@ -1,0 +1,20 @@
+{
+    "name": "Fibreboard over airspace on solid wall 12mm",
+    "category": "Wall Treatments",
+    "thickness": "12mm",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.0,
+        "500": 0.3,
+        "1000": 0.0,
+        "2000": 0.3,
+        "4000": 0.3
+    },
+    "scattering": 0.1,
+    "color": [
+        152,
+        122,
+        82
+    ],
+    "texture": ""
+}

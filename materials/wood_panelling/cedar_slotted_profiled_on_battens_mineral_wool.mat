@@ -1,0 +1,20 @@
+{
+    "name": "Cedar slotted profiled on battens mineral wool",
+    "category": "Wood Panelling",
+    "thickness": "",
+    "absorption": {
+        "125": 0.2,
+        "250": 0.62,
+        "500": 0.98,
+        "1000": 0.62,
+        "2000": 0.21,
+        "4000": 0.15
+    },
+    "scattering": 0.1,
+    "color": [
+        180,
+        120,
+        60
+    ],
+    "texture": ""
+}

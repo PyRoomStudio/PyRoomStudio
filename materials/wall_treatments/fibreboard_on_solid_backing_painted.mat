@@ -1,0 +1,20 @@
+{
+    "name": "Fibreboard on solid backing painted",
+    "category": "Wall Treatments",
+    "thickness": "",
+    "absorption": {
+        "125": 0.05,
+        "250": 0.0,
+        "500": 0.1,
+        "1000": 0.0,
+        "2000": 0.15,
+        "4000": 0.15
+    },
+    "scattering": 0.1,
+    "color": [
+        165,
+        135,
+        95
+    ],
+    "texture": ""
+}

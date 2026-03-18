@@ -1,0 +1,20 @@
+{
+    "name": "16-22mm T and G wood 50mm cavity mineral wool",
+    "category": "Wood Panelling",
+    "thickness": "",
+    "absorption": {
+        "125": 0.25,
+        "250": 0.15,
+        "500": 0.1,
+        "1000": 0.09,
+        "2000": 0.08,
+        "4000": 0.07
+    },
+    "scattering": 0.1,
+    "color": [
+        146,
+        106,
+        66
+    ],
+    "texture": ""
+}

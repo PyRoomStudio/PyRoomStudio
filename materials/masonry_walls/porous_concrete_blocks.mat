@@ -1,0 +1,20 @@
+{
+    "name": "Porous concrete blocks",
+    "category": "Masonry Walls",
+    "thickness": "",
+    "absorption": {
+        "125": 0.05,
+        "250": 0.05,
+        "500": 0.05,
+        "1000": 0.08,
+        "2000": 0.14,
+        "4000": 0.2
+    },
+    "scattering": 0.1,
+    "color": [
+        155,
+        150,
+        145
+    ],
+    "texture": ""
+}

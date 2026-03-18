@@ -1,0 +1,20 @@
+{
+    "name": "Smooth marble or terrazzo slabs",
+    "category": "Floors",
+    "thickness": "",
+    "absorption": {
+        "125": 0.01,
+        "250": 0.01,
+        "500": 0.01,
+        "1000": 0.01,
+        "2000": 0.02,
+        "4000": 0.02
+    },
+    "scattering": 0.1,
+    "color": [
+        220,
+        215,
+        205
+    ],
+    "texture": ""
+}

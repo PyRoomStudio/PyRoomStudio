@@ -1,0 +1,20 @@
+{
+    "name": "Chipboard on frame 50mm airspace mineral wool",
+    "category": "Wood Panelling",
+    "thickness": "22mm",
+    "absorption": {
+        "125": 0.12,
+        "250": 0.04,
+        "500": 0.06,
+        "1000": 0.05,
+        "2000": 0.05,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        138,
+        98,
+        58
+    ],
+    "texture": ""
+}

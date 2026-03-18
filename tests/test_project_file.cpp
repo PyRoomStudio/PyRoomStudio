@@ -16,7 +16,7 @@ private slots:
 
         Material mat;
         mat.name = "Concrete";
-        mat.energyAbsorption = 0.3f;
+        mat.absorption = {0.02f, 0.03f, 0.03f, 0.03f, 0.04f, 0.07f};
         mat.scattering = 0.15f;
         data.surfaceMaterials = {mat, std::nullopt};
 

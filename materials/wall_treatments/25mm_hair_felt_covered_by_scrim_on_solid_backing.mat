@@ -1,0 +1,20 @@
+{
+    "name": "25mm hair felt covered by scrim on solid backing",
+    "category": "Wall Treatments",
+    "thickness": "25mm",
+    "absorption": {
+        "125": 0.1,
+        "250": 0.0,
+        "500": 0.7,
+        "1000": 0.0,
+        "2000": 0.8,
+        "4000": 0.8
+    },
+    "scattering": 0.1,
+    "color": [
+        140,
+        120,
+        100
+    ],
+    "texture": ""
+}

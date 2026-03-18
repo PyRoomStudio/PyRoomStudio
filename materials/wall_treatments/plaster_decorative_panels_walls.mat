@@ -1,0 +1,20 @@
+{
+    "name": "Plaster decorative panels walls",
+    "category": "Wall Treatments",
+    "thickness": "",
+    "absorption": {
+        "125": 0.2,
+        "250": 0.15,
+        "500": 0.1,
+        "1000": 0.08,
+        "2000": 0.04,
+        "4000": 0.02
+    },
+    "scattering": 0.1,
+    "color": [
+        240,
+        236,
+        228
+    ],
+    "texture": ""
+}

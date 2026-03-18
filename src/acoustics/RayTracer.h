@@ -1,21 +1,22 @@
 #pragma once
 
 #include "core/Types.h"
+#include "core/Material.h"
 #include "Wall.h"
 #include "Bvh.h"
 
 #include <vector>
+#include <array>
 
 namespace prs {
 
 struct RayContribution {
     float delay  = 0.0f;
-    float energy = 0.0f;
+    std::array<float, NUM_FREQ_BANDS> energy = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 };
 
 class RayTracer {
 public:
-    /** headCenter/headRadius: when headRadius > 0, contributions that pass through the head sphere are skipped. */
     std::vector<RayContribution> trace(
         const Vec3f& sourcePos,
         const Vec3f& listenerPos,

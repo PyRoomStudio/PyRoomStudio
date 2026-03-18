@@ -6,12 +6,15 @@
 #include "Camera.h"
 #include "MeshData.h"
 #include "SurfaceGrouper.h"
+#include "TextureManager.h"
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QKeyEvent>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QImage>
 
 #include <vector>
@@ -80,7 +83,7 @@ public:
 
     struct WallInfo {
         std::vector<int> triangleIndices;
-        float energyAbsorption = DEFAULT_ENERGY_ABSORPTION;
+        std::array<float, NUM_FREQ_BANDS> absorption = {0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f};
         float scattering = DEFAULT_SCATTERING;
     };
     std::vector<WallInfo> getWallsForAcoustic() const;
@@ -133,6 +136,9 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
 private:
     void autoNormalizeScale();
@@ -205,6 +211,8 @@ private:
     Color3f defaultSurfaceColor_ = {0.6f, 0.8f, 1.0f};
     unsigned int textureId_ = 0;
     QImage textureImage_;
+    TextureManager textureManager_;
+    std::vector<GLuint> surfaceTextureIds_;
 };
 
 } // namespace prs

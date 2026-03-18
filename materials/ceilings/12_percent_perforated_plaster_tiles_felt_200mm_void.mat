@@ -1,0 +1,20 @@
+{
+    "name": "12 percent perforated plaster tiles felt 200mm void",
+    "category": "Ceilings",
+    "thickness": "",
+    "absorption": {
+        "125": 0.45,
+        "250": 0.7,
+        "500": 0.88,
+        "1000": 0.52,
+        "2000": 0.42,
+        "4000": 0.35
+    },
+    "scattering": 0.1,
+    "color": [
+        238,
+        236,
+        230
+    ],
+    "texture": ""
+}

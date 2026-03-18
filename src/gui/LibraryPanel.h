@@ -23,7 +23,7 @@ public:
     explicit LibraryPanel(QWidget* parent = nullptr);
 
 signals:
-    void materialSelected(const QString& name, const Color3f& glColor, float absorption);
+    void materialSelected(const Material& material);
     void soundFileSelected(const QString& filepath);
 
 private:

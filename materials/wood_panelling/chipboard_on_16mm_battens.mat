@@ -1,0 +1,20 @@
+{
+    "name": "Chipboard on 16mm battens",
+    "category": "Wood Panelling",
+    "thickness": "20mm",
+    "absorption": {
+        "125": 0.2,
+        "250": 0.25,
+        "500": 0.2,
+        "1000": 0.2,
+        "2000": 0.15,
+        "4000": 0.2
+    },
+    "scattering": 0.1,
+    "color": [
+        140,
+        100,
+        60
+    ],
+    "texture": ""
+}

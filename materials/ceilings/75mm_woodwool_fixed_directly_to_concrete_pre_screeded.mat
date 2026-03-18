@@ -1,0 +1,20 @@
+{
+    "name": "75mm woodwool fixed directly to concrete pre-screeded",
+    "category": "Ceilings",
+    "thickness": "",
+    "absorption": {
+        "125": 0.15,
+        "250": 0.4,
+        "500": 0.95,
+        "1000": 0.6,
+        "2000": 0.7,
+        "4000": 0.6
+    },
+    "scattering": 0.1,
+    "color": [
+        177,
+        157,
+        117
+    ],
+    "texture": ""
+}

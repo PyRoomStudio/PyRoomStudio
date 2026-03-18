@@ -1,0 +1,20 @@
+{
+    "name": "Plaster decorative panels ceilings",
+    "category": "Ceilings",
+    "thickness": "",
+    "absorption": {
+        "125": 0.2,
+        "250": 0.22,
+        "500": 0.18,
+        "1000": 0.15,
+        "2000": 0.15,
+        "4000": 0.16
+    },
+    "scattering": 0.1,
+    "color": [
+        236,
+        232,
+        224
+    ],
+    "texture": ""
+}

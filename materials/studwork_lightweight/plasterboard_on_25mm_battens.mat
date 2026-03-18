@@ -1,0 +1,20 @@
+{
+    "name": "Plasterboard on 25mm battens",
+    "category": "Studwork Lightweight",
+    "thickness": "",
+    "absorption": {
+        "125": 0.31,
+        "250": 0.33,
+        "500": 0.14,
+        "1000": 0.1,
+        "2000": 0.1,
+        "4000": 0.12
+    },
+    "scattering": 0.1,
+    "color": [
+        226,
+        222,
+        214
+    ],
+    "texture": ""
+}

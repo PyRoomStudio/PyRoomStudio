@@ -5,6 +5,7 @@
 #include "RayTracer.h"
 #include "RoomImpulseResponse.h"
 #include "AcousticMetrics.h"
+#include "dg/DGSolver.h"
 #include "rendering/RayPicking.h"
 #include "rendering/MeshSimplifier.h"
 #include "audio/AudioFile.h"
@@ -98,7 +99,7 @@ std::vector<AcousticSurface> buildAcousticSurfaces(
         s.centroid = centroidSum / totalArea;
         s.planePoint = firstPoint;
         s.area = totalArea;
-        s.energyAbsorption = wi.energyAbsorption;
+        s.absorption = wi.absorption;
         s.scattering = wi.scattering;
         surfaces.push_back(s);
     }
@@ -144,7 +145,7 @@ void SimulationWorker::process() {
             Vec3f e1 = wall.triangle.v1 - wall.triangle.v0;
             Vec3f e2 = wall.triangle.v2 - wall.triangle.v0;
             wall.triangle.normal = e1.cross(e2).normalized();
-            wall.energyAbsorption = wi.energyAbsorption;
+            wall.absorption = wi.absorption;
             wall.scattering = wi.scattering;
 
             if (wall.area() > 1e-8f) {
@@ -196,6 +197,89 @@ void SimulationWorker::process() {
             listenerIndices.push_back(i);
     }
     int numListeners = static_cast<int>(listenerIndices.size());
+
+    // ========== DG solver path ==========
+    if (params_.method == SimMethod::DG_2D || params_.method == SimMethod::DG_3D) {
+        dg::DGParams dgParams;
+        dgParams.method = (params_.method == SimMethod::DG_2D)
+                        ? dg::DGMethod::DG_2D : dg::DGMethod::DG_3D;
+        dgParams.polynomialOrder = params_.dgPolyOrder;
+        dgParams.maxFrequency = params_.dgMaxFrequency;
+
+        dg::DGSolver dgSolver;
+        int totalPairsDG = scene.soundSourceCount() * numListeners;
+        int pairsDoneDG = 0;
+        int mixedFsDG = params_.sampleRate;
+
+        struct MixedStereoDG { std::vector<float> left; std::vector<float> right; };
+        std::map<int, MixedStereoDG> mixedPerListenerDG;
+
+        for (int si = 0; si < scene.soundSourceCount(); ++si) {
+            auto* source = scene.getSoundSource(si);
+            if (!source) continue;
+            if (isCancelled()) { emit error("Cancelled"); return; }
+
+            AudioFile audioFile;
+            if (!audioFile.load(QString::fromStdString(source->audioFile))) {
+                qWarning() << "Failed to load:" << QString::fromStdString(source->audioFile);
+                pairsDoneDG += numListeners;
+                continue;
+            }
+            audioFile.applyVolume(source->volume);
+            int fs = audioFile.sampleRate();
+            mixedFsDG = fs;
+            const std::vector<float>& inputSamples = audioFile.samples();
+            if (inputSamples.empty()) { pairsDoneDG += numListeners; continue; }
+
+            for (int li : listenerIndices) {
+                if (isCancelled()) { emit error("Cancelled"); return; }
+                auto* listener = scene.getListener(li);
+                if (!listener) continue;
+
+                int pct = 10 + (pairsDoneDG * 80) / std::max(totalPairsDG, 1);
+                emit progressChanged(pct, QString("DG: %1 -> %2")
+                    .arg(QString::fromStdString(source->name),
+                         QString::fromStdString(listener->name)));
+
+                auto dgProgress = [this, pct](int subPct, const QString& msg) {
+                    emit progressChanged(pct + subPct * 80 / (100 * std::max(1, 1)), msg);
+                };
+                auto dgCancel = [this]() -> bool { return isCancelled(); };
+
+                auto dgResult = dgSolver.solve(
+                    source->position, listener->position,
+                    params_.walls, params_.modelVertices, bvh,
+                    dgParams, dgProgress, dgCancel);
+
+                if (dgResult.impulseResponse.empty()) {
+                    ++pairsDoneDG;
+                    continue;
+                }
+
+                auto outMono = SignalProcessing::fftConvolve(inputSamples, dgResult.impulseResponse);
+                SignalProcessing::normalize(outMono, 0.95f);
+
+                // Save mono (DG doesn't inherently produce stereo)
+                QString listenerName = QString::fromStdString(listener->name).replace(' ', '_');
+                QString sourceName = QString::fromStdString(source->name).replace(' ', '_');
+                QString filename = QString("%1_from_%2.wav").arg(listenerName, sourceName);
+                AudioFile outFile;
+                outFile.samples() = std::move(outMono);
+                if (!outFile.save(QDir(outputDir).filePath(filename), fs))
+                    qWarning() << "Failed to write" << filename;
+
+                ++pairsDoneDG;
+            }
+        }
+
+        qInfo() << "=== DG SIMULATION COMPLETE in" << totalTimer.elapsed() << "ms ===";
+        emit progressChanged(100, QString("DG simulation complete! (%1s)")
+            .arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
+        emit finished(outputDir);
+        return;
+    }
+
+    // ========== Ray-tracing path (existing) ==========
 
     int totalPairs = scene.soundSourceCount() * numListeners;
     int pairsDone = 0;
@@ -269,14 +353,16 @@ void SimulationWorker::process() {
 
             phaseTimer.restart();
             RoomImpulseResponse rir;
-            auto impulseLeft  = rir.compute(isLeft,  rayLeft,  fs);
-            auto impulseRight = rir.compute(isRight, rayRight, fs);
+            auto multibandLeft  = rir.computeMultiband(isLeft,  rayLeft,  fs);
+            auto multibandRight = rir.computeMultiband(isRight, rayRight, fs);
+
+            auto impulseLeft  = SignalProcessing::combineMultibandRIR(multibandLeft,  fs);
+            auto impulseRight = SignalProcessing::combineMultibandRIR(multibandRight, fs);
 
             auto outLeft  = SignalProcessing::fftConvolve(inputSamples, impulseLeft);
             auto outRight = SignalProcessing::fftConvolve(inputSamples, impulseRight);
             qInfo() << "  RIR + convolution:" << phaseTimer.elapsed() << "ms";
 
-            // Compute acoustic metrics from left-ear RIR (representative)
             auto rtResult = AcousticMetrics::computeRT(impulseLeft, fs);
             auto splResult = AcousticMetrics::computeSPL(
                 source->volume, isLeft, rayLeft, params_.nRays);

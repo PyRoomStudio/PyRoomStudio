@@ -1,0 +1,20 @@
+{
+    "name": "12mm plywood over 200mm airgap 50mm mineral wool",
+    "category": "Wood Panelling",
+    "thickness": "",
+    "absorption": {
+        "125": 0.14,
+        "250": 0.1,
+        "500": 0.1,
+        "1000": 0.08,
+        "2000": 0.1,
+        "4000": 0.08
+    },
+    "scattering": 0.1,
+    "color": [
+        165,
+        125,
+        75
+    ],
+    "texture": ""
+}

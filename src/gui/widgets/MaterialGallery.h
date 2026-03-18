@@ -4,7 +4,9 @@
 #include "core/Material.h"
 
 #include <QWidget>
-#include <QGroupBox>
+#include <QFrame>
+#include <QPushButton>
+#include <QVBoxLayout>
 #include <QString>
 #include <vector>
 
@@ -12,7 +14,7 @@ namespace prs {
 
 class ColorSwatch;
 
-class MaterialGallery : public QGroupBox {
+class MaterialGallery : public QWidget {
     Q_OBJECT
 
 public:
@@ -20,10 +22,15 @@ public:
                     QWidget* parent = nullptr);
 
 signals:
-    void materialClicked(const QString& name, const Color3i& color, float absorption);
+    void materialClicked(const Material& material);
 
 private:
+    void setCollapsed(bool collapsed);
+
+    QPushButton* header_ = nullptr;
+    QWidget* contentWidget_ = nullptr;
     std::vector<ColorSwatch*> swatches_;
+    bool collapsed_ = true;
 };
 
 } // namespace prs

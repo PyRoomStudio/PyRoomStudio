@@ -1,0 +1,20 @@
+{
+    "name": "20mm dense veneered chipboard 100mm airgap",
+    "category": "Wood Panelling",
+    "thickness": "",
+    "absorption": {
+        "125": 0.03,
+        "250": 0.05,
+        "500": 0.04,
+        "1000": 0.03,
+        "2000": 0.03,
+        "4000": 0.02
+    },
+    "scattering": 0.1,
+    "color": [
+        140,
+        100,
+        60
+    ],
+    "texture": ""
+}

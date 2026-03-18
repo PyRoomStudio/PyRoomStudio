@@ -1,0 +1,20 @@
+{
+    "name": "Fibreglass bitumen bonded mat 50mm",
+    "category": "Mineral Wool Foams",
+    "thickness": "50mm",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.55,
+        "500": 0.8,
+        "1000": 0.85,
+        "2000": 0.75,
+        "4000": 0.8
+    },
+    "scattering": 0.1,
+    "color": [
+        78,
+        78,
+        78
+    ],
+    "texture": ""
+}

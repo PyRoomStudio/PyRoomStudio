@@ -1,0 +1,20 @@
+{
+    "name": "20mm dense veneered chipboard 250mm airgap mineral wool",
+    "category": "Wood Panelling",
+    "thickness": "",
+    "absorption": {
+        "125": 0.12,
+        "250": 0.1,
+        "500": 0.08,
+        "1000": 0.07,
+        "2000": 0.1,
+        "4000": 0.08
+    },
+    "scattering": 0.1,
+    "color": [
+        136,
+        96,
+        56
+    ],
+    "texture": ""
+}

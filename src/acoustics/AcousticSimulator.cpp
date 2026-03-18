@@ -59,7 +59,7 @@ std::vector<AcousticSurface> buildAcousticSurfaces(
         s.centroid = centroidSum / totalArea;
         s.planePoint = firstPoint;
         s.area = totalArea;
-        s.energyAbsorption = wi.energyAbsorption;
+        s.absorption = wi.absorption;
         s.scattering = wi.scattering;
         surfaces.push_back(s);
     }
@@ -78,7 +78,6 @@ QString AcousticSimulator::simulateScene(
     const std::vector<Vec3f>& modelVertices,
     int maxOrder,
     int nRays,
-    float energyAbsorption,
     float scattering,
     bool airAbsorption)
 {
@@ -101,7 +100,6 @@ QString AcousticSimulator::simulateScene(
     QDir().mkpath(outputDir);
     scene.saveToFile(QDir(outputDir).filePath("scene.json"));
 
-    // Build walls with surface IDs
     QElapsedTimer phaseTimer;
     phaseTimer.start();
 
@@ -109,9 +107,6 @@ QString AcousticSimulator::simulateScene(
     std::vector<int> wallSurfaceIds;
     int surfaceIdx = 0;
     for (auto& wi : wallsFromRender) {
-        float wallAbsorption = wi.energyAbsorption;
-        float wallScattering = wi.scattering;
-
         for (int triIdx : wi.triangleIndices) {
             int baseVert = triIdx * 3;
             if (baseVert + 2 >= static_cast<int>(modelVertices.size())) continue;
@@ -123,8 +118,8 @@ QString AcousticSimulator::simulateScene(
             Vec3f e1 = wall.triangle.v1 - wall.triangle.v0;
             Vec3f e2 = wall.triangle.v2 - wall.triangle.v0;
             wall.triangle.normal = e1.cross(e2).normalized();
-            wall.energyAbsorption = wallAbsorption;
-            wall.scattering       = wallScattering;
+            wall.absorption = wi.absorption;
+            wall.scattering = wi.scattering;
 
             if (wall.area() > 1e-8f) {
                 walls.push_back(wall);
@@ -136,7 +131,6 @@ QString AcousticSimulator::simulateScene(
 
     qInfo() << "Built" << walls.size() << "wall triangles in" << phaseTimer.elapsed() << "ms";
 
-    // Mesh simplification for dense geometry
     if (static_cast<int>(walls.size()) > SIMPLIFICATION_THRESHOLD) {
         phaseTimer.restart();
         int target = static_cast<int>(walls.size() * SIMPLIFICATION_TARGET_RATIO);
@@ -145,13 +139,11 @@ QString AcousticSimulator::simulateScene(
         qInfo() << "Simplified to" << walls.size() << "triangles in" << phaseTimer.elapsed() << "ms";
     }
 
-    // Build BVH
     phaseTimer.restart();
     Bvh bvh;
     bvh.build(walls);
     qInfo() << "BVH built in" << phaseTimer.elapsed() << "ms";
 
-    // Build acoustic surfaces for ISM
     phaseTimer.restart();
     auto acousticSurfaces = buildAcousticSurfaces(wallsFromRender, modelVertices);
     qInfo() << "Built" << acousticSurfaces.size() << "acoustic surfaces for ISM in" << phaseTimer.elapsed() << "ms";
@@ -181,22 +173,20 @@ QString AcousticSimulator::simulateScene(
 
             Vec3f listenerPos = listener->position;
 
-            // ISM with surface-level walls + BVH visibility
             phaseTimer.restart();
             ImageSourceMethod ism;
             auto imageSources = ism.compute(sourcePos, listenerPos, acousticSurfaces, bvh, maxOrder);
             qInfo() << "  ISM:" << phaseTimer.elapsed() << "ms (" << imageSources.size() << "sources)";
 
-            // Ray tracing with BVH
             phaseTimer.restart();
             RayTracer rt;
             auto rayContributions = rt.trace(sourcePos, listenerPos, walls, bvh, nRays, 0.5f, 100, 1e-6f, nullptr, 0.0f, airAbsorption);
             qInfo() << "  Ray tracing:" << phaseTimer.elapsed() << "ms (" << rayContributions.size() << "contributions)";
 
-            // Compute RIR
             phaseTimer.restart();
             RoomImpulseResponse rir;
-            auto impulse = rir.compute(imageSources, rayContributions, fs);
+            auto multibandRIR = rir.computeMultiband(imageSources, rayContributions, fs);
+            auto impulse = SignalProcessing::combineMultibandRIR(multibandRIR, fs);
             auto output = SignalProcessing::fftConvolve(audioFile.samples(), impulse);
             SignalProcessing::normalize(output, 0.95f);
             qInfo() << "  RIR + convolution:" << phaseTimer.elapsed() << "ms";

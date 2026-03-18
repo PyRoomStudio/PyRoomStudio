@@ -1,0 +1,20 @@
+{
+    "name": "12mm plywood over 150mm airgap",
+    "category": "Wood Panelling",
+    "thickness": "",
+    "absorption": {
+        "125": 0.28,
+        "250": 0.08,
+        "500": 0.07,
+        "1000": 0.07,
+        "2000": 0.09,
+        "4000": 0.09
+    },
+    "scattering": 0.1,
+    "color": [
+        168,
+        128,
+        78
+    ],
+    "texture": ""
+}

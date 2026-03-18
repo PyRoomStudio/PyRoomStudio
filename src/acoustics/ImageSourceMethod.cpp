@@ -1,10 +1,17 @@
 #include "ImageSourceMethod.h"
 #include "rendering/RayPicking.h"
 #include <cmath>
+#include <algorithm>
 
 namespace prs {
 
-// ── Original per-triangle interface (kept for backwards compat) ─────────────
+static bool allBelowThreshold(const std::array<float, NUM_FREQ_BANDS>& att, float threshold) {
+    for (float a : att)
+        if (a > threshold) return false;
+    return true;
+}
+
+// Per-triangle interface
 
 std::vector<ImageSource> ImageSourceMethod::compute(
     const Vec3f& sourcePos,
@@ -14,17 +21,21 @@ std::vector<ImageSource> ImageSourceMethod::compute(
 {
     std::vector<ImageSource> results;
 
+    std::array<float, NUM_FREQ_BANDS> unity;
+    unity.fill(1.0f);
+
     if (isVisible(sourcePos, listenerPos, walls)) {
         float dist = (listenerPos - sourcePos).norm();
         ImageSource direct;
-        direct.position    = sourcePos;
-        direct.attenuation = 1.0f / std::max(dist, 0.001f);
-        direct.delay       = dist / SPEED_OF_SOUND;
-        direct.order       = 0;
+        direct.position = sourcePos;
+        for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+            direct.attenuation[b] = 1.0f / std::max(dist, 0.001f);
+        direct.delay = dist / SPEED_OF_SOUND;
+        direct.order = 0;
         results.push_back(direct);
     }
 
-    generateImageSources(sourcePos, walls, 1, maxOrder, 1.0f, {}, results);
+    generateImageSources(sourcePos, walls, 1, maxOrder, unity, {}, results);
 
     std::vector<ImageSource> valid;
     for (auto& is : results) {
@@ -34,7 +45,9 @@ std::vector<ImageSource> ImageSourceMethod::compute(
         }
         if (isVisible(is.position, listenerPos, walls)) {
             float dist = (listenerPos - is.position).norm();
-            is.attenuation /= std::max(dist, 0.001f);
+            float invDist = 1.0f / std::max(dist, 0.001f);
+            for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+                is.attenuation[b] *= invDist;
             is.delay = dist / SPEED_OF_SOUND;
             valid.push_back(is);
         }
@@ -47,7 +60,7 @@ void ImageSourceMethod::generateImageSources(
     const Vec3f& source,
     const std::vector<Wall>& walls,
     int order, int maxOrder,
-    float attenuation,
+    const std::array<float, NUM_FREQ_BANDS>& attenuation,
     const std::vector<int>& path,
     std::vector<ImageSource>& results)
 {
@@ -57,9 +70,12 @@ void ImageSourceMethod::generateImageSources(
         if (!path.empty() && path.back() == wi) continue;
 
         Vec3f reflected = walls[wi].reflectPoint(source);
-        float newAtt = attenuation * (1.0f - walls[wi].energyAbsorption);
 
-        if (newAtt < 1e-6f) continue;
+        std::array<float, NUM_FREQ_BANDS> newAtt;
+        for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+            newAtt[b] = attenuation[b] * (1.0f - walls[wi].absorption[b]);
+
+        if (allBelowThreshold(newAtt, 1e-6f)) continue;
 
         auto newPath = path;
         newPath.push_back(wi);
@@ -92,7 +108,7 @@ bool ImageSourceMethod::isVisible(const Vec3f& from, const Vec3f& to,
     return true;
 }
 
-// ── Surface-level ISM with BVH visibility ───────────────────────────────────
+// Surface-level ISM with BVH visibility
 
 std::vector<ImageSource> ImageSourceMethod::compute(
     const Vec3f& sourcePos,
@@ -103,17 +119,21 @@ std::vector<ImageSource> ImageSourceMethod::compute(
 {
     std::vector<ImageSource> results;
 
+    std::array<float, NUM_FREQ_BANDS> unity;
+    unity.fill(1.0f);
+
     if (isVisible(sourcePos, listenerPos, bvh)) {
         float dist = (listenerPos - sourcePos).norm();
         ImageSource direct;
-        direct.position    = sourcePos;
-        direct.attenuation = 1.0f / std::max(dist, 0.001f);
-        direct.delay       = dist / SPEED_OF_SOUND;
-        direct.order       = 0;
+        direct.position = sourcePos;
+        for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+            direct.attenuation[b] = 1.0f / std::max(dist, 0.001f);
+        direct.delay = dist / SPEED_OF_SOUND;
+        direct.order = 0;
         results.push_back(direct);
     }
 
-    generateImageSources(sourcePos, surfaces, 1, maxOrder, 1.0f, {}, results);
+    generateImageSources(sourcePos, surfaces, 1, maxOrder, unity, {}, results);
 
     std::vector<ImageSource> valid;
     for (auto& is : results) {
@@ -123,7 +143,9 @@ std::vector<ImageSource> ImageSourceMethod::compute(
         }
         if (isVisible(is.position, listenerPos, bvh)) {
             float dist = (listenerPos - is.position).norm();
-            is.attenuation /= std::max(dist, 0.001f);
+            float invDist = 1.0f / std::max(dist, 0.001f);
+            for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+                is.attenuation[b] *= invDist;
             is.delay = dist / SPEED_OF_SOUND;
             valid.push_back(is);
         }
@@ -136,7 +158,7 @@ void ImageSourceMethod::generateImageSources(
     const Vec3f& source,
     const std::vector<AcousticSurface>& surfaces,
     int order, int maxOrder,
-    float attenuation,
+    const std::array<float, NUM_FREQ_BANDS>& attenuation,
     const std::vector<int>& path,
     std::vector<ImageSource>& results)
 {
@@ -146,9 +168,12 @@ void ImageSourceMethod::generateImageSources(
         if (!path.empty() && path.back() == si) continue;
 
         Vec3f reflected = surfaces[si].reflectPoint(source);
-        float newAtt = attenuation * (1.0f - surfaces[si].energyAbsorption);
 
-        if (newAtt < 1e-6f) continue;
+        std::array<float, NUM_FREQ_BANDS> newAtt;
+        for (int b = 0; b < NUM_FREQ_BANDS; ++b)
+            newAtt[b] = attenuation[b] * (1.0f - surfaces[si].absorption[b]);
+
+        if (allBelowThreshold(newAtt, 1e-6f)) continue;
 
         auto newPath = path;
         newPath.push_back(si);

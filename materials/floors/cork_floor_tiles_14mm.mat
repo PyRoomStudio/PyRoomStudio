@@ -1,0 +1,20 @@
+{
+    "name": "Cork floor tiles 14mm",
+    "category": "Floors",
+    "thickness": "14mm",
+    "absorption": {
+        "125": 0.0,
+        "250": 0.05,
+        "500": 0.15,
+        "1000": 0.25,
+        "2000": 0.25,
+        "4000": 0.0
+    },
+    "scattering": 0.1,
+    "color": [
+        165,
+        125,
+        65
+    ],
+    "texture": ""
+}

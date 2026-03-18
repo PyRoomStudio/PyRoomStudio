@@ -1,0 +1,20 @@
+{
+    "name": "Brickwork 10mm flush pointing",
+    "category": "Masonry Walls",
+    "thickness": "",
+    "absorption": {
+        "125": 0.08,
+        "250": 0.09,
+        "500": 0.12,
+        "1000": 0.16,
+        "2000": 0.22,
+        "4000": 0.24
+    },
+    "scattering": 0.1,
+    "color": [
+        165,
+        90,
+        70
+    ],
+    "texture": ""
+}

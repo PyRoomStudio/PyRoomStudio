@@ -1,0 +1,20 @@
+{
+    "name": "Parquet on counterfloor",
+    "category": "Floors",
+    "thickness": "",
+    "absorption": {
+        "125": 0.2,
+        "250": 0.15,
+        "500": 0.1,
+        "1000": 0.1,
+        "2000": 0.05,
+        "4000": 0.1
+    },
+    "scattering": 0.1,
+    "color": [
+        155,
+        105,
+        60
+    ],
+    "texture": ""
+}

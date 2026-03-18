@@ -1,0 +1,20 @@
+{
+    "name": "Wood hollowcore door",
+    "category": "Panels Doors",
+    "thickness": "",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.25,
+        "500": 0.15,
+        "1000": 0.1,
+        "2000": 0.1,
+        "4000": 0.07
+    },
+    "scattering": 0.1,
+    "color": [
+        140,
+        90,
+        55
+    ],
+    "texture": ""
+}

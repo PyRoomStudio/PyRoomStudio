@@ -1,0 +1,20 @@
+{
+    "name": "Adults per person standing",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.15,
+        "250": 0.38,
+        "500": 0.42,
+        "1000": 0.43,
+        "2000": 0.45,
+        "4000": 0.45
+    },
+    "scattering": 0.1,
+    "color": [
+        165,
+        145,
+        125
+    ],
+    "texture": ""
+}

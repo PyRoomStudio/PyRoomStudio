@@ -47,6 +47,7 @@ endif()
 set(SOURCES
     src/main.cpp
     src/core/Material.cpp
+    src/core/MaterialLoader.cpp
     src/core/SoundSource.cpp
     src/core/Listener.cpp
     src/core/PlacedPoint.cpp
@@ -58,6 +59,7 @@ set(SOURCES
     src/rendering/SurfaceGrouper.cpp
     src/rendering/RayPicking.cpp
     src/rendering/MeshSimplifier.cpp
+    src/rendering/TextureManager.cpp
     src/acoustics/AcousticSimulator.cpp
     src/acoustics/Bvh.cpp
     src/acoustics/ImageSourceMethod.cpp
@@ -67,6 +69,14 @@ set(SOURCES
     src/acoustics/SimulationWorker.cpp
     src/acoustics/SimulationQueue.cpp
     src/acoustics/AcousticMetrics.cpp
+    src/acoustics/dg/DGBasis2D.cpp
+    src/acoustics/dg/DGBasis3D.cpp
+    src/acoustics/dg/DGMesh2D.cpp
+    src/acoustics/dg/DGMesh3D.cpp
+    src/acoustics/dg/DGAcoustics2D.cpp
+    src/acoustics/dg/DGAcoustics3D.cpp
+    src/acoustics/dg/DGSolver.cpp
+    src/acoustics/dg/DGGpuCompute.cpp
     src/audio/AudioFile.cpp
     src/audio/SignalProcessing.cpp
     src/gui/MainWindow.cpp
@@ -88,6 +98,7 @@ set(SOURCES
 set(HEADERS
     src/core/Types.h
     src/core/Material.h
+    src/core/MaterialLoader.h
     src/core/SoundSource.h
     src/core/Listener.h
     src/core/PlacedPoint.h
@@ -100,6 +111,7 @@ set(HEADERS
     src/rendering/SurfaceGrouper.h
     src/rendering/RayPicking.h
     src/rendering/MeshSimplifier.h
+    src/rendering/TextureManager.h
     src/acoustics/AcousticSimulator.h
     src/acoustics/Bvh.h
     src/acoustics/ImageSourceMethod.h
@@ -109,6 +121,15 @@ set(HEADERS
     src/acoustics/SimulationWorker.h
     src/acoustics/SimulationQueue.h
     src/acoustics/AcousticMetrics.h
+    src/acoustics/dg/DGTypes.h
+    src/acoustics/dg/DGBasis2D.h
+    src/acoustics/dg/DGBasis3D.h
+    src/acoustics/dg/DGMesh2D.h
+    src/acoustics/dg/DGMesh3D.h
+    src/acoustics/dg/DGAcoustics2D.h
+    src/acoustics/dg/DGAcoustics3D.h
+    src/acoustics/dg/DGSolver.h
+    src/acoustics/dg/DGGpuCompute.h
     src/audio/AudioFile.h
     src/audio/SignalProcessing.h
     src/gui/MainWindow.h
@@ -184,6 +205,14 @@ install(TARGETS ${PROJECT_NAME}
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# Copy materials directory next to the binary for runtime loading
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/materials"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/materials"
+    COMMENT "Copying materials directory..."
 )
 
 if(WIN32)

@@ -1,0 +1,20 @@
+{
+    "name": "Plaster lime or gypsum on solid backing",
+    "category": "Masonry Walls",
+    "thickness": "",
+    "absorption": {
+        "125": 0.03,
+        "250": 0.03,
+        "500": 0.02,
+        "1000": 0.03,
+        "2000": 0.04,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        242,
+        238,
+        228
+    ],
+    "texture": ""
+}

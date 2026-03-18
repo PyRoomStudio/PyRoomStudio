@@ -1,0 +1,20 @@
+{
+    "name": "12mm plywood in framework 30mm airspace behind",
+    "category": "Wood Panelling",
+    "thickness": "12mm",
+    "absorption": {
+        "125": 0.35,
+        "250": 0.2,
+        "500": 0.15,
+        "1000": 0.1,
+        "2000": 0.05,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        160,
+        120,
+        80
+    ],
+    "texture": ""
+}

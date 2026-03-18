@@ -1,0 +1,20 @@
+{
+    "name": "Orchestral player with instrument average",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.37,
+        "250": 0.8,
+        "500": 1.0,
+        "1000": 1.0,
+        "2000": 1.0,
+        "4000": 1.0
+    },
+    "scattering": 0.1,
+    "color": [
+        55,
+        45,
+        35
+    ],
+    "texture": ""
+}

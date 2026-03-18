@@ -1,0 +1,20 @@
+{
+    "name": "Breeze block",
+    "category": "Masonry Walls",
+    "thickness": "",
+    "absorption": {
+        "125": 0.2,
+        "250": 0.45,
+        "500": 0.6,
+        "1000": 0.4,
+        "2000": 0.45,
+        "4000": 0.4
+    },
+    "scattering": 0.1,
+    "color": [
+        150,
+        145,
+        135
+    ],
+    "texture": ""
+}

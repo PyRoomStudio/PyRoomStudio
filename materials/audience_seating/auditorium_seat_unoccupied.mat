@@ -1,0 +1,20 @@
+{
+    "name": "Auditorium seat unoccupied",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.13,
+        "250": 0.33,
+        "500": 0.59,
+        "1000": 0.58,
+        "2000": 0.61,
+        "4000": 0.62
+    },
+    "scattering": 0.1,
+    "color": [
+        135,
+        45,
+        45
+    ],
+    "texture": ""
+}

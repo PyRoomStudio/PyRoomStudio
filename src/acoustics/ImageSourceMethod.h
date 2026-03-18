@@ -1,16 +1,18 @@
 #pragma once
 
 #include "core/Types.h"
+#include "core/Material.h"
 #include "Wall.h"
 #include "Bvh.h"
 
 #include <vector>
+#include <array>
 
 namespace prs {
 
 struct ImageSource {
     Vec3f position;
-    float attenuation = 1.0f;
+    std::array<float, NUM_FREQ_BANDS> attenuation = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
     float delay       = 0.0f;
     int   order       = 0;
     std::vector<int> wallPath;
@@ -18,14 +20,12 @@ struct ImageSource {
 
 class ImageSourceMethod {
 public:
-    // Original interface (linear scan, per-triangle walls)
     std::vector<ImageSource> compute(
         const Vec3f& sourcePos,
         const Vec3f& listenerPos,
         const std::vector<Wall>& walls,
         int maxOrder);
 
-    // Surface-level ISM with BVH-accelerated visibility
     std::vector<ImageSource> compute(
         const Vec3f& sourcePos,
         const Vec3f& listenerPos,
@@ -38,7 +38,7 @@ private:
         const Vec3f& source,
         const std::vector<Wall>& walls,
         int order, int maxOrder,
-        float attenuation,
+        const std::array<float, NUM_FREQ_BANDS>& attenuation,
         const std::vector<int>& path,
         std::vector<ImageSource>& results);
 
@@ -46,7 +46,7 @@ private:
         const Vec3f& source,
         const std::vector<AcousticSurface>& surfaces,
         int order, int maxOrder,
-        float attenuation,
+        const std::array<float, NUM_FREQ_BANDS>& attenuation,
         const std::vector<int>& path,
         std::vector<ImageSource>& results);
 

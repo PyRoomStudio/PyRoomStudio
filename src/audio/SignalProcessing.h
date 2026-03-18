@@ -1,6 +1,8 @@
 #pragma once
 
+#include "core/Material.h"
 #include <vector>
+#include <array>
 
 namespace prs {
 
@@ -13,6 +15,13 @@ std::vector<float> convolve(const std::vector<float>& signal,
 
 std::vector<float> fftConvolve(const std::vector<float>& signal,
                                const std::vector<float>& impulse);
+
+std::vector<float> bandpassFilter(const std::vector<float>& signal,
+                                   int sampleRate, float centerFreq);
+
+std::vector<float> combineMultibandRIR(
+    const std::array<std::vector<float>, NUM_FREQ_BANDS>& bandRIRs,
+    int sampleRate);
 
 } // namespace SignalProcessing
 

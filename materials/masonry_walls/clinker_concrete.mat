@@ -1,0 +1,20 @@
+{
+    "name": "Clinker concrete",
+    "category": "Masonry Walls",
+    "thickness": "",
+    "absorption": {
+        "125": 0.1,
+        "250": 0.2,
+        "500": 0.4,
+        "1000": 0.6,
+        "2000": 0.5,
+        "4000": 0.6
+    },
+    "scattering": 0.1,
+    "color": [
+        130,
+        125,
+        120
+    ],
+    "texture": ""
+}

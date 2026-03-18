@@ -1,0 +1,20 @@
+{
+    "name": "50mm woodwool slabs on 25mm cavity pre-screeded",
+    "category": "Ceilings",
+    "thickness": "",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.4,
+        "500": 0.5,
+        "1000": 0.85,
+        "2000": 0.5,
+        "4000": 0.65
+    },
+    "scattering": 0.1,
+    "color": [
+        180,
+        160,
+        120
+    ],
+    "texture": ""
+}

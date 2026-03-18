@@ -1,0 +1,20 @@
+{
+    "name": "Thick pile carpet on sponge rubber underlay",
+    "category": "Floors",
+    "thickness": "15mm",
+    "absorption": {
+        "125": 0.15,
+        "250": 0.25,
+        "500": 0.5,
+        "1000": 0.6,
+        "2000": 0.7,
+        "4000": 0.7
+    },
+    "scattering": 0.1,
+    "color": [
+        85,
+        65,
+        105
+    ],
+    "texture": ""
+}

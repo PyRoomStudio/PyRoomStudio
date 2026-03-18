@@ -1,0 +1,20 @@
+{
+    "name": "Lightweight curtains 0.2 kg per m2 hung 90mm from wall",
+    "category": "Wall Treatments",
+    "thickness": "",
+    "absorption": {
+        "125": 0.05,
+        "250": 0.06,
+        "500": 0.39,
+        "1000": 0.63,
+        "2000": 0.7,
+        "4000": 0.73
+    },
+    "scattering": 0.1,
+    "color": [
+        230,
+        200,
+        180
+    ],
+    "texture": ""
+}

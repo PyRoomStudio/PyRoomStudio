@@ -2,6 +2,9 @@
 
 #include <QPainter>
 #include <QMouseEvent>
+#include <QDrag>
+#include <QMimeData>
+#include <QApplication>
 
 namespace prs {
 
@@ -17,6 +20,10 @@ void ColorSwatch::setColor(const Color3i& color) {
     update();
 }
 
+void ColorSwatch::setDragData(const QByteArray& data) {
+    dragData_ = data;
+}
+
 void ColorSwatch::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
@@ -24,16 +31,13 @@ void ColorSwatch::paintEvent(QPaintEvent*) {
     QRect r = rect().adjusted(1, 1, -1, -1);
     int colorHeight = r.height() - 20;
 
-    // Color rectangle
     QRect colorRect(r.x(), r.y(), r.width(), colorHeight);
     QColor qcolor(color_[0], color_[1], color_[2]);
     p.fillRect(colorRect, qcolor);
 
-    // Border
     p.setPen(hovered_ ? QColor(70, 130, 180) : QColor(64, 64, 64));
     p.drawRect(colorRect);
 
-    // Label
     QFont font = p.font();
     font.setPointSize(8);
     p.setFont(font);
@@ -43,9 +47,32 @@ void ColorSwatch::paintEvent(QPaintEvent*) {
 }
 
 void ColorSwatch::mousePressEvent(QMouseEvent* event) {
-    if (event->button() == Qt::LeftButton)
+    if (event->button() == Qt::LeftButton) {
+        dragStartPos_ = event->pos();
         emit clicked();
+    }
     QWidget::mousePressEvent(event);
+}
+
+void ColorSwatch::mouseMoveEvent(QMouseEvent* event) {
+    if (!(event->buttons() & Qt::LeftButton))
+        return;
+    if (dragData_.isEmpty())
+        return;
+    if ((event->pos() - dragStartPos_).manhattanLength() < QApplication::startDragDistance())
+        return;
+
+    auto* drag = new QDrag(this);
+    auto* mimeData = new QMimeData;
+    mimeData->setData("application/x-prs-material", dragData_);
+    drag->setMimeData(mimeData);
+
+    QPixmap pixmap(40, 40);
+    pixmap.fill(QColor(color_[0], color_[1], color_[2]));
+    drag->setPixmap(pixmap);
+    drag->setHotSpot(QPoint(20, 20));
+
+    drag->exec(Qt::CopyAction);
 }
 
 void ColorSwatch::enterEvent(QEnterEvent*) {

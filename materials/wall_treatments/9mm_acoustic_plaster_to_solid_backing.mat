@@ -1,0 +1,20 @@
+{
+    "name": "9mm acoustic plaster to solid backing",
+    "category": "Wall Treatments",
+    "thickness": "9mm",
+    "absorption": {
+        "125": 0.02,
+        "250": 0.08,
+        "500": 0.3,
+        "1000": 0.6,
+        "2000": 0.8,
+        "4000": 0.9
+    },
+    "scattering": 0.1,
+    "color": [
+        233,
+        228,
+        218
+    ],
+    "texture": ""
+}

@@ -1,0 +1,20 @@
+{
+    "name": "Orchestra with instruments on podium",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.27,
+        "250": 0.53,
+        "500": 0.67,
+        "1000": 0.93,
+        "2000": 0.87,
+        "4000": 0.8
+    },
+    "scattering": 0.1,
+    "color": [
+        60,
+        50,
+        40
+    ],
+    "texture": ""
+}

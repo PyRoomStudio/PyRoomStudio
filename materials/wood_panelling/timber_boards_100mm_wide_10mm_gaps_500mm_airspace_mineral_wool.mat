@@ -1,0 +1,20 @@
+{
+    "name": "Timber boards 100mm wide 10mm gaps 500mm airspace mineral wool",
+    "category": "Wood Panelling",
+    "thickness": "22mm",
+    "absorption": {
+        "125": 0.05,
+        "250": 0.25,
+        "500": 0.6,
+        "1000": 0.15,
+        "2000": 0.05,
+        "4000": 0.1
+    },
+    "scattering": 0.1,
+    "color": [
+        145,
+        105,
+        65
+    ],
+    "texture": ""
+}

@@ -1,0 +1,20 @@
+{
+    "name": "Curtains close-woven glass mat 50mm from wall",
+    "category": "Wall Treatments",
+    "thickness": "",
+    "absorption": {
+        "125": 0.03,
+        "250": 0.03,
+        "500": 0.15,
+        "1000": 0.4,
+        "2000": 0.5,
+        "4000": 0.5
+    },
+    "scattering": 0.1,
+    "color": [
+        220,
+        210,
+        200
+    ],
+    "texture": ""
+}

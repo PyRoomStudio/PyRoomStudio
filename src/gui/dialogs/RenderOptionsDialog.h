@@ -1,7 +1,11 @@
 #pragma once
 
+#include "acoustics/SimulationWorker.h"
+
 #include <QDialog>
 #include <QCheckBox>
+#include <QComboBox>
+#include <QSpinBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <vector>
@@ -22,9 +26,19 @@ public:
                                  QWidget* parent = nullptr);
 
     std::vector<int> selectedListenerIndices() const;
+    SimMethod selectedMethod() const;
+    int dgPolynomialOrder() const;
+    float dgMaxFrequency() const;
+
+private slots:
+    void onMethodChanged(int index);
 
 private:
     std::vector<QCheckBox*> checkboxes_;
+    QComboBox* methodCombo_ = nullptr;
+    QSpinBox* polyOrderSpin_ = nullptr;
+    QSpinBox* maxFreqSpin_ = nullptr;
+    QWidget* dgParamsWidget_ = nullptr;
 };
 
 } // namespace prs

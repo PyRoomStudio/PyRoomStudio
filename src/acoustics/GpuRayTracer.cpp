@@ -17,18 +17,17 @@ void GpuRayTracer::buildWallCache(const std::vector<Wall>& walls) {
         gw.v1 = w.triangle.v1;
         gw.v2 = w.triangle.v2;
         gw.normal = w.triangle.normal;
-        gw.energyAbsorption = w.energyAbsorption;
+        gw.absorption = w.absorption;
         gw.scattering = w.scattering;
         wallsCache_.push_back(gw);
     }
-
-    // A future GPU implementation would upload wallsCache_ to GPU buffers here.
 }
 
 std::vector<RayContribution> GpuRayTracer::trace(
     const Vec3f& sourcePos,
     const Vec3f& listenerPos,
     const std::vector<Wall>& walls,
+    const Bvh& bvh,
     int numRays,
     float listenerRadius,
     int maxBounces,
@@ -38,8 +37,6 @@ std::vector<RayContribution> GpuRayTracer::trace(
 {
     buildWallCache(walls);
 
-    // For now, fall back to the existing CPU implementation while keeping the
-    // GPU-oriented data layout ready for a future kernel-based implementation.
     qWarning() << "GpuRayTracer::trace using CPU fallback; GPU kernels not yet implemented.";
 
     RayTracer cpuTracer;
@@ -47,6 +44,7 @@ std::vector<RayContribution> GpuRayTracer::trace(
         sourcePos,
         listenerPos,
         walls,
+        bvh,
         numRays,
         listenerRadius,
         maxBounces,
@@ -56,4 +54,3 @@ std::vector<RayContribution> GpuRayTracer::trace(
 }
 
 } // namespace prs
-

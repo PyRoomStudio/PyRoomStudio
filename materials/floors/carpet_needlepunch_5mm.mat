@@ -1,0 +1,20 @@
+{
+    "name": "Carpet needlepunch 5mm",
+    "category": "Floors",
+    "thickness": "5mm",
+    "absorption": {
+        "125": 0.03,
+        "250": 0.05,
+        "500": 0.05,
+        "1000": 0.25,
+        "2000": 0.35,
+        "4000": 0.5
+    },
+    "scattering": 0.1,
+    "color": [
+        130,
+        110,
+        140
+    ],
+    "texture": ""
+}

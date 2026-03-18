@@ -1,0 +1,20 @@
+{
+    "name": "Metal ceiling 32.5 percent perforated backed rockwool",
+    "category": "Ceilings",
+    "thickness": "",
+    "absorption": {
+        "125": 0.12,
+        "250": 0.45,
+        "500": 0.87,
+        "1000": 0.98,
+        "2000": 1.0,
+        "4000": 1.0
+    },
+    "scattering": 0.1,
+    "color": [
+        190,
+        195,
+        200
+    ],
+    "texture": ""
+}

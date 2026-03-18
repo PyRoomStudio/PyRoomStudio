@@ -11,6 +11,8 @@
 
 namespace prs {
 
+enum class SimMethod { RayTracing, DG_2D, DG_3D };
+
 class SimulationWorker : public QObject {
     Q_OBJECT
 
@@ -23,10 +25,13 @@ public:
         int sampleRate = DEFAULT_SAMPLE_RATE;
         int maxOrder = DEFAULT_MAX_ORDER;
         int nRays = DEFAULT_N_RAYS;
-        float energyAbsorption = DEFAULT_ENERGY_ABSORPTION;
         float scattering = DEFAULT_SCATTERING;
         bool airAbsorption = true;
         std::vector<int> selectedListenerIndices;
+
+        SimMethod method = SimMethod::RayTracing;
+        int dgPolyOrder = 3;
+        float dgMaxFrequency = 1000.0f;
     };
 
     explicit SimulationWorker(const Params& params, QObject* parent = nullptr);

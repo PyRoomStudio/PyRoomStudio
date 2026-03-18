@@ -1,0 +1,20 @@
+{
+    "name": "Glass wool or mineral wool on solid backing 50mm",
+    "category": "Mineral Wool Foams",
+    "thickness": "50mm",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.0,
+        "500": 0.8,
+        "1000": 0.0,
+        "2000": 0.95,
+        "4000": 0.9
+    },
+    "scattering": 0.1,
+    "color": [
+        223,
+        213,
+        43
+    ],
+    "texture": ""
+}

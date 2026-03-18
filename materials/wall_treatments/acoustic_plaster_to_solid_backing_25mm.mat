@@ -1,0 +1,20 @@
+{
+    "name": "Acoustic plaster to solid backing 25mm",
+    "category": "Wall Treatments",
+    "thickness": "25mm",
+    "absorption": {
+        "125": 0.03,
+        "250": 0.15,
+        "500": 0.5,
+        "1000": 0.8,
+        "2000": 0.85,
+        "4000": 0.8
+    },
+    "scattering": 0.1,
+    "color": [
+        235,
+        230,
+        220
+    ],
+    "texture": ""
+}

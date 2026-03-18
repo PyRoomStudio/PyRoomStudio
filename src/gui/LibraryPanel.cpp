@@ -1,5 +1,6 @@
 #include "LibraryPanel.h"
 #include "widgets/MaterialGallery.h"
+#include "core/MaterialLoader.h"
 
 #include <QLabel>
 #include <QScrollArea>
@@ -8,6 +9,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QSettings>
+#include <QCoreApplication>
 
 namespace prs {
 
@@ -110,14 +112,22 @@ void LibraryPanel::createMaterialTab(QWidget* tab) {
     contentLayout->setContentsMargins(4, 4, 4, 4);
     contentLayout->setSpacing(4);
 
-    for (auto& category : getAcousticMaterials()) {
+    // Load materials from the materials/ directory next to the executable
+    QString materialsDir = QCoreApplication::applicationDirPath() + "/materials";
+    if (!QDir(materialsDir).exists()) {
+        // Fall back to source tree path for development
+        materialsDir = "materials";
+    }
+
+    auto categories = MaterialLoader::loadFromDirectory(materialsDir);
+
+    for (auto& category : categories) {
         auto* gallery = new MaterialGallery(
             QString::fromStdString(category.name), category.materials, content);
 
         connect(gallery, &MaterialGallery::materialClicked,
-            [this](const QString& name, const Color3i& color, float absorption) {
-                Color3f glColor = {color[0] / 255.0f, color[1] / 255.0f, color[2] / 255.0f};
-                emit materialSelected(name, glColor, absorption);
+            [this](const Material& mat) {
+                emit materialSelected(mat);
             });
 
         materialGalleries_.push_back(gallery);

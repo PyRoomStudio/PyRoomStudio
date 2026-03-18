@@ -2,6 +2,7 @@ find_package(Qt6 REQUIRED COMPONENTS Test Widgets OpenGL OpenGLWidgets Multimedi
 
 set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/core/Material.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/MaterialLoader.cpp
     ${CMAKE_SOURCE_DIR}/src/core/SoundSource.cpp
     ${CMAKE_SOURCE_DIR}/src/core/Listener.cpp
     ${CMAKE_SOURCE_DIR}/src/core/PlacedPoint.cpp
@@ -12,6 +13,7 @@ set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/rendering/SurfaceGrouper.cpp
     ${CMAKE_SOURCE_DIR}/src/rendering/RayPicking.cpp
     ${CMAKE_SOURCE_DIR}/src/rendering/MeshSimplifier.cpp
+    ${CMAKE_SOURCE_DIR}/src/rendering/TextureManager.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/Wall.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/Bvh.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/ImageSourceMethod.cpp
@@ -73,6 +75,14 @@ set(GUI_TEST_EXTRA
     ${CMAKE_SOURCE_DIR}/src/utils/ResourcePath.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationWorker.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationQueue.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGBasis2D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGBasis3D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGMesh2D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGMesh3D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGAcoustics2D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGAcoustics3D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGSolver.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGGpuCompute.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/SimulationQueuePanel.cpp
     ${CMAKE_SOURCE_DIR}/src/rendering/Viewport3D.cpp
 )

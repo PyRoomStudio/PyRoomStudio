@@ -76,7 +76,7 @@ std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls,
         Face f;
         f.v[0] = vi0; f.v[1] = vi1; f.v[2] = vi2;
         f.surfaceId = sid;
-        f.energyAbsorption = walls[i].energyAbsorption;
+        f.absorption = walls[i].absorption;
         f.scattering = walls[i].scattering;
         faces.push_back(f);
     }
@@ -259,7 +259,7 @@ std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls,
         Vec3f e1 = w.triangle.v1 - w.triangle.v0;
         Vec3f e2 = w.triangle.v2 - w.triangle.v0;
         w.triangle.normal = e1.cross(e2).normalized();
-        w.energyAbsorption = f.energyAbsorption;
+        w.absorption = f.absorption;
         w.scattering = f.scattering;
 
         if (w.area() > 1e-8f)

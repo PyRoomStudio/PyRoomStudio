@@ -1,0 +1,20 @@
+{
+    "name": "Solid timber door",
+    "category": "Panels Doors",
+    "thickness": "",
+    "absorption": {
+        "125": 0.14,
+        "250": 0.1,
+        "500": 0.06,
+        "1000": 0.08,
+        "2000": 0.1,
+        "4000": 0.1
+    },
+    "scattering": 0.1,
+    "color": [
+        120,
+        70,
+        35
+    ],
+    "texture": ""
+}

@@ -1,0 +1,20 @@
+{
+    "name": "Fibreglass scrim-covered sewn sheet 40mm",
+    "category": "Mineral Wool Foams",
+    "thickness": "40mm",
+    "absorption": {
+        "125": 0.4,
+        "250": 0.8,
+        "500": 0.95,
+        "1000": 0.95,
+        "2000": 0.8,
+        "4000": 0.85
+    },
+    "scattering": 0.1,
+    "color": [
+        228,
+        228,
+        228
+    ],
+    "texture": ""
+}

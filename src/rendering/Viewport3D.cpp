@@ -7,6 +7,10 @@
 
 #include <QPainter>
 #include <QSettings>
+#include <QMimeData>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 namespace prs {
 
@@ -22,6 +26,7 @@ Viewport3D::Viewport3D(QWidget* parent)
 {
     setFocusPolicy(Qt::StrongFocus);
     setMinimumSize(200, 200);
+    setAcceptDrops(true);
     applyDisplaySettings();
 }
 
@@ -46,6 +51,7 @@ bool Viewport3D::loadModel(const QString& filepath) {
     surfaceColors_.assign(surfaces_.size(), defaultSurfaceColor_);
     surfaceMaterials_.assign(surfaces_.size(), std::nullopt);
     surfaceTextured_.assign(surfaces_.size(), false);
+    surfaceTextureIds_.assign(surfaces_.size(), 0);
 
     triangleToSurface_.clear();
     for (int si = 0; si < static_cast<int>(surfaces_.size()); ++si)
@@ -255,7 +261,23 @@ void Viewport3D::assignMaterial(int surfIdx, const Material& material) {
         surfaceColors_[surfIdx] = {material.color[0] / 255.0f,
                                     material.color[1] / 255.0f,
                                     material.color[2] / 255.0f};
-        surfaceTextured_[surfIdx] = false;
+
+        if (!material.texturePath.empty()) {
+            makeCurrent();
+            GLuint texId = textureManager_.getOrLoad(QString::fromStdString(material.texturePath));
+            if (texId != 0) {
+                surfaceTextureIds_[surfIdx] = texId;
+                surfaceTextured_[surfIdx] = true;
+            } else {
+                surfaceTextureIds_[surfIdx] = 0;
+                surfaceTextured_[surfIdx] = false;
+            }
+            doneCurrent();
+        } else {
+            surfaceTextureIds_[surfIdx] = 0;
+            surfaceTextured_[surfIdx] = false;
+        }
+
         emit surfaceMaterialChanged(surfIdx, QString::fromStdString(material.name));
         update();
     }
@@ -359,7 +381,7 @@ std::vector<Viewport3D::WallInfo> Viewport3D::getWallsForAcoustic() const {
         WallInfo wi;
         wi.triangleIndices.assign(surfaces_[si].begin(), surfaces_[si].end());
         if (si < static_cast<int>(surfaceMaterials_.size()) && surfaceMaterials_[si].has_value()) {
-            wi.energyAbsorption = surfaceMaterials_[si]->energyAbsorption;
+            wi.absorption = surfaceMaterials_[si]->absorption;
             wi.scattering = surfaceMaterials_[si]->scattering;
         }
         walls.push_back(std::move(wi));
@@ -380,7 +402,6 @@ std::vector<Vec3f> Viewport3D::getScaledModelVertices() const {
 void Viewport3D::initializeGL() {
     initializeOpenGLFunctions();
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
@@ -397,6 +418,11 @@ void Viewport3D::resizeGL(int w, int h) {
 }
 
 void Viewport3D::paintGL() {
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (!hasModel()) {
@@ -409,8 +435,8 @@ void Viewport3D::paintGL() {
     drawSelectedSurfaceOutline();
     drawPointMarkers();
 
-    // Draw measurement line if both points are set
     if (measurePoint1_ && measurePoint2_) {
+        glEnable(GL_BLEND);
         glPushMatrix();
         camera_.applyViewMatrix();
         glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
@@ -427,6 +453,7 @@ void Viewport3D::paintGL() {
         glDisable(GL_LINE_STIPPLE);
         glEnable(GL_DEPTH_TEST);
         glPopMatrix();
+        glDisable(GL_BLEND);
     }
 }
 
@@ -450,6 +477,7 @@ void Viewport3D::drawPlaceholder() {
 void Viewport3D::drawMeasurementGrid() {
     if (!gridVisible_) return;
 
+    glEnable(GL_BLEND);
     glPushMatrix();
     camera_.applyViewMatrix();
     glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
@@ -488,6 +516,7 @@ void Viewport3D::drawMeasurementGrid() {
     }
 
     glPopMatrix();
+    glDisable(GL_BLEND);
 }
 
 void Viewport3D::drawModel() {
@@ -501,25 +530,30 @@ void Viewport3D::drawModel() {
     Vec3f mx = mesh_.maxBound();
     float alpha = transparentMode_ ? transparencyAlpha_ : 1.0f;
 
-    // Draw textured surfaces first (if texture loaded)
-    if (textureId_ != 0) {
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, textureId_);
-        for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
-            auto it = triangleToSurface_.find(i);
-            if (it == triangleToSurface_.end()) continue;
-            int si = it->second;
-            if (!surfaceTextured_[si]) continue;
+    if (transparentMode_)
+        glEnable(GL_BLEND);
 
-            glColor4f(1.0f, 1.0f, 1.0f, alpha);
-            glBegin(GL_TRIANGLES);
-            for (const Vec3f* v : {&tris[i].v0, &tris[i].v1, &tris[i].v2}) {
-                Vec2f uv = getTexCoordsFromNormal(*v, tris[i].normal, mn, mx);
-                glTexCoord2f(uv.x(), uv.y());
-                glVertex3f(v->x(), v->y(), v->z());
-            }
-            glEnd();
+    // Draw textured surfaces (per-surface or global texture)
+    for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
+        auto it = triangleToSurface_.find(i);
+        if (it == triangleToSurface_.end()) continue;
+        int si = it->second;
+        if (!surfaceTextured_[si]) continue;
+
+        GLuint texId = (si < static_cast<int>(surfaceTextureIds_.size()) && surfaceTextureIds_[si] != 0)
+                       ? surfaceTextureIds_[si] : textureId_;
+        if (texId == 0) continue;
+
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texId);
+        glColor4f(1.0f, 1.0f, 1.0f, alpha);
+        glBegin(GL_TRIANGLES);
+        for (const Vec3f* v : {&tris[i].v0, &tris[i].v1, &tris[i].v2}) {
+            Vec2f uv = getTexCoordsFromNormal(*v, tris[i].normal, mn, mx);
+            glTexCoord2f(uv.x(), uv.y());
+            glVertex3f(v->x(), v->y(), v->z());
         }
+        glEnd();
         glDisable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -530,7 +564,7 @@ void Viewport3D::drawModel() {
         auto it = triangleToSurface_.find(i);
         if (it == triangleToSurface_.end()) continue;
         int si = it->second;
-        if (textureId_ != 0 && surfaceTextured_[si]) continue;
+        if (surfaceTextured_[si]) continue;
 
         auto& c = surfaceColors_[si];
         glColor4f(c[0], c[1], c[2], alpha);
@@ -541,6 +575,9 @@ void Viewport3D::drawModel() {
         glVertex3f(tris[i].v2.x(), tris[i].v2.y(), tris[i].v2.z());
         glEnd();
     }
+
+    if (transparentMode_)
+        glDisable(GL_BLEND);
 
     // Draw feature edges
     glColor3f(0, 0, 0);
@@ -558,6 +595,7 @@ void Viewport3D::drawModel() {
 void Viewport3D::drawPointMarkers() {
     if (placedPoints_.empty()) return;
 
+    glEnable(GL_BLEND);
     glPushMatrix();
     camera_.applyViewMatrix();
     glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
@@ -655,6 +693,7 @@ void Viewport3D::drawPointMarkers() {
     else
         glDisable(GL_POLYGON_OFFSET_FILL);
     glPopMatrix();
+    glDisable(GL_BLEND);
 }
 
 void Viewport3D::drawSelectedSurfaceOutline() {
@@ -852,31 +891,6 @@ void Viewport3D::mousePressEvent(QMouseEvent* event) {
                 moveOriginal_ = placedPoints_[movingPointIndex_];
             }
         }
-    } else if (event->button() == Qt::RightButton && hasModel()) {
-        // Right click: random color change on surface
-        makeCurrent();
-        glPushMatrix();
-        camera_.applyViewMatrix();
-        glScalef(scaleFactor_, scaleFactor_, scaleFactor_);
-        glTranslatef(-modelCenter_.x(), -modelCenter_.y(), -modelCenter_.z());
-        auto [ro, rd] = getRayFromMouse(event->pos());
-        glPopMatrix();
-        doneCurrent();
-
-        const auto& tris = mesh_.triangles();
-        float minT = std::numeric_limits<float>::max();
-        int hitTri = -1;
-        for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
-            auto t = RayPicking::rayTriangleIntersect(ro, rd, tris[i]);
-            if (t && *t < minT) { minT = *t; hitTri = i; }
-        }
-        if (hitTri >= 0) {
-            auto it = triangleToSurface_.find(hitTri);
-            if (it != triangleToSurface_.end()) {
-                auto randF = []() { return 0.2f + static_cast<float>(rand()) / RAND_MAX * 0.7f; };
-                setSurfaceColor(it->second, {randF(), randF(), randF()});
-            }
-        }
     }
     QOpenGLWidget::mousePressEvent(event);
 }
@@ -983,6 +997,58 @@ void Viewport3D::keyPressEvent(QKeyEvent* event) {
         break;
     }
     QOpenGLWidget::keyPressEvent(event);
+}
+
+void Viewport3D::dragEnterEvent(QDragEnterEvent* event) {
+    if (event->mimeData()->hasFormat("application/x-prs-material") && hasModel())
+        event->acceptProposedAction();
+}
+
+void Viewport3D::dragMoveEvent(QDragMoveEvent* event) {
+    if (event->mimeData()->hasFormat("application/x-prs-material"))
+        event->acceptProposedAction();
+}
+
+void Viewport3D::dropEvent(QDropEvent* event) {
+    if (!event->mimeData()->hasFormat("application/x-prs-material"))
+        return;
+
+    QByteArray data = event->mimeData()->data("application/x-prs-material");
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (!doc.isObject()) return;
+
+    QJsonObject obj = doc.object();
+    Material mat;
+    mat.name = obj["name"].toString().toStdString();
+    mat.category = obj["category"].toString().toStdString();
+    mat.thickness = obj["thickness"].toString().toStdString();
+    mat.scattering = static_cast<float>(obj["scattering"].toDouble(0.1));
+    mat.texturePath = obj["texture"].toString().toStdString();
+
+    if (obj.contains("absorption") && obj["absorption"].isObject()) {
+        QJsonObject abs = obj["absorption"].toObject();
+        for (int i = 0; i < NUM_FREQ_BANDS; ++i) {
+            QString key = QString::number(FREQ_BANDS[i]);
+            if (abs.contains(key))
+                mat.absorption[i] = static_cast<float>(abs[key].toDouble(0.2));
+        }
+    }
+
+    if (obj.contains("color") && obj["color"].isArray()) {
+        QJsonArray c = obj["color"].toArray();
+        if (c.size() >= 3)
+            mat.color = {c[0].toInt(160), c[1].toInt(160), c[2].toInt(160)};
+    }
+
+    QPoint dropPos = event->position().toPoint();
+    auto hit = getIntersectionPoint(dropPos);
+    if (hit) {
+        auto it = triangleToSurface_.find(hit->triIndex);
+        if (it != triangleToSurface_.end()) {
+            assignMaterial(it->second, mat);
+            event->acceptProposedAction();
+        }
+    }
 }
 
 } // namespace prs

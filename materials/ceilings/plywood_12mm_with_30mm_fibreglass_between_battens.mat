@@ -1,0 +1,20 @@
+{
+    "name": "Plywood 12mm with 30mm fibreglass between battens",
+    "category": "Ceilings",
+    "thickness": "",
+    "absorption": {
+        "125": 0.4,
+        "250": 0.2,
+        "500": 0.15,
+        "1000": 0.1,
+        "2000": 0.1,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        168,
+        128,
+        78
+    ],
+    "texture": ""
+}

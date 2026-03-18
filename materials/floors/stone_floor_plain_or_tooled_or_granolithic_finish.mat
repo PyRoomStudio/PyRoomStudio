@@ -1,0 +1,20 @@
+{
+    "name": "Stone floor plain or tooled or granolithic finish",
+    "category": "Floors",
+    "thickness": "",
+    "absorption": {
+        "125": 0.02,
+        "250": 0.0,
+        "500": 0.02,
+        "1000": 0.0,
+        "2000": 0.05,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        200,
+        195,
+        185
+    ],
+    "texture": ""
+}

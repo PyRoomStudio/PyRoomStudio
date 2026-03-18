@@ -1,0 +1,20 @@
+{
+    "name": "Plasterboard on frame 100mm airspace",
+    "category": "Studwork Lightweight",
+    "thickness": "13mm",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.12,
+        "500": 0.08,
+        "1000": 0.06,
+        "2000": 0.06,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        232,
+        228,
+        220
+    ],
+    "texture": ""
+}

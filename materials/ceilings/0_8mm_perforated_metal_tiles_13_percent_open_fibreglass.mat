@@ -1,0 +1,20 @@
+{
+    "name": "0.8mm perforated metal tiles 13 percent open fibreglass",
+    "category": "Ceilings",
+    "thickness": "0.8mm",
+    "absorption": {
+        "125": 0.1,
+        "250": 0.3,
+        "500": 0.6,
+        "1000": 0.75,
+        "2000": 0.8,
+        "4000": 0.8
+    },
+    "scattering": 0.1,
+    "color": [
+        186,
+        190,
+        196
+    ],
+    "texture": ""
+}

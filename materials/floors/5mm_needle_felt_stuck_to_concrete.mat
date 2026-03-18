@@ -1,0 +1,20 @@
+{
+    "name": "5mm needle-felt stuck to concrete",
+    "category": "Floors",
+    "thickness": "5mm",
+    "absorption": {
+        "125": 0.01,
+        "250": 0.02,
+        "500": 0.05,
+        "1000": 0.15,
+        "2000": 0.3,
+        "4000": 0.4
+    },
+    "scattering": 0.1,
+    "color": [
+        120,
+        110,
+        100
+    ],
+    "texture": ""
+}

@@ -1,0 +1,20 @@
+{
+    "name": "Plywood hardwood panels 25mm airspace absorbent",
+    "category": "Wood Panelling",
+    "thickness": "",
+    "absorption": {
+        "125": 0.4,
+        "250": 0.25,
+        "500": 0.15,
+        "1000": 0.1,
+        "2000": 0.1,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        153,
+        113,
+        73
+    ],
+    "texture": ""
+}

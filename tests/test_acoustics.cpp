@@ -19,28 +19,22 @@ static std::vector<Wall> createSimpleBox(float size = 5.0f) {
         w.triangle.v2 = v2;
         Vec3f e1 = v1 - v0, e2 = v2 - v0;
         w.triangle.normal = e1.cross(e2).normalized();
-        w.energyAbsorption = 0.2f;
+        w.absorption.fill(0.2f);
         w.scattering = 0.1f;
         walls.push_back(w);
     };
 
     float s = size;
-    // Floor (z=0)
     addWall(Vec3f(0,0,0), Vec3f(s,0,0), Vec3f(s,s,0));
     addWall(Vec3f(0,0,0), Vec3f(s,s,0), Vec3f(0,s,0));
-    // Ceiling (z=s)
     addWall(Vec3f(0,0,s), Vec3f(s,s,s), Vec3f(s,0,s));
     addWall(Vec3f(0,0,s), Vec3f(0,s,s), Vec3f(s,s,s));
-    // Front (y=0)
     addWall(Vec3f(0,0,0), Vec3f(s,0,s), Vec3f(s,0,0));
     addWall(Vec3f(0,0,0), Vec3f(0,0,s), Vec3f(s,0,s));
-    // Back (y=s)
     addWall(Vec3f(0,s,0), Vec3f(s,s,0), Vec3f(s,s,s));
     addWall(Vec3f(0,s,0), Vec3f(s,s,s), Vec3f(0,s,s));
-    // Left (x=0)
     addWall(Vec3f(0,0,0), Vec3f(0,s,0), Vec3f(0,s,s));
     addWall(Vec3f(0,0,0), Vec3f(0,s,s), Vec3f(0,0,s));
-    // Right (x=s)
     addWall(Vec3f(s,0,0), Vec3f(s,0,s), Vec3f(s,s,s));
     addWall(Vec3f(s,0,0), Vec3f(s,s,s), Vec3f(s,s,0));
 
@@ -81,6 +75,13 @@ private slots:
 
         QVERIFY(w.isPointOnSameSide(Vec3f(0, 0, 1)));
         QVERIFY(!w.isPointOnSameSide(Vec3f(0, 0, -1)));
+    }
+
+    void testWallAverageAbsorption() {
+        Wall w;
+        w.absorption = {0.10f, 0.20f, 0.30f, 0.40f, 0.50f, 0.60f};
+        float avg = w.averageAbsorption();
+        QVERIFY(std::abs(avg - 0.35f) < 1e-5f);
     }
 
     void testISMSimpleBox() {
@@ -138,25 +139,25 @@ private slots:
         QVERIFY(std::abs(noDecay - 1.0f) < 1e-6f);
     }
 
-    void testRIRDuration() {
+    void testRIRMultiband() {
         std::vector<ImageSource> images;
         ImageSource is;
         is.position = Vec3f(3, 0, 0);
         is.delay = 0.01f;
-        is.attenuation = 0.5f;
+        is.attenuation = {0.5f, 0.4f, 0.3f, 0.2f, 0.15f, 0.1f};
         is.order = 1;
         images.push_back(is);
 
         RoomImpulseResponse rir;
-        auto impulse = rir.compute(images, {}, 44100);
-        QVERIFY(!impulse.empty());
-        QVERIFY(impulse.size() > 44);
+        auto multiband = rir.computeMultiband(images, {}, 44100);
+        for (auto& band : multiband)
+            QVERIFY(!band.empty());
+        QVERIFY(multiband[0].size() > 44);
     }
 
     void testSchroederCurve() {
-        // Exponentially decaying impulse
         int fs = 44100;
-        int len = fs;  // 1 second
+        int len = fs;
         std::vector<float> rir(len, 0.0f);
         for (int i = 0; i < len; ++i)
             rir[i] = std::exp(-3.0f * i / fs);
@@ -189,13 +190,13 @@ private slots:
     void testComputeSPL() {
         std::vector<ImageSource> images;
         ImageSource direct;
-        direct.attenuation = 0.5f;
+        direct.attenuation = {0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f};
         direct.order = 0;
         direct.delay = 0.01f;
         images.push_back(direct);
 
         ImageSource reflected;
-        reflected.attenuation = 0.1f;
+        reflected.attenuation = {0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};
         reflected.order = 1;
         reflected.delay = 0.02f;
         images.push_back(reflected);

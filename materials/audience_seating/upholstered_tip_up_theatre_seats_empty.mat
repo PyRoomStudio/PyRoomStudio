@@ -1,0 +1,20 @@
+{
+    "name": "Upholstered tip-up theatre seats empty",
+    "category": "Audience Seating",
+    "thickness": "",
+    "absorption": {
+        "125": 0.33,
+        "250": 0.51,
+        "500": 0.64,
+        "1000": 0.71,
+        "2000": 0.77,
+        "4000": 0.81
+    },
+    "scattering": 0.1,
+    "color": [
+        130,
+        40,
+        40
+    ],
+    "texture": ""
+}

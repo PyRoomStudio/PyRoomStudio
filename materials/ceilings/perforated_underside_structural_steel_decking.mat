@@ -1,0 +1,20 @@
+{
+    "name": "Perforated underside structural steel decking",
+    "category": "Ceilings",
+    "thickness": "",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.7,
+        "500": 0.85,
+        "1000": 0.9,
+        "2000": 0.7,
+        "4000": 0.65
+    },
+    "scattering": 0.1,
+    "color": [
+        185,
+        190,
+        195
+    ],
+    "texture": ""
+}

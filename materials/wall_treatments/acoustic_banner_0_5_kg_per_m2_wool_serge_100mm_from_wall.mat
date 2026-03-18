@@ -1,0 +1,20 @@
+{
+    "name": "Acoustic banner 0.5 kg per m2 wool serge 100mm from wall",
+    "category": "Wall Treatments",
+    "thickness": "",
+    "absorption": {
+        "125": 0.11,
+        "250": 0.4,
+        "500": 0.7,
+        "1000": 0.74,
+        "2000": 0.88,
+        "4000": 0.89
+    },
+    "scattering": 0.1,
+    "color": [
+        100,
+        60,
+        80
+    ],
+    "texture": ""
+}

@@ -1,0 +1,20 @@
+{
+    "name": "6mm wood fibre board cavity over 100mm empty",
+    "category": "Wood Panelling",
+    "thickness": "",
+    "absorption": {
+        "125": 0.3,
+        "250": 0.2,
+        "500": 0.2,
+        "1000": 0.1,
+        "2000": 0.05,
+        "4000": 0.05
+    },
+    "scattering": 0.1,
+    "color": [
+        142,
+        102,
+        62
+    ],
+    "texture": ""
+}
