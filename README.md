@@ -30,9 +30,6 @@ William (Zhiwen) Chen (willc@illinois.edu, [LinkedIn](https://www.linkedin.com/i
 
 Evan M. Matthews (evanmm3@illinois.edu, [LinkedIn](https://www.linkedin.com/in/ematth)), *Co-Founder & Progammer*
 
-Aslan Wang (aslanwang187@gmail.com, [LinkedIn](https://www.linkedin.com/in/aslan-wang-b00473326)), *Programmer*
-
-
 <!------------------------------------------------------------------->
 
 ## Mission Statement
