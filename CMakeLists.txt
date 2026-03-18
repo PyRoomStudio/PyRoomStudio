@@ -152,9 +152,10 @@ qt6_add_resources(RESOURCES resources/resources.qrc)
 
 if(WIN32)
     set(APP_RC resources/app.rc)
+    add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
+else()
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
 endif()
-
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -206,24 +207,6 @@ install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-
-# Copy materials directory next to the binary for runtime loading
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/materials"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/materials"
-    COMMENT "Copying materials directory..."
-)
-
-if(WIN32)
-    find_program(WINDEPLOYQT NAMES windeployqt6 windeployqt HINTS "${CMAKE_PREFIX_PATH}/bin")
-    if(WINDEPLOYQT)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND "${WINDEPLOYQT}" "$<TARGET_FILE:${PROJECT_NAME}>"
-            COMMENT "Running windeployqt..."
-        )
-    endif()
-endif()
 
 enable_testing()
 add_subdirectory(tests)

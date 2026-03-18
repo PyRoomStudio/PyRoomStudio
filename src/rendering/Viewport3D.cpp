@@ -258,9 +258,15 @@ void Viewport3D::setSurfaceColor(int surfIdx, const Color3f& color) {
 void Viewport3D::assignMaterial(int surfIdx, const Material& material) {
     if (surfIdx >= 0 && surfIdx < static_cast<int>(surfaceColors_.size())) {
         surfaceMaterials_[surfIdx] = material;
-        surfaceColors_[surfIdx] = {material.color[0] / 255.0f,
-                                    material.color[1] / 255.0f,
-                                    material.color[2] / 255.0f};
+        auto srgbByteToLinear = [](int byte) -> float {
+            float s = std::clamp(byte / 255.0f, 0.0f, 1.0f);
+            return std::pow(s, 2.2f);
+        };
+        surfaceColors_[surfIdx] = {
+            srgbByteToLinear(material.color[0]),
+            srgbByteToLinear(material.color[1]),
+            srgbByteToLinear(material.color[2])
+        };
 
         if (!material.texturePath.empty()) {
             makeCurrent();

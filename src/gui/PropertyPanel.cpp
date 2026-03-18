@@ -186,8 +186,6 @@ void PropertyPanel::setupUI() {
 
         setSurfaceControlsEnabled(false);
     }
-
-    layout->addStretch();
 }
 
 void PropertyPanel::setScaleValue(float value) {

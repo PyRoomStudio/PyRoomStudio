@@ -80,6 +80,52 @@ Once Cmake has built the Ninja files, follow-up compilations will only need `cma
 $ ./build/PyRoomStudio
 ```
 
+On Windows, the dev build in `build/` does not bundle Qt DLLs. Run via:
+
+```bash
+$ ./run_windows.sh
+```
+
+## Releasing
+
+These scripts create a clean, upload-ready archive in `dist/` containing the app plus `materials/`.
+
+### Windows
+
+```bash
+$ ./release_windows.sh
+```
+
+Optional clean rebuild:
+
+```bash
+$ ./release_windows.sh --fresh
+```
+
+### macOS
+
+```bash
+$ ./release_macos.sh
+```
+
+Optional clean rebuild:
+
+```bash
+$ ./release_macos.sh --fresh
+```
+
+### Linux
+
+```bash
+$ ./release_linux.sh
+```
+
+Optional clean rebuild:
+
+```bash
+$ ./release_linux.sh --fresh
+```
+
 <!------------------------------------------------------------------->
 
 ## Controls

@@ -29,6 +29,10 @@
 #include <QProgressDialog>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QScrollArea>
+#include <QTimer>
+#include <algorithm>
+#include <cmath>
 
 namespace prs {
 
@@ -208,19 +212,39 @@ void MainWindow::setupCentralWidget() {
     splitter->addWidget(viewport_);
 
     // Right: stacked property + assets
-    auto* rightWidget = new QWidget;
-    auto* rightLayout = new QVBoxLayout(rightWidget);
-    rightLayout->setContentsMargins(0, 0, 0, 0);
-    rightLayout->setSpacing(4);
-
     propertyPanel_ = new PropertyPanel;
     assetsPanel_   = new AssetsPanel;
 
-    rightLayout->addWidget(propertyPanel_);
-    rightLayout->addWidget(assetsPanel_);
-    rightWidget->setFixedWidth(210);
+    auto* propertyScroll = new QScrollArea;
+    propertyScroll->setWidgetResizable(true);
+    propertyScroll->setFrameShape(QFrame::NoFrame);
+    propertyScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    propertyScroll->setWidget(propertyPanel_);
 
-    splitter->addWidget(rightWidget);
+    auto* rightSplitter = new QSplitter(Qt::Vertical);
+    rightSplitter->addWidget(propertyScroll);
+    rightSplitter->addWidget(assetsPanel_);
+    // Let Assets expand; allow Property to shrink.
+    rightSplitter->setStretchFactor(0, 1);
+    rightSplitter->setStretchFactor(1, 1);
+    rightSplitter->setCollapsible(0, false);
+    rightSplitter->setCollapsible(1, false);
+    rightSplitter->setMinimumWidth(240);
+    assetsPanel_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    propertyPanel_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    // Set default split after layout is computed.
+    // Target: Property ~35%, Assets ~65% (matches desired default).
+    QTimer::singleShot(0, rightSplitter, [rightSplitter]() {
+        int h = rightSplitter->height();
+        if (h <= 0) {
+            rightSplitter->setSizes({350, 650});
+            return;
+        }
+        rightSplitter->setSizes({static_cast<int>(h * 0.35), static_cast<int>(h * 0.65)});
+    });
+
+    splitter->addWidget(rightSplitter);
     splitter->setStretchFactor(0, 0);
     splitter->setStretchFactor(1, 1);
     splitter->setStretchFactor(2, 0);
@@ -796,10 +820,16 @@ void MainWindow::populateAssetsFromRenderer(const QString& filepath) {
     const auto& colors = viewport_->surfaceColors();
     QVector<AssetsPanel::SurfaceInfo> surfaces;
     for (int i = 0; i < static_cast<int>(colors.size()); ++i) {
+        auto linearToSrgbByte = [](float v) -> int {
+            v = std::clamp(v, 0.0f, 1.0f);
+            // Viewport stores linear RGB; Qt draws in sRGB.
+            float srgb = std::pow(v, 1.0f / 2.2f);
+            return static_cast<int>(std::lround(srgb * 255.0f));
+        };
         Color3i displayColor = {
-            static_cast<int>(colors[i][0] * 255),
-            static_cast<int>(colors[i][1] * 255),
-            static_cast<int>(colors[i][2] * 255)
+            linearToSrgbByte(colors[i][0]),
+            linearToSrgbByte(colors[i][1]),
+            linearToSrgbByte(colors[i][2])
         };
         surfaces.append({QString("Surface %1").arg(i + 1), displayColor, i});
     }
