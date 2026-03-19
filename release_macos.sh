@@ -19,9 +19,12 @@ if [[ "$cleanup_build" == "true" ]]; then
 fi
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Build (expects build_macos.sh to be configured for your Qt path)
 QT_PREFIX_PATH="${QT_PREFIX_PATH}" BUILD_DIR="${BUILD_DIR}" PROJECT_NAME="${PROJECT_NAME}" "${REPO_ROOT}/build_macos.sh"
 =======
+=======
+>>>>>>> 2152ce4fda94c7299413feb8576dfc7b43c2385e
 # Build (uses Qt paths to configure CMake)
 #
 # Examples:
@@ -64,6 +67,9 @@ cmake -S "${REPO_ROOT}" -B "${REPO_ROOT}/${BUILD_DIR}" \
   -G "${CMAKE_GENERATOR}" \
   "${CMAKE_QT6_DIR_ARGS[@]}"
 cmake --build "${REPO_ROOT}/${BUILD_DIR}" --config Release
+<<<<<<< HEAD
+>>>>>>> 2152ce4fda94c7299413feb8576dfc7b43c2385e
+=======
 >>>>>>> 2152ce4fda94c7299413feb8576dfc7b43c2385e
 
 PROJECT_VERSION="$(sed -n 's/^project(PyRoomStudio VERSION \([^ ]*\) LANGUAGES.*$/\1/p' "${REPO_ROOT}/CMakeLists.txt")"

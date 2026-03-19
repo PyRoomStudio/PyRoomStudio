@@ -156,12 +156,22 @@ elseif(APPLE)
     add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${RESOURCES})
 else()
 <<<<<<< HEAD
+<<<<<<< HEAD
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
 =======
+=======
+>>>>>>> 2152ce4fda94c7299413feb8576dfc7b43c2385e
     # APP_RC is only used on Windows; keep it defined to avoid accidental expansion issues.
     set(APP_RC "")
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
 >>>>>>> 2152ce4fda94c7299413feb8576dfc7b43c2385e
+endif()
+
+# On macOS, build a proper .app bundle so macdeployqt can package it.
+if(APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE TRUE
+    )
 endif()
 
 # On macOS, build a proper .app bundle so macdeployqt can package it.
