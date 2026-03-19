@@ -3,7 +3,8 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-QT_PREFIX_PATH="${QT_PREFIX_PATH:-}"
+DEFAULT_QT_PREFIX_PATH="${HOME}/Qt/6.10.2/macos"
+QT_PREFIX_PATH="${QT_PREFIX_PATH:-${DEFAULT_QT_PREFIX_PATH}}"
 PROJECT_NAME="${PROJECT_NAME:-PyRoomStudio}"
 BUILD_DIR="${BUILD_DIR:-build}"
 DIST_DIR="${DIST_DIR:-dist}"
@@ -18,7 +19,7 @@ if [[ "$cleanup_build" == "true" ]]; then
 fi
 
 # Build (expects build_macos.sh to be configured for your Qt path)
-"${REPO_ROOT}/build_macos.sh"
+QT_PREFIX_PATH="${QT_PREFIX_PATH}" BUILD_DIR="${BUILD_DIR}" PROJECT_NAME="${PROJECT_NAME}" "${REPO_ROOT}/build_macos.sh"
 
 PROJECT_VERSION="$(sed -n 's/^project(PyRoomStudio VERSION \([^ ]*\) LANGUAGES.*$/\1/p' "${REPO_ROOT}/CMakeLists.txt")"
 if [[ -z "${PROJECT_VERSION}" ]]; then

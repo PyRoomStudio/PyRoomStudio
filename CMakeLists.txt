@@ -16,9 +16,7 @@ if(NOT Eigen3_FOUND)
     include(FetchContent)
     FetchContent_Declare(
         eigen
-        GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-        GIT_TAG        3.4.0
-        GIT_SHALLOW    TRUE
+        URL "https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz"
     )
     set(EIGEN_BUILD_DOC OFF CACHE BOOL "" FORCE)
     set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -153,8 +151,11 @@ qt6_add_resources(RESOURCES resources/resources.qrc)
 if(WIN32)
     set(APP_RC resources/app.rc)
     add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
+elseif(APPLE)
+    # Build a macOS application bundle so `release_macos.sh` can package `build/<name>.app`.
+    add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${RESOURCES})
 else()
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
