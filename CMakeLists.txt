@@ -154,7 +154,16 @@ if(WIN32)
     set(APP_RC resources/app.rc)
     add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
 else()
+    # APP_RC is only used on Windows; keep it defined to avoid accidental expansion issues.
+    set(APP_RC "")
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
+endif()
+
+# On macOS, build a proper .app bundle so macdeployqt can package it.
+if(APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE TRUE
+    )
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
