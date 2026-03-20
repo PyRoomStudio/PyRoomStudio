@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QString>
 #include <QPoint>
+#include <QPixmap>
 
 namespace prs {
 
@@ -16,6 +17,9 @@ public:
                 QWidget* parent = nullptr);
 
     void setColor(const Color3i& color);
+    void setSurfaceAppearance(const Color3i& color, const QPixmap& texturePreview);
+    void setPreviewPixmap(const QPixmap& pixmap);
+    void clearPreviewPixmap();
     void setDragData(const QByteArray& data);
     QSize sizeHint() const override { return {70, 70}; }
 
@@ -32,6 +36,7 @@ protected:
 private:
     QString label_;
     Color3i color_;
+    QPixmap previewPixmap_;
     bool hovered_ = false;
     QPoint dragStartPos_;
     QByteArray dragData_;

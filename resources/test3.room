@@ -1,0 +1,139 @@
+{
+    "placedPoints": [
+        {
+            "audioFile": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/sounds/sources/93KHJ.wav",
+            "color": [
+                0.20000000298023224,
+                0.800000011920929,
+                0.20000000298023224
+            ],
+            "distance": -0.4000000059604645,
+            "name": "",
+            "normal": {
+                "x": -0.7726957201957703,
+                "y": 0.6347765922546387,
+                "z": 0
+            },
+            "orientationYaw": 0,
+            "pointType": "source",
+            "surfacePoint": {
+                "x": 0.3212728500366211,
+                "y": 3.129843235015869,
+                "z": 2.7445476055145264
+            },
+            "volume": 1
+        },
+        {
+            "audioFile": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/sounds/sources/93KHJ.wav",
+            "color": [
+                0.800000011920929,
+                0.20000000298023224,
+                0.20000000298023224
+            ],
+            "distance": -0.5,
+            "name": "",
+            "normal": {
+                "x": 0.6864100098609924,
+                "y": -0.7272147536277771,
+                "z": 0
+            },
+            "orientationYaw": 0,
+            "pointType": "source",
+            "surfacePoint": {
+                "x": 7.754537582397461,
+                "y": 2.3652167320251465,
+                "z": 2.7580881118774414
+            },
+            "volume": 1
+        },
+        {
+            "audioFile": "",
+            "color": [
+                0.20000000298023224,
+                0.20000000298023224,
+                0.800000011920929
+            ],
+            "distance": -0.6000000238418579,
+            "name": "side",
+            "normal": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+            },
+            "orientationYaw": 264,
+            "pointType": "listener",
+            "surfacePoint": {
+                "x": 4.62094259262085,
+                "y": 6.270637035369873,
+                "z": -4.76837158203125e-07
+            },
+            "volume": 1
+        },
+        {
+            "audioFile": "",
+            "color": [
+                0.800000011920929,
+                0.20000000298023224,
+                0.800000011920929
+            ],
+            "distance": -0.7000000476837158,
+            "name": "middlep",
+            "normal": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+            },
+            "orientationYaw": 113,
+            "pointType": "listener",
+            "surfacePoint": {
+                "x": 4.498104095458984,
+                "y": 3.197052001953125,
+                "z": 0
+            },
+            "volume": 1
+        }
+    ],
+    "scaleFactor": 2.0999999046325684,
+    "soundSourceFile": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/sounds/sources/93KHJ.wav",
+    "stlFilePath": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/resources/Room1.STL",
+    "surfaceColors": [
+        [
+            0.45345649123191833,
+            0.1332085132598877,
+            0.08919350802898407
+        ],
+        [
+            0.45345649123191833,
+            0.1332085132598877,
+            0.08919350802898407
+        ],
+        [
+            0.45345649123191833,
+            0.1332085132598877,
+            0.08919350802898407
+        ],
+        [
+            0.45345649123191833,
+            0.1332085132598877,
+            0.08919350802898407
+        ],
+        [
+            0.45345649123191833,
+            0.1332085132598877,
+            0.08919350802898407
+        ],
+        [
+            0.5234431624412537,
+            0.7226724624633789,
+            0.835527777671814
+        ],
+        [
+            0.39929333329200745,
+            0.2195197343826294,
+            0.07382776588201523
+        ]
+    ],
+    "surfaceMaterials": [
+    ],
+    "version": 1
+}

@@ -36,6 +36,9 @@ void Viewport3D::applyDisplaySettings() {
     gridSpacing_       = static_cast<float>(s.value("display/gridSpacing", 1.0).toDouble());
     transparencyAlpha_ = static_cast<float>(s.value("display/transparencyAlpha", 0.55).toDouble());
     markerSize_        = s.value("display/markerSize", 15).toInt();
+    texturesEnabled_   = s.value("display/texturesEnabled", true).toBool();
+    for (int i = 0; i < static_cast<int>(surfaceColors_.size()); ++i)
+        emit surfaceAppearanceChanged(i);
     update();
 }
 
@@ -62,9 +65,11 @@ bool Viewport3D::loadModel(const QString& filepath) {
     activePointIndex_ = -1;
     selectedSurfaceIndex_ = -1;
     nextPointColorIndex_ = 0;
+    selectedPointIndices_.clear();
 
     autoNormalizeScale();
 
+    notifyPlacedPointsChanged();
     update();
     emit modelLoaded(filepath);
 
@@ -128,6 +133,16 @@ void Viewport3D::setPlacementMode(bool enabled) {
     update();
 }
 
+void Viewport3D::setPlacementPointTypeForNew(const std::string& type) {
+    placementPointTypeForNew_ = type;
+    if (placementMode_)
+        emit placementModeChanged(true);
+}
+
+void Viewport3D::notifyPlacedPointsChanged() {
+    emit placedPointsChanged();
+}
+
 void Viewport3D::updateActivePointDistance(float distance) {
     if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size()))
         placedPoints_[activePointIndex_].distance = distance;
@@ -167,17 +182,43 @@ void Viewport3D::removeActivePoint() {
             activePointIndex_ = -1;
         else if (activePointIndex_ >= static_cast<int>(placedPoints_.size()))
             activePointIndex_ = static_cast<int>(placedPoints_.size()) - 1;
+        notifyPlacedPointsChanged();
         emit pointDeselected();
         update();
     }
 }
 
 void Viewport3D::deselectPoint() {
-    if (activePointIndex_ >= 0) {
-        activePointIndex_ = -1;
+    bool had = activePointIndex_ >= 0 || !selectedPointIndices_.empty();
+    activePointIndex_ = -1;
+    selectedPointIndices_.clear();
+    if (had) {
         emit pointDeselected();
         update();
     }
+}
+
+void Viewport3D::clearFullSelection() {
+    bool hadPoint = activePointIndex_ >= 0 || !selectedPointIndices_.empty();
+    bool hadSurf  = selectedSurfaceIndex_ >= 0;
+    activePointIndex_ = -1;
+    selectedPointIndices_.clear();
+    selectedSurfaceIndex_ = -1;
+    if (hadPoint) emit pointDeselected();
+    if (hadSurf) emit surfaceDeselected();
+    if (hadPoint || hadSurf) update();
+}
+
+void Viewport3D::selectPoint(int index) {
+    if (index < 0 || index >= static_cast<int>(placedPoints_.size())) return;
+    selectedPointIndices_.clear();
+    if (selectedSurfaceIndex_ >= 0) {
+        selectedSurfaceIndex_ = -1;
+        emit surfaceDeselected();
+    }
+    activePointIndex_ = index;
+    emit pointSelected(index);
+    update();
 }
 
 void Viewport3D::clearPlacedPoints() {
@@ -186,6 +227,7 @@ void Viewport3D::clearPlacedPoints() {
     nextPointColorIndex_ = 0;
     selectedPointIndices_.clear();
     emit pointDeselected();
+    notifyPlacedPointsChanged();
     update();
 }
 
@@ -194,15 +236,23 @@ void Viewport3D::restorePlacedPoints(const std::vector<PlacedPoint>& points) {
     nextPointColorIndex_ = static_cast<int>(points.size());
     activePointIndex_ = -1;
     selectedPointIndices_.clear();
+    notifyPlacedPointsChanged();
     update();
 }
 
 // ==================== Multi-Selection ====================
 
 void Viewport3D::selectAllPoints() {
+    bool hadActive = activePointIndex_ >= 0;
     selectedPointIndices_.clear();
     for (int i = 0; i < static_cast<int>(placedPoints_.size()); ++i)
         selectedPointIndices_.insert(i);
+    if (selectedSurfaceIndex_ >= 0) {
+        selectedSurfaceIndex_ = -1;
+        emit surfaceDeselected();
+    }
+    activePointIndex_ = -1;
+    if (hadActive) emit pointDeselected();
     update();
 }
 
@@ -232,8 +282,11 @@ void Viewport3D::setMeasureMode(bool enabled) {
 
 void Viewport3D::selectSurface(int index) {
     if (index >= 0 && index < static_cast<int>(surfaces_.size())) {
-        selectedSurfaceIndex_ = index;
+        bool hadPoint = activePointIndex_ >= 0 || !selectedPointIndices_.empty();
+        selectedPointIndices_.clear();
         activePointIndex_ = -1;
+        selectedSurfaceIndex_ = index;
+        if (hadPoint) emit pointDeselected();
         emit surfaceSelected(index);
         update();
     }
@@ -251,6 +304,7 @@ void Viewport3D::setSurfaceColor(int surfIdx, const Color3f& color) {
     if (surfIdx >= 0 && surfIdx < static_cast<int>(surfaceColors_.size())) {
         surfaceColors_[surfIdx] = color;
         surfaceTextured_[surfIdx] = false;
+        emit surfaceAppearanceChanged(surfIdx);
         update();
     }
 }
@@ -285,6 +339,7 @@ void Viewport3D::assignMaterial(int surfIdx, const Material& material) {
         }
 
         emit surfaceMaterialChanged(surfIdx, QString::fromStdString(material.name));
+        emit surfaceAppearanceChanged(surfIdx);
         update();
     }
 }
@@ -298,8 +353,19 @@ std::optional<Material> Viewport3D::getSurfaceMaterial(int surfIdx) const {
 void Viewport3D::toggleSurfaceTexture(int surfIdx) {
     if (surfIdx >= 0 && surfIdx < static_cast<int>(surfaceTextured_.size())) {
         surfaceTextured_[surfIdx] = !surfaceTextured_[surfIdx];
+        emit surfaceAppearanceChanged(surfIdx);
         update();
     }
+}
+
+bool Viewport3D::isSurfaceTextureActive(int surfIdx) const {
+    if (surfIdx < 0 || surfIdx >= static_cast<int>(surfaceTextured_.size()))
+        return false;
+    if (!texturesEnabled_ || !surfaceTextured_[surfIdx])
+        return false;
+    if (surfIdx < static_cast<int>(surfaceTextureIds_.size()) && surfaceTextureIds_[surfIdx] != 0)
+        return true;
+    return textureId_ != 0;
 }
 
 bool Viewport3D::loadTexture(const QString& filepath) {
@@ -544,7 +610,7 @@ void Viewport3D::drawModel() {
         auto it = triangleToSurface_.find(i);
         if (it == triangleToSurface_.end()) continue;
         int si = it->second;
-        if (!surfaceTextured_[si]) continue;
+        if (!texturesEnabled_ || !surfaceTextured_[si]) continue;
 
         GLuint texId = (si < static_cast<int>(surfaceTextureIds_.size()) && surfaceTextureIds_[si] != 0)
                        ? surfaceTextureIds_[si] : textureId_;
@@ -564,13 +630,13 @@ void Viewport3D::drawModel() {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    // Draw non-textured surfaces
+    // Draw non-textured surfaces (includes textured surfaces when textures disabled)
     glDisable(GL_TEXTURE_2D);
     for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
         auto it = triangleToSurface_.find(i);
         if (it == triangleToSurface_.end()) continue;
         int si = it->second;
-        if (surfaceTextured_[si]) continue;
+        if (texturesEnabled_ && surfaceTextured_[si]) continue;
 
         auto& c = surfaceColors_[si];
         glColor4f(c[0], c[1], c[2], alpha);
@@ -671,16 +737,16 @@ void Viewport3D::drawPointMarkers() {
         // Direction arrow for listener points (always horizontal, parallel to grid floor)
         if (pt.pointType == POINT_TYPE_LISTENER) {
             Vec3f fwd = pt.getForwardDirection();
-            float arrowLen = size * 2.5f;
+            float arrowLen = size * 4.2f;
             Vec3f tip = pos + fwd * arrowLen;
 
             Vec3f right(-fwd.y(), fwd.x(), 0.0f);
-            float headSize = arrowLen * 0.3f;
+            float headSize = arrowLen * 0.35f;
             Vec3f head1 = tip - fwd * headSize + right * headSize * 0.5f;
             Vec3f head2 = tip - fwd * headSize - right * headSize * 0.5f;
 
             glColor4f(1.0f, 1.0f, 1.0f, alpha);
-            glLineWidth(2);
+            glLineWidth(4);
             glBegin(GL_LINES);
             glVertex3f(pos.x(), pos.y(), pos.z());
             glVertex3f(tip.x(), tip.y(), tip.z());
@@ -803,7 +869,8 @@ std::optional<int> Viewport3D::getPointAtMouse(const QPoint& pos) {
     glPopMatrix();
     doneCurrent();
 
-    float hitRadius = 0.30f / scaleFactor_;
+    float markerRadius = (markerSize_ / 100.0f) / scaleFactor_;
+    float hitRadius    = std::max(0.48f / scaleFactor_, markerRadius * 1.8f);
     float minT = std::numeric_limits<float>::max();
     int hitIdx = -1;
 
@@ -820,9 +887,7 @@ std::optional<int> Viewport3D::getPointAtMouse(const QPoint& pos) {
 bool Viewport3D::trySelectPointAtMouse(const QPoint& pos) {
     auto idx = getPointAtMouse(pos);
     if (idx) {
-        activePointIndex_ = *idx;
-        selectedSurfaceIndex_ = -1;
-        emit pointSelected(*idx);
+        selectPoint(*idx);
         return true;
     }
     return false;
@@ -876,9 +941,11 @@ void Viewport3D::addPointAtMouse(const QPoint& pos) {
     pt.distance     = 0.0f;
     pt.color        = color;
 
+    pt.pointType = placementPointTypeForNew_;
     placedPoints_.push_back(pt);
     activePointIndex_ = static_cast<int>(placedPoints_.size()) - 1;
     selectedSurfaceIndex_ = -1;
+    notifyPlacedPointsChanged();
     emit pointPlaced(activePointIndex_);
 }
 
@@ -932,13 +999,12 @@ void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
                     }
                 }
             } else if (trySelectPointAtMouse(event->pos())) {
-                selectedSurfaceIndex_ = -1;
             } else if (placementMode_) {
                 addPointAtMouse(event->pos());
                 selectedSurfaceIndex_ = -1;
             } else {
                 if (!trySelectSurfaceAtMouse(event->pos())) {
-                    deselectPoint();
+                    clearFullSelection();
                 }
             }
             update();
@@ -990,7 +1056,16 @@ void Viewport3D::keyPressEvent(QKeyEvent* event) {
         update();
         break;
     case Qt::Key_P:
-        setPlacementMode(!placementMode_);
+        if (!placementMode_) {
+            placementPointTypeForNew_ = POINT_TYPE_SOURCE;
+            setPlacementMode(true);
+        } else if (placementPointTypeForNew_ == POINT_TYPE_SOURCE) {
+            placementPointTypeForNew_ = POINT_TYPE_LISTENER;
+            emit placementModeChanged(true);
+            update();
+        } else {
+            setPlacementMode(false);
+        }
         break;
     case Qt::Key_Delete:
     case Qt::Key_Backspace:

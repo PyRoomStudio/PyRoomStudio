@@ -98,6 +98,10 @@ DisplaySettingsDialog::DisplaySettingsDialog(QWidget* parent)
     markerSize_->setValue(s.value("display/markerSize", 15).toInt());
     form->addRow("Point marker size:", markerSize_);
 
+    solidColorsOnly_ = new QCheckBox("Solid colors only (ignore surface textures)");
+    solidColorsOnly_->setChecked(!s.value("display/texturesEnabled", true).toBool());
+    form->addRow(solidColorsOnly_);
+
     layout->addLayout(form);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -112,6 +116,7 @@ void DisplaySettingsDialog::accept() {
     s.setValue("display/gridSpacing", gridSpacing_->value());
     s.setValue("display/transparencyAlpha", transparencyAlpha_->value() / 100.0);
     s.setValue("display/markerSize", markerSize_->value());
+    s.setValue("display/texturesEnabled", !solidColorsOnly_->isChecked());
     emit settingsChanged();
     QDialog::accept();
 }
@@ -139,7 +144,7 @@ AudioSettingsDialog::AudioSettingsDialog(QWidget* parent)
     form->addRow("Sample Rate:", sampleRate_);
 
     auto* formatLabel = new QLabel("WAV (16-bit PCM)");
-    formatLabel->setStyleSheet("color: #666;");
+    formatLabel->setStyleSheet("font-size: 11px;");
     form->addRow("Output Format:", formatLabel);
 
     layout->addLayout(form);
@@ -249,7 +254,7 @@ KeyboardShortcutsDialog::KeyboardShortcutsDialog(QWidget* parent)
         {"Copy Point",           "Ctrl+C"},
         {"Paste Point",          "Ctrl+V"},
         {"Delete Point",         "Delete"},
-        {"Toggle Placement",     "P"},
+        {"Placement (off / Source / Listener / off)", "P"},
         {"Toggle Transparency",  "T"},
         {"Reset Surface Colors", "R"},
         {"Clear All Points",     "C"},

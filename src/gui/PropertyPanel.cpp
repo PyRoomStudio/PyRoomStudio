@@ -4,6 +4,8 @@
 #include <QHBoxLayout>
 #include <QGroupBox>
 #include <QLabel>
+#include <QFont>
+#include <QFontMetrics>
 
 namespace prs {
 
@@ -13,19 +15,29 @@ PropertyPanel::PropertyPanel(QWidget* parent)
     setupUI();
 }
 
+void PropertyPanel::setPropertyContext(Context ctx) {
+    context_ = ctx;
+    if (roomGroup_) roomGroup_->setVisible(ctx == Context::Room);
+    if (pointDistGroup_) pointDistGroup_->setVisible(ctx == Context::Point);
+    if (pointGroup_) pointGroup_->setVisible(ctx == Context::Point);
+    if (surfaceGroup_) surfaceGroup_->setVisible(ctx == Context::Surface);
+}
+
 void PropertyPanel::setupUI() {
     auto* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setContentsMargins(2, 2, 2, 2);
     layout->setSpacing(4);
 
     auto* header = new QLabel("PROPERTY");
     header->setAlignment(Qt::AlignCenter);
-    header->setStyleSheet("background: #c8c8c8; font-weight: bold; padding: 4px;");
+    header->setFixedHeight(QFontMetrics(header->font()).height() + 8);
+    header->setStyleSheet("background: #e0e0e0; font-weight: bold; padding: 0 4px;");
     layout->addWidget(header);
 
     // Room Scale
     {
-        auto* group = new QGroupBox("Room Scale");
+        roomGroup_ = new QGroupBox("Room Scale");
+        auto* group = roomGroup_;
         auto* gl    = new QVBoxLayout(group);
         auto* row   = new QHBoxLayout;
         scaleSlider_ = new QSlider(Qt::Horizontal);
@@ -37,7 +49,18 @@ void PropertyPanel::setupUI() {
         gl->addLayout(row);
 
         dimensionLabel_ = new QLabel("Size: -- m");
-        dimensionLabel_->setStyleSheet("font-size: 10px;");
+        {
+            QFont titleFont = group->font();
+            titleFont.setBold(true);
+            const int titleLineH = QFontMetrics(titleFont).height();
+            QFont dimFont = group->font();
+            dimFont.setBold(false);
+            if (dimFont.pointSizeF() <= 0.0)
+                dimFont.setPointSize(9);
+            for (int i = 0; i < 24 && QFontMetrics(dimFont).height() < titleLineH; ++i)
+                dimFont.setPointSizeF(dimFont.pointSizeF() + 0.5);
+            dimensionLabel_->setFont(dimFont);
+        }
         gl->addWidget(dimensionLabel_);
         layout->addWidget(group);
 
@@ -51,7 +74,8 @@ void PropertyPanel::setupUI() {
 
     // Point Distance
     {
-        auto* group = new QGroupBox("Point Distance");
+        pointDistGroup_ = new QGroupBox("Point Distance");
+        auto* group = pointDistGroup_;
         auto* gl    = new QVBoxLayout(group);
         auto* row   = new QHBoxLayout;
         pointDistSlider_ = new QSlider(Qt::Horizontal);
@@ -73,7 +97,8 @@ void PropertyPanel::setupUI() {
 
     // Point Controls
     {
-        auto* group = new QGroupBox("Selected Point");
+        pointGroup_ = new QGroupBox("Selected Point");
+        auto* group = pointGroup_;
         auto* gl    = new QVBoxLayout(group);
 
         pointNameEdit_ = new QLineEdit;
@@ -110,7 +135,7 @@ void PropertyPanel::setupUI() {
         pointAudioBtn_ = new QPushButton("Set Audio File");
         gl->addWidget(pointAudioBtn_);
         pointAudioLabel_ = new QLabel("No audio file");
-        pointAudioLabel_->setStyleSheet("font-size: 10px; color: #666;");
+        pointAudioLabel_->setStyleSheet("font-size: 10px;");
         pointAudioLabel_->setWordWrap(true);
         gl->addWidget(pointAudioLabel_);
         connect(pointAudioBtn_, &QPushButton::clicked, this, &PropertyPanel::selectPointAudioFile);
@@ -162,7 +187,8 @@ void PropertyPanel::setupUI() {
 
     // Surface Controls
     {
-        auto* group = new QGroupBox("Selected Surface");
+        surfaceGroup_ = new QGroupBox("Selected Surface");
+        auto* group = surfaceGroup_;
         auto* gl    = new QVBoxLayout(group);
 
         materialLabel_ = new QLabel("Material: (none)");
@@ -186,6 +212,8 @@ void PropertyPanel::setupUI() {
 
         setSurfaceControlsEnabled(false);
     }
+
+    setPropertyContext(Context::Room);
 }
 
 void PropertyPanel::setScaleValue(float value) {

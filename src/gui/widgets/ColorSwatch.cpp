@@ -17,6 +17,23 @@ ColorSwatch::ColorSwatch(const QString& label, const Color3i& color, QWidget* pa
 
 void ColorSwatch::setColor(const Color3i& color) {
     color_ = color;
+    previewPixmap_ = QPixmap();
+    update();
+}
+
+void ColorSwatch::setSurfaceAppearance(const Color3i& color, const QPixmap& texturePreview) {
+    color_ = color;
+    previewPixmap_ = texturePreview;
+    update();
+}
+
+void ColorSwatch::setPreviewPixmap(const QPixmap& pixmap) {
+    previewPixmap_ = pixmap;
+    update();
+}
+
+void ColorSwatch::clearPreviewPixmap() {
+    previewPixmap_ = QPixmap();
     update();
 }
 
@@ -33,7 +50,16 @@ void ColorSwatch::paintEvent(QPaintEvent*) {
 
     QRect colorRect(r.x(), r.y(), r.width(), colorHeight);
     QColor qcolor(color_[0], color_[1], color_[2]);
-    p.fillRect(colorRect, qcolor);
+    if (!previewPixmap_.isNull()) {
+        p.fillRect(colorRect, qcolor);
+        QPixmap scaled = previewPixmap_.scaled(colorRect.size(), Qt::KeepAspectRatio,
+                                               Qt::SmoothTransformation);
+        int x = colorRect.x() + (colorRect.width() - scaled.width()) / 2;
+        int y = colorRect.y() + (colorRect.height() - scaled.height()) / 2;
+        p.drawPixmap(x, y, scaled);
+    } else {
+        p.fillRect(colorRect, qcolor);
+    }
 
     p.setPen(hovered_ ? QColor(70, 130, 180) : QColor(64, 64, 64));
     p.drawRect(colorRect);
@@ -68,7 +94,10 @@ void ColorSwatch::mouseMoveEvent(QMouseEvent* event) {
     drag->setMimeData(mimeData);
 
     QPixmap pixmap(40, 40);
-    pixmap.fill(QColor(color_[0], color_[1], color_[2]));
+    if (!previewPixmap_.isNull())
+        pixmap = previewPixmap_.scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    else
+        pixmap.fill(QColor(color_[0], color_[1], color_[2]));
     drag->setPixmap(pixmap);
     drag->setHotSpot(QPoint(20, 20));
 

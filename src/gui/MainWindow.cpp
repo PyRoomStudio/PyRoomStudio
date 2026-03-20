@@ -4,11 +4,15 @@
 #include "PropertyPanel.h"
 #include "AssetsPanel.h"
 #include "BottomToolbar.h"
+#include "IconUtils.h"
 #include "acoustics/AcousticSimulator.h"
 #include "acoustics/SimulationWorker.h"
 #include "acoustics/SimulationQueue.h"
 #include "SimulationQueuePanel.h"
+#include "SimulationQueueWindow.h"
 #include "core/ProjectFile.h"
+#include "core/Types.h"
+#include "utils/ResourcePath.h"
 #include "dialogs/SettingsDialogs.h"
 #include "dialogs/AudioComparisonDialog.h"
 #include "dialogs/RenderOptionsDialog.h"
@@ -31,8 +35,34 @@
 #include <QUrl>
 #include <QScrollArea>
 #include <QTimer>
+#include <QImage>
+#include <QPixmap>
 #include <algorithm>
 #include <cmath>
+
+namespace {
+
+prs::Color3i linearSurfaceColorToDisplay(const prs::Color3f& c) {
+    auto linearToSrgbByte = [](float v) -> int {
+        v = std::clamp(v, 0.0f, 1.0f);
+        float srgb = std::pow(v, 1.0f / 2.2f);
+        return static_cast<int>(std::lround(srgb * 255.0f));
+    };
+    return {linearToSrgbByte(c[0]), linearToSrgbByte(c[1]), linearToSrgbByte(c[2])};
+}
+
+QPixmap loadSurfaceTextureThumbnail(prs::Viewport3D* vp, int surfIdx) {
+    auto mat = vp->getSurfaceMaterial(surfIdx);
+    if (!mat || !vp->isSurfaceTextureActive(surfIdx) || mat->texturePath.empty())
+        return {};
+    QString resolved = prs::resolveMaterialTexturePath(QString::fromStdString(mat->texturePath));
+    QImage img(resolved);
+    if (img.isNull())
+        return {};
+    return QPixmap::fromImage(img);
+}
+
+} // namespace
 
 namespace prs {
 
@@ -56,7 +86,8 @@ MainWindow::MainWindow(QWidget* parent)
         }
     });
 
-    simQueue_ = new SimulationQueue(this);
+    simQueue_         = new SimulationQueue(this);
+    simQueueWindow_   = new SimulationQueueWindow(simQueue_, this);
 
     setupMenus();
     setupToolbars();
@@ -65,6 +96,7 @@ MainWindow::MainWindow(QWidget* parent)
     updateRecentProjectsMenu();
     configureAutoSaveTimer();
 
+    propertyPanel_->setPropertyContext(PropertyPanel::Context::Room);
     statusBar()->showMessage("Ready");
 }
 
@@ -119,8 +151,12 @@ void MainWindow::setupMenus() {
     actSelectAll_ = editMenu->addAction("Select &All", QKeySequence::SelectAll, this, [this]() {
         if (viewport_->hasModel() && !viewport_->placedPoints().empty()) {
             viewport_->selectAllPoints();
+            syncPropertyPanelContext();
         }
     });
+
+    auto* viewMenu = menuBar()->addMenu("&View");
+    actSimQueue_   = viewMenu->addAction("Simulation &Queue", this, &MainWindow::onShowSimQueue);
 
     settingsMenu_ = menuBar()->addMenu("&Settings");
     actPreferences_ = settingsMenu_->addAction("&Preferences...", this, [this]() {
@@ -153,21 +189,23 @@ void MainWindow::setupMenus() {
 void MainWindow::setupToolbars() {
     topToolbar_ = addToolBar("Tools");
     topToolbar_->setMovable(false);
+    topToolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    topToolbar_->setIconSize(QSize(32, 32));
 
-    actToolMove_ = topToolbar_->addAction("Move");
+    actToolMove_ = topToolbar_->addAction(iconFromSvgResource(":/toolbar/move.svg"), "Move");
     actToolMove_->setCheckable(true);
     actToolMove_->setToolTip("Drag placed points to new positions");
     connect(actToolMove_, &QAction::toggled, [this](bool checked) {
         viewport_->setMoveMode(checked);
     });
 
-    actToolCopy_ = topToolbar_->addAction("Copy");
+    actToolCopy_ = topToolbar_->addAction(iconFromSvgResource(":/toolbar/copy.svg"), "Copy");
     connect(actToolCopy_, &QAction::triggered, [this]() {
         if (viewport_->activePointIndex() >= 0)
             clipboardPoint_ = viewport_->placedPoints()[viewport_->activePointIndex()];
     });
 
-    actToolCut_ = topToolbar_->addAction("Cut");
+    actToolCut_ = topToolbar_->addAction(iconFromSvgResource(":/toolbar/cut.svg"), "Cut");
     connect(actToolCut_, &QAction::triggered, [this]() {
         if (viewport_->activePointIndex() >= 0) {
             clipboardPoint_ = viewport_->placedPoints()[viewport_->activePointIndex()];
@@ -175,19 +213,19 @@ void MainWindow::setupToolbars() {
         }
     });
 
-    actToolPaste_ = topToolbar_->addAction("Paste");
+    actToolPaste_ = topToolbar_->addAction(iconFromSvgResource(":/toolbar/paste.svg"), "Paste");
     connect(actToolPaste_, &QAction::triggered, [this]() {
         if (clipboardPoint_.has_value())
             undoStack_->push(new AddPointCommand(viewport_, *clipboardPoint_));
     });
 
-    actToolDelete_ = topToolbar_->addAction("Delete");
+    actToolDelete_ = topToolbar_->addAction(iconFromSvgResource(":/toolbar/delete.svg"), "Delete");
     connect(actToolDelete_, &QAction::triggered, [this]() {
         if (viewport_->activePointIndex() >= 0)
             undoStack_->push(new RemovePointCommand(viewport_, viewport_->activePointIndex()));
     });
 
-    actToolMeasure_ = topToolbar_->addAction("Measure");
+    actToolMeasure_ = topToolbar_->addAction(iconFromSvgResource(":/toolbar/measure.svg"), "Measure");
     actToolMeasure_->setCheckable(true);
     connect(actToolMeasure_, &QAction::toggled, [this](bool checked) {
         viewport_->setMeasureMode(checked);
@@ -251,11 +289,6 @@ void MainWindow::setupCentralWidget() {
 
     mainLayout->addWidget(splitter, 1);
 
-    // Simulation queue panel
-    simQueuePanel_ = new SimulationQueuePanel(simQueue_);
-    simQueuePanel_->setMaximumHeight(180);
-    mainLayout->addWidget(simQueuePanel_);
-
     // Bottom toolbar
     bottomToolbar_ = new BottomToolbar;
     mainLayout->addWidget(bottomToolbar_);
@@ -295,9 +328,9 @@ void MainWindow::connectSignals() {
     });
 
     // Bottom toolbar
-    connect(bottomToolbar_, &BottomToolbar::importRoomClicked,  this, &MainWindow::onImportRoom);
-    connect(bottomToolbar_, &BottomToolbar::importSoundClicked, this, &MainWindow::onImportSound);
-    connect(bottomToolbar_, &BottomToolbar::placePointClicked,  this, &MainWindow::onPlacePoint);
+    connect(bottomToolbar_, &BottomToolbar::importRoomClicked,   this, &MainWindow::onImportRoom);
+    connect(bottomToolbar_, &BottomToolbar::addSourceClicked,   this, &MainWindow::onAddSourcePlacement);
+    connect(bottomToolbar_, &BottomToolbar::addListenerClicked, this, &MainWindow::onAddListenerPlacement);
     connect(bottomToolbar_, &BottomToolbar::renderClicked,      this, &MainWindow::onRender);
 
     // Simulation queue
@@ -313,7 +346,7 @@ void MainWindow::connectSignals() {
         }
         statusBar()->showMessage("Simulation complete: " + outputDir);
     });
-    connect(simQueuePanel_, &SimulationQueuePanel::openResults, this, [this](const QString& outputDir) {
+    connect(simQueueWindow_->panel(), &SimulationQueuePanel::openResults, this, [this](const QString& outputDir) {
         auto* dlg = new AudioComparisonDialog(outputDir, this);
         dlg->setAttribute(Qt::WA_DeleteOnClose);
         dlg->show();
@@ -404,6 +437,7 @@ void MainWindow::connectSignals() {
         [this](int, const QString& materialName) {
             propertyPanel_->setMaterialName(materialName);
         });
+    connect(viewport_, &Viewport3D::surfaceAppearanceChanged, this, &MainWindow::syncAssetsSurface);
 
     // Library panel -> sound file selection
     connect(libraryPanel_, &LibraryPanel::soundFileSelected, [this](const QString& path) {
@@ -427,6 +461,16 @@ void MainWindow::connectSignals() {
                 viewport_->assignMaterial(si, mat);
             }
         });
+
+    connect(viewport_, &Viewport3D::placedPointsChanged, this, &MainWindow::refreshAssetsPointLists);
+    connect(assetsPanel_, &AssetsPanel::pointListClicked, this, [this](int idx) {
+        viewport_->selectPoint(idx);
+    });
+    connect(viewport_, &Viewport3D::pointSelected, this, [this](int) { refreshAssetsPointLists(); });
+    connect(viewport_, &Viewport3D::pointDeselected, this, [this]() { refreshAssetsPointLists(); });
+
+    refreshAssetsPointLists();
+    updatePlacementToolbar();
 }
 
 // ==================== Slots ====================
@@ -642,12 +686,38 @@ void MainWindow::onImportSound() {
     statusBar()->showMessage("Sound loaded: " + path);
 }
 
-void MainWindow::onPlacePoint() {
+void MainWindow::onAddSourcePlacement() {
     if (!viewport_->hasModel()) {
         statusBar()->showMessage("Load a 3D model first");
         return;
     }
-    viewport_->setPlacementMode(!viewport_->placementMode());
+    if (viewport_->placementMode() && viewport_->placementPointTypeForNew() == POINT_TYPE_SOURCE)
+        viewport_->setPlacementMode(false);
+    else {
+        viewport_->setPlacementPointTypeForNew(POINT_TYPE_SOURCE);
+        viewport_->setPlacementMode(true);
+    }
+    updatePlacementToolbar();
+}
+
+void MainWindow::onAddListenerPlacement() {
+    if (!viewport_->hasModel()) {
+        statusBar()->showMessage("Load a 3D model first");
+        return;
+    }
+    if (viewport_->placementMode() && viewport_->placementPointTypeForNew() == POINT_TYPE_LISTENER)
+        viewport_->setPlacementMode(false);
+    else {
+        viewport_->setPlacementPointTypeForNew(POINT_TYPE_LISTENER);
+        viewport_->setPlacementMode(true);
+    }
+    updatePlacementToolbar();
+}
+
+void MainWindow::onShowSimQueue() {
+    simQueueWindow_->show();
+    simQueueWindow_->raise();
+    simQueueWindow_->activateWindow();
 }
 
 void MainWindow::onRender() {
@@ -741,6 +811,7 @@ void MainWindow::onModelLoaded(const QString& filepath) {
 }
 
 void MainWindow::onPointSelected(int index) {
+    propertyPanel_->setPropertyContext(PropertyPanel::Context::Point);
     propertyPanel_->setPointControlsEnabled(true);
     if (index >= 0 && index < static_cast<int>(viewport_->placedPoints().size())) {
         auto& pt = viewport_->placedPoints()[index];
@@ -760,9 +831,11 @@ void MainWindow::onPointSelected(int index) {
 
 void MainWindow::onPointDeselected() {
     propertyPanel_->setPointControlsEnabled(false);
+    syncPropertyPanelContext();
 }
 
 void MainWindow::onSurfaceSelected(int index) {
+    propertyPanel_->setPropertyContext(PropertyPanel::Context::Surface);
     propertyPanel_->setSurfaceControlsEnabled(true);
     auto mat = viewport_->getSurfaceMaterial(index);
     propertyPanel_->setMaterialName(mat ? QString::fromStdString(mat->name) : "");
@@ -770,10 +843,11 @@ void MainWindow::onSurfaceSelected(int index) {
 
 void MainWindow::onSurfaceDeselected() {
     propertyPanel_->setSurfaceControlsEnabled(false);
+    syncPropertyPanelContext();
 }
 
-void MainWindow::onPlacementModeChanged(bool enabled) {
-    bottomToolbar_->setPlacePointText(enabled ? "Stop Placing" : "Place Point");
+void MainWindow::onPlacementModeChanged(bool) {
+    updatePlacementToolbar();
 }
 
 void MainWindow::onScaleChanged(float factor) {
@@ -814,28 +888,53 @@ void MainWindow::configureAutoSaveTimer() {
     }
 }
 
+void MainWindow::syncPropertyPanelContext() {
+    if (viewport_->selectedSurfaceIndex() >= 0)
+        propertyPanel_->setPropertyContext(PropertyPanel::Context::Surface);
+    else if (viewport_->activePointIndex() >= 0)
+        propertyPanel_->setPropertyContext(PropertyPanel::Context::Point);
+    else
+        propertyPanel_->setPropertyContext(PropertyPanel::Context::Room);
+}
+
+void MainWindow::refreshAssetsPointLists() {
+    assetsPanel_->updatePointLists(viewport_->placedPoints(), viewport_->activePointIndex());
+}
+
+void MainWindow::updatePlacementToolbar() {
+    bool pm = viewport_->placementMode();
+    bool src = viewport_->placementPointTypeForNew() == POINT_TYPE_SOURCE;
+    bottomToolbar_->setPlacementState(pm, src);
+}
+
 void MainWindow::populateAssetsFromRenderer(const QString& filepath) {
     assetsPanel_->clearSurfaces();
 
     const auto& colors = viewport_->surfaceColors();
     QVector<AssetsPanel::SurfaceInfo> surfaces;
     for (int i = 0; i < static_cast<int>(colors.size()); ++i) {
-        auto linearToSrgbByte = [](float v) -> int {
-            v = std::clamp(v, 0.0f, 1.0f);
-            // Viewport stores linear RGB; Qt draws in sRGB.
-            float srgb = std::pow(v, 1.0f / 2.2f);
-            return static_cast<int>(std::lround(srgb * 255.0f));
-        };
-        Color3i displayColor = {
-            linearToSrgbByte(colors[i][0]),
-            linearToSrgbByte(colors[i][1]),
-            linearToSrgbByte(colors[i][2])
-        };
-        surfaces.append({QString("Surface %1").arg(i + 1), displayColor, i});
+        Color3i displayColor = linearSurfaceColorToDisplay(colors[i]);
+        QString texPath;
+        if (auto m = viewport_->getSurfaceMaterial(i))
+            texPath = QString::fromStdString(m->texturePath);
+        QPixmap thumb = loadSurfaceTextureThumbnail(viewport_, i);
+        surfaces.append({QString("Surface %1").arg(i + 1), displayColor, i, texPath, thumb});
     }
 
     QFileInfo fi(filepath);
     assetsPanel_->addStlSurfaces(fi.baseName(), surfaces);
+    refreshAssetsPointLists();
+}
+
+void MainWindow::syncAssetsSurface(int surfIdx) {
+    if (!viewport_->hasModel())
+        return;
+    const auto& colors = viewport_->surfaceColors();
+    if (surfIdx < 0 || surfIdx >= static_cast<int>(colors.size()))
+        return;
+    Color3i displayColor = linearSurfaceColorToDisplay(colors[surfIdx]);
+    QPixmap thumb = loadSurfaceTextureThumbnail(viewport_, surfIdx);
+    assetsPanel_->updateSurfaceAppearance(surfIdx, displayColor, thumb);
 }
 
 } // namespace prs

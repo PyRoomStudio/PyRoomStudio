@@ -38,6 +38,7 @@ private slots:
         for (auto* a : actions) menuTitles << a->text();
         QVERIFY(menuTitles.contains("&File"));
         QVERIFY(menuTitles.contains("&Edit"));
+        QVERIFY(menuTitles.contains("&View"));
         QVERIFY(menuTitles.contains("&Settings"));
     }
 
@@ -79,13 +80,13 @@ private slots:
     void testBottomToolbarButtons() {
         BottomToolbar toolbar;
         QSignalSpy importRoomSpy(&toolbar, &BottomToolbar::importRoomClicked);
-        QSignalSpy importSoundSpy(&toolbar, &BottomToolbar::importSoundClicked);
-        QSignalSpy placePointSpy(&toolbar, &BottomToolbar::placePointClicked);
+        QSignalSpy addSourceSpy(&toolbar, &BottomToolbar::addSourceClicked);
+        QSignalSpy addListenerSpy(&toolbar, &BottomToolbar::addListenerClicked);
         QSignalSpy renderSpy(&toolbar, &BottomToolbar::renderClicked);
 
         QVERIFY(importRoomSpy.isValid());
-        QVERIFY(importSoundSpy.isValid());
-        QVERIFY(placePointSpy.isValid());
+        QVERIFY(addSourceSpy.isValid());
+        QVERIFY(addListenerSpy.isValid());
         QVERIFY(renderSpy.isValid());
     }
 
@@ -118,6 +119,7 @@ private slots:
         s.setValue("display/gridSpacing", 2.5);
         s.setValue("display/transparencyAlpha", 0.3);
         s.setValue("display/markerSize", 25);
+        s.setValue("display/texturesEnabled", false);
 
         Viewport3D vp;
         vp.applyDisplaySettings();
@@ -126,11 +128,13 @@ private slots:
         QVERIFY(std::abs(vp.gridSpacing() - 2.5f) < 0.01f);
         QVERIFY(std::abs(vp.transparencyAlpha() - 0.3f) < 0.01f);
         QCOMPARE(vp.markerSize(), 25);
+        QVERIFY(!vp.texturesEnabled());
 
         s.setValue("display/gridVisible", true);
         s.setValue("display/gridSpacing", 1.0);
         s.setValue("display/transparencyAlpha", 0.55);
         s.setValue("display/markerSize", 15);
+        s.setValue("display/texturesEnabled", true);
     }
 
     void testDisplaySettingsSignalEmitted() {

@@ -4,7 +4,7 @@ set -euo pipefail
 QT_ROOT="C:/Qt/6.10.2/mingw_64"
 MINGW_BIN="C:/Qt/Tools/mingw1310_64/bin"
 
-rm -rf build
+# rm -rf build
 
 cmake -S . -B build \
   -DCMAKE_PREFIX_PATH="$QT_ROOT" \

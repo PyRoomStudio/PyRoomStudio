@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(PyRoomStudio VERSION 0.0.1 LANGUAGES CXX)
+project(PyRoomStudio VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -84,6 +84,8 @@ set(SOURCES
     src/gui/PropertyPanel.cpp
     src/gui/AssetsPanel.cpp
     src/gui/BottomToolbar.cpp
+    src/gui/IconUtils.cpp
+    src/gui/SimulationQueueWindow.cpp
     src/gui/UndoCommands.cpp
     src/gui/SimulationQueuePanel.cpp
     src/gui/dialogs/SettingsDialogs.cpp
@@ -137,8 +139,10 @@ set(HEADERS
     src/gui/PropertyPanel.h
     src/gui/AssetsPanel.h
     src/gui/BottomToolbar.h
+    src/gui/IconUtils.h
     src/gui/UndoCommands.h
     src/gui/SimulationQueuePanel.h
+    src/gui/SimulationQueueWindow.h
     src/gui/dialogs/SettingsDialogs.h
     src/gui/dialogs/AudioComparisonDialog.h
     src/gui/dialogs/RenderOptionsDialog.h

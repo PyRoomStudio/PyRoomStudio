@@ -10,6 +10,7 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QCoreApplication>
+#include <QFontMetrics>
 
 namespace prs {
 
@@ -26,7 +27,8 @@ void LibraryPanel::setupUI() {
 
     auto* header = new QLabel("LIBRARY");
     header->setAlignment(Qt::AlignCenter);
-    header->setStyleSheet("background: #c8c8c8; font-weight: bold; padding: 4px;");
+    header->setFixedHeight(QFontMetrics(header->font()).height() + 8);
+    header->setStyleSheet("background: #e0e0e0; font-weight: bold; padding: 0 4px;");
     layout->addWidget(header);
 
     tabWidget_ = new QTabWidget;
@@ -50,7 +52,7 @@ void LibraryPanel::createSoundTab(QWidget* tab) {
     layout->setSpacing(4);
 
     soundDirLabel_ = new QLabel("No folder selected");
-    soundDirLabel_->setStyleSheet("font-size: 10px; color: #666;");
+    soundDirLabel_->setStyleSheet("font-size: 10px;");
     soundDirLabel_->setWordWrap(true);
     layout->addWidget(soundDirLabel_);
 
@@ -74,7 +76,7 @@ void LibraryPanel::createSoundTab(QWidget* tab) {
     layout->addWidget(soundList_);
 
     auto* hintLabel = new QLabel("Double-click to select a sound file");
-    hintLabel->setStyleSheet("font-size: 9px; color: #888;");
+    hintLabel->setStyleSheet("font-size: 9px;");
     hintLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(hintLabel);
 

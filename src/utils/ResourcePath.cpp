@@ -1,6 +1,7 @@
 #include "ResourcePath.h"
 #include <QCoreApplication>
 #include <QDir>
+#include <QFile>
 
 namespace prs {
 
@@ -16,6 +17,17 @@ QString resourcePath(const QString& relativePath) {
 
     // Fallback: relative to current directory
     return relativePath;
+}
+
+QString resolveMaterialTexturePath(const QString& storedPath) {
+    if (storedPath.isEmpty())
+        return {};
+    if (QFile::exists(storedPath))
+        return storedPath;
+    QString viaResource = resourcePath(storedPath);
+    if (QFile::exists(viaResource))
+        return viaResource;
+    return storedPath;
 }
 
 } // namespace prs
