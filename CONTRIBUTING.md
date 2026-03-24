@@ -1,4 +1,4 @@
-# PyRoomStudio & [PyRoomAcoustics](https://github.com/LCAV/pyroomacoustics) - Contributing
+# Seiche & [PyRoomAcoustics](https://github.com/LCAV/pyroomacoustics) - Contributing
 
 We are always accepting external contributions! We're looking for users who are interested in contributing code (GUI and app functionality) and/or material coefficients (for a public database).
 
@@ -18,19 +18,7 @@ For further details and discussions, please join our Discord server.
 
 ### Development Environment
 
-Environment libraries are provided in `requirements.txt` and consist of minimal tools needed to build the running simulation: PyGame, PyOpenGL, PyRoomAcoustics, and their required libraries.
-
-The easiest way to get started is to create a venv using `pip` with the following:
-
-```
-python3 -m venv development_venv
-```
-
-After starting your virtual environment, install necessary packages with
-
-```
-pip install -r requirements.txt
-```
+The main development build is compiled in C++17 with OpenGL, Qt 6.10.2 and Eigen3 as dependencies. Qt 6.10.2 can be installed for free with a personal account on the [Qt6 website](https://doc.qt.io/qt-6/get-and-install-qt.html), and Eigen3 is automatically installed when compiling the software.
 
 ## Materials
 

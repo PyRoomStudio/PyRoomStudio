@@ -1,7 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/placeholder.txt</file>
-        <file alias="logo.svg">../assets/logo_v3.svg</file>
+        <file alias="logo.svg">../assets/logo.svg</file>
         <file alias="toolbar/move.svg">../assets/move.svg</file>
         <file alias="toolbar/copy.svg">../assets/copy.svg</file>
         <file alias="toolbar/cut.svg">../assets/cut.svg</file>

@@ -1,6 +1,6 @@
 # INSTRUCTIONS
 
-This document will guide you through all the controls and features of the software.
+This document will guide you through all the controls and features of the Seiche software.
 
 ## Opening Projects
 

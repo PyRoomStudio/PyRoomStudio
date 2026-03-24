@@ -20,10 +20,10 @@ cmake --build build
 
 # Deploy Qt DLLs/plugins next to the .exe so it runs
 if [[ -x "${QT_ROOT}/bin/windeployqt.exe" ]]; then
-  "${QT_ROOT}/bin/windeployqt.exe" --release "build/PyRoomStudio.exe"
+  "${QT_ROOT}/bin/windeployqt.exe" --release "build/Seiche.exe"
 else
   echo "Warning: windeployqt.exe not found at '${QT_ROOT}/bin/windeployqt.exe'"
-  echo "PyRoomStudio.exe may fail to start unless Qt's bin is on PATH."
+  echo "Seiche.exe may fail to start unless Qt's bin is on PATH."
 fi
 
-echo "Build complete. Run: ./build/PyRoomStudio.exe"
+echo "Build complete. Run: ./build/Seiche.exe"

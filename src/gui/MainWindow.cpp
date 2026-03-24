@@ -69,7 +69,7 @@ namespace prs {
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
 {
-    setWindowTitle("PyRoomStudio");
+    setWindowTitle("Seiche");
     resize(1200, 800);
 
     undoStack_ = new QUndoStack(this);

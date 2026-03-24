@@ -30,7 +30,7 @@
                 0.20000000298023224,
                 0.20000000298023224
             ],
-            "distance": -0.5,
+            "distance": -1,
             "name": "",
             "normal": {
                 "x": 0.6864100098609924,
@@ -93,7 +93,7 @@
             "volume": 1
         }
     ],
-    "scaleFactor": 2.0999999046325684,
+    "scaleFactor": 4.199999809265137,
     "soundSourceFile": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/sounds/sources/93KHJ.wav",
     "stlFilePath": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/resources/Room1.STL",
     "surfaceColors": [
