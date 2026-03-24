@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/Users/ematth/PyRoomStudio/build-qtcheck/_deps/eigen-subbuild/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

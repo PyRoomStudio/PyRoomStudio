@@ -14,17 +14,24 @@ if [[ "${1:-}" == "--fresh" ]]; then
   cleanup_build=true
 fi
 
+# If `ninja` isn't available, ensure we don't keep an old `build/` directory
+# configured with the Ninja generator (CMake will fail early when it can't
+# find the Ninja executable). If the cache already uses a different generator,
+# keep the build dir to speed up iteration.
+if ! command -v ninja >/dev/null 2>&1; then
+  cache_path="${REPO_ROOT}/${BUILD_DIR}/CMakeCache.txt"
+  if [[ -f "${cache_path}" ]]; then
+    cmake_generator="$(awk -F= '/^CMAKE_GENERATOR:INTERNAL=/{print $2; exit}' "${cache_path}" || true)"
+    if [[ "${cmake_generator}" == "Ninja" ]]; then
+      cleanup_build=true
+    fi
+  fi
+fi
+
 if [[ "$cleanup_build" == "true" ]]; then
   rm -rf "${REPO_ROOT:?}/${BUILD_DIR}"
 fi
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-# Build (expects build_macos.sh to be configured for your Qt path)
-QT_PREFIX_PATH="${QT_PREFIX_PATH}" BUILD_DIR="${BUILD_DIR}" PROJECT_NAME="${PROJECT_NAME}" "${REPO_ROOT}/build_macos.sh"
-=======
-=======
->>>>>>> 2152ce4fda94c7299413feb8576dfc7b43c2385e
 # Build (uses Qt paths to configure CMake)
 #
 # Examples:
@@ -49,7 +56,14 @@ if [[ ! -d "${QT_PREFIX_PATH}" ]]; then
   exit 1
 fi
 
-CMAKE_GENERATOR="${CMAKE_GENERATOR:-Ninja}"
+# Default generator: use Ninja only if it's actually available.
+if [[ -z "${CMAKE_GENERATOR:-}" ]]; then
+  if command -v ninja >/dev/null 2>&1; then
+    CMAKE_GENERATOR="Ninja"
+  else
+    CMAKE_GENERATOR="Unix Makefiles"
+  fi
+fi
 if [[ -n "${Qt6_DIR:-}" && -d "${Qt6_DIR}" ]]; then
   CMAKE_QT6_DIR_ARGS=( -DQt6_DIR="${Qt6_DIR}" )
 else
@@ -66,11 +80,7 @@ cmake -S "${REPO_ROOT}" -B "${REPO_ROOT}/${BUILD_DIR}" \
   -DCMAKE_PREFIX_PATH="${QT_PREFIX_PATH}" \
   -G "${CMAKE_GENERATOR}" \
   "${CMAKE_QT6_DIR_ARGS[@]}"
-cmake --build "${REPO_ROOT}/${BUILD_DIR}" --config Release
-<<<<<<< HEAD
->>>>>>> 2152ce4fda94c7299413feb8576dfc7b43c2385e
-=======
->>>>>>> 2152ce4fda94c7299413feb8576dfc7b43c2385e
+cmake --build "${REPO_ROOT}/${BUILD_DIR}" --config Release --target "${PROJECT_NAME}"
 
 PROJECT_VERSION="$(sed -n 's/^project(PyRoomStudio VERSION \([^ ]*\) LANGUAGES.*$/\1/p' "${REPO_ROOT}/CMakeLists.txt")"
 if [[ -z "${PROJECT_VERSION}" ]]; then
