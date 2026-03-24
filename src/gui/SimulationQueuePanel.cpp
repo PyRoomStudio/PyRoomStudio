@@ -37,11 +37,10 @@ SimulationQueuePanel::SimulationQueuePanel(SimulationQueue* queue, QWidget* pare
     layout->addWidget(progressBar_);
 
     statusLabel_ = new QLabel("No simulations running");
-    statusLabel_->setStyleSheet("color: #888;");
+    statusLabel_->setStyleSheet("font-size: 11px;");
     layout->addWidget(statusLabel_);
 
     jobList_ = new QListWidget;
-    jobList_->setMaximumHeight(120);
     jobList_->setAlternatingRowColors(true);
     layout->addWidget(jobList_);
 

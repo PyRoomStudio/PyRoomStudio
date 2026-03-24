@@ -1,6 +1,16 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/placeholder.txt</file>
-        <file alias="logo.svg">../assets/logo_v3.svg</file>
+        <file alias="logo.svg">../assets/logo.svg</file>
+        <file alias="toolbar/move.svg">../assets/move.svg</file>
+        <file alias="toolbar/copy.svg">../assets/copy.svg</file>
+        <file alias="toolbar/cut.svg">../assets/cut.svg</file>
+        <file alias="toolbar/paste.svg">../assets/paste.svg</file>
+        <file alias="toolbar/delete.svg">../assets/delete.svg</file>
+        <file alias="toolbar/measure.svg">../assets/measure.svg</file>
+        <file alias="toolbar/import_room.svg">../assets/import_room.svg</file>
+        <file alias="toolbar/place_sound.svg">../assets/place_sound.svg</file>
+        <file alias="toolbar/place_listener.svg">../assets/place_listener.svg</file>
+        <file alias="toolbar/render.svg">../assets/render.svg</file>
     </qresource>
 </RCC>

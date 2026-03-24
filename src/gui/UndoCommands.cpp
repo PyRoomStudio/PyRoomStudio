@@ -11,6 +11,7 @@ void AddPointCommand::undo() {
     if (!pts.empty()) {
         pts.pop_back();
         vp_->deselectPoint();
+        vp_->notifyPlacedPointsChanged();
         vp_->update();
     }
 }
@@ -18,6 +19,7 @@ void AddPointCommand::undo() {
 void AddPointCommand::redo() {
     vp_->placedPoints().push_back(point_);
     index_ = static_cast<int>(vp_->placedPoints().size()) - 1;
+    vp_->notifyPlacedPointsChanged();
     vp_->update();
 }
 
@@ -31,6 +33,7 @@ void RemovePointCommand::undo() {
     auto& pts = vp_->placedPoints();
     if (index_ >= 0 && index_ <= static_cast<int>(pts.size()))
         pts.insert(pts.begin() + index_, point_);
+    vp_->notifyPlacedPointsChanged();
     vp_->update();
 }
 
@@ -39,6 +42,7 @@ void RemovePointCommand::redo() {
     if (index_ >= 0 && index_ < static_cast<int>(pts.size()))
         pts.erase(pts.begin() + index_);
     vp_->deselectPoint();
+    vp_->notifyPlacedPointsChanged();
     vp_->update();
 }
 
@@ -52,6 +56,7 @@ void ChangePointTypeCommand::undo() {
     auto& pts = vp_->placedPoints();
     if (index_ >= 0 && index_ < static_cast<int>(pts.size()))
         pts[index_].pointType = oldType_;
+    vp_->notifyPlacedPointsChanged();
     vp_->update();
 }
 
@@ -59,6 +64,7 @@ void ChangePointTypeCommand::redo() {
     auto& pts = vp_->placedPoints();
     if (index_ >= 0 && index_ < static_cast<int>(pts.size()))
         pts[index_].pointType = newType_;
+    vp_->notifyPlacedPointsChanged();
     vp_->update();
 }
 

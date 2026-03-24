@@ -7,6 +7,7 @@
 #include <QGroupBox>
 #include <QString>
 #include <QVector>
+#include <QPixmap>
 #include <vector>
 
 namespace prs {
@@ -22,6 +23,7 @@ public:
                    QWidget* parent = nullptr);
 
     void updateColor(int surfaceIndex, const Color3i& color);
+    void updateSurfaceAppearance(int surfaceIndex, const Color3i& color, const QPixmap& textureThumbnail);
 
 signals:
     void surfaceClicked(int surfaceIndex, const QString& name);

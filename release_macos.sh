@@ -3,9 +3,8 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-DEFAULT_QT_PREFIX_PATH="${HOME}/Qt/6.10.2/macos"
-QT_PREFIX_PATH="${QT_PREFIX_PATH:-${DEFAULT_QT_PREFIX_PATH}}"
-PROJECT_NAME="${PROJECT_NAME:-PyRoomStudio}"
+QT_PREFIX_PATH="${QT_PREFIX_PATH:-}"
+PROJECT_NAME="${PROJECT_NAME:-Seiche}"
 BUILD_DIR="${BUILD_DIR:-build}"
 DIST_DIR="${DIST_DIR:-dist}"
 
@@ -82,7 +81,7 @@ cmake -S "${REPO_ROOT}" -B "${REPO_ROOT}/${BUILD_DIR}" \
   "${CMAKE_QT6_DIR_ARGS[@]}"
 cmake --build "${REPO_ROOT}/${BUILD_DIR}" --config Release --target "${PROJECT_NAME}"
 
-PROJECT_VERSION="$(sed -n 's/^project(PyRoomStudio VERSION \([^ ]*\) LANGUAGES.*$/\1/p' "${REPO_ROOT}/CMakeLists.txt")"
+PROJECT_VERSION="$(sed -n 's/^project([^ ]* VERSION \([^ ]*\) LANGUAGES.*$/\1/p' "${REPO_ROOT}/CMakeLists.txt")"
 if [[ -z "${PROJECT_VERSION}" ]]; then
   PROJECT_VERSION="0.0.0"
 fi

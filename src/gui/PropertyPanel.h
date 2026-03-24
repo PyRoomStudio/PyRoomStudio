@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QGroupBox>
 #include <QSlider>
 #include <QDial>
 #include <QLabel>
@@ -14,7 +15,12 @@ class PropertyPanel : public QWidget {
     Q_OBJECT
 
 public:
+    enum class Context { Room, Point, Surface };
+
     explicit PropertyPanel(QWidget* parent = nullptr);
+
+    void setPropertyContext(Context ctx);
+    Context propertyContext() const { return context_; }
 
     void setScaleValue(float value);
     void setDimensionText(const QString& text);
@@ -46,6 +52,13 @@ signals:
 
 private:
     void setupUI();
+
+    Context context_ = Context::Room;
+
+    QGroupBox*   roomGroup_           = nullptr;
+    QGroupBox*   pointDistGroup_      = nullptr;
+    QGroupBox*   pointGroup_          = nullptr;
+    QGroupBox*   surfaceGroup_        = nullptr;
 
     QSlider*     scaleSlider_         = nullptr;
     QLabel*      scaleValueLabel_     = nullptr;

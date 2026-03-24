@@ -1,7 +1,8 @@
 #pragma once
 
 #include <QWidget>
-#include <QPushButton>
+
+class QToolButton;
 
 namespace prs {
 
@@ -11,19 +12,19 @@ class BottomToolbar : public QWidget {
 public:
     explicit BottomToolbar(QWidget* parent = nullptr);
 
-    void setPlacePointText(const QString& text);
+    void setPlacementState(bool placementActive, bool sourceMode);
 
 signals:
     void importRoomClicked();
-    void importSoundClicked();
-    void placePointClicked();
+    void addSourceClicked();
+    void addListenerClicked();
     void renderClicked();
 
 private:
-    QPushButton* importRoomBtn_  = nullptr;
-    QPushButton* importSoundBtn_ = nullptr;
-    QPushButton* placePointBtn_  = nullptr;
-    QPushButton* renderBtn_      = nullptr;
+    QToolButton* importRoomBtn_   = nullptr;
+    QToolButton* addSourceBtn_   = nullptr;
+    QToolButton* addListenerBtn_ = nullptr;
+    QToolButton* renderBtn_      = nullptr;
 };
 
 } // namespace prs

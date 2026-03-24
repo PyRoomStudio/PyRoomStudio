@@ -36,6 +36,7 @@ private:
     QSlider*        transparencyAlpha_ = nullptr;
     QLabel*         alphaLabel_ = nullptr;
     QSpinBox*       markerSize_ = nullptr;
+    QCheckBox*      solidColorsOnly_ = nullptr;
 };
 
 class AudioSettingsDialog : public QDialog {

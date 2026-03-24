@@ -65,6 +65,7 @@ set(GUI_TEST_EXTRA
     ${CMAKE_SOURCE_DIR}/src/gui/PropertyPanel.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/AssetsPanel.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/BottomToolbar.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/IconUtils.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/UndoCommands.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/dialogs/SettingsDialogs.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/dialogs/AudioComparisonDialog.cpp
@@ -84,13 +85,14 @@ set(GUI_TEST_EXTRA
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGSolver.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGGpuCompute.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/SimulationQueuePanel.cpp
+    ${CMAKE_SOURCE_DIR}/src/gui/SimulationQueueWindow.cpp
     ${CMAKE_SOURCE_DIR}/src/rendering/Viewport3D.cpp
 )
 qt6_add_resources(TEST_RESOURCES ${CMAKE_SOURCE_DIR}/resources/resources.qrc)
 add_executable(test_gui test_gui.cpp ${TEST_COMMON_SOURCES} ${GUI_TEST_EXTRA} ${TEST_RESOURCES})
 target_include_directories(test_gui PRIVATE ${TEST_INCLUDE_DIRS})
 target_link_libraries(test_gui PRIVATE
-    Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Multimedia Eigen3::Eigen)
+    Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Multimedia Qt6::Svg Eigen3::Eigen)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(test_gui PRIVATE OpenMP::OpenMP_CXX)
 endif()

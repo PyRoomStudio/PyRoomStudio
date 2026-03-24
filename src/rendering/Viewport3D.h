@@ -45,6 +45,8 @@ public:
     // Point placement
     void setPlacementMode(bool enabled);
     bool placementMode() const { return placementMode_; }
+    void setPlacementPointTypeForNew(const std::string& type);
+    const std::string& placementPointTypeForNew() const { return placementPointTypeForNew_; }
     void updateActivePointDistance(float distance);
     void adjustActivePointDistance(float delta);
     float getActivePointDistance() const;
@@ -52,8 +54,11 @@ public:
     std::string getActivePointType() const;
     void removeActivePoint();
     void deselectPoint();
+    void clearFullSelection();
     void clearPlacedPoints();
     void restorePlacedPoints(const std::vector<PlacedPoint>& points);
+    void selectPoint(int index);
+    void notifyPlacedPointsChanged();
     int  activePointIndex() const { return activePointIndex_; }
     const std::vector<PlacedPoint>& placedPoints() const { return placedPoints_; }
     std::vector<PlacedPoint>& placedPoints() { return placedPoints_; }
@@ -71,6 +76,7 @@ public:
     std::optional<Material> getSurfaceMaterial(int surfIdx) const;
     const std::vector<std::optional<Material>>& surfaceMaterials() const { return surfaceMaterials_; }
     void toggleSurfaceTexture(int surfIdx);
+    bool isSurfaceTextureActive(int surfIdx) const;
     bool loadTexture(const QString& filepath);
     bool hasTexture() const { return textureId_ != 0; }
 
@@ -99,6 +105,7 @@ public:
     float gridSpacing() const { return gridSpacing_; }
     float transparencyAlpha() const { return transparencyAlpha_; }
     int markerSize() const { return markerSize_; }
+    bool texturesEnabled() const { return texturesEnabled_; }
 
     // Select all / multi-selection
     void selectAllPoints();
@@ -121,10 +128,12 @@ signals:
     void surfaceSelected(int index);
     void surfaceDeselected();
     void surfaceMaterialChanged(int index, const QString& materialName);
+    void surfaceAppearanceChanged(int index);
     void placementModeChanged(bool enabled);
     void scaleChanged(float factor);
     void measurementResult(float distance);
     void moveFinished(int pointIndex, const PlacedPoint& oldState, const PlacedPoint& newState);
+    void placedPointsChanged();
 
 protected:
     void initializeGL() override;
@@ -180,6 +189,7 @@ private:
     int activePointIndex_ = -1;
     bool placementMode_ = false;
     int nextPointColorIndex_ = 0;
+    std::string placementPointTypeForNew_ = POINT_TYPE_SOURCE;
     static const std::vector<Color3f>& pointColors();
 
     // Surface selection
@@ -207,6 +217,7 @@ private:
     float gridSpacing_ = 1.0f;
     float transparencyAlpha_ = 0.55f;
     int markerSize_ = 15;
+    bool texturesEnabled_ = true;
 
     Color3f defaultSurfaceColor_ = {0.6f, 0.8f, 1.0f};
     unsigned int textureId_ = 0;

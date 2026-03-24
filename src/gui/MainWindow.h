@@ -22,7 +22,7 @@ class LibraryPanel;
 class PropertyPanel;
 class AssetsPanel;
 class BottomToolbar;
-class SimulationQueuePanel;
+class SimulationQueueWindow;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -48,8 +48,10 @@ private slots:
     // Bottom toolbar
     void onImportRoom();
     void onImportSound();
-    void onPlacePoint();
+    void onAddSourcePlacement();
+    void onAddListenerPlacement();
     void onRender();
+    void onShowSimQueue();
 
     // Viewport signals
     void onModelLoaded(const QString& filepath);
@@ -70,11 +72,15 @@ private:
     void connectSignals();
     void updateTitle();
     void populateAssetsFromRenderer(const QString& filepath);
+    void syncAssetsSurface(int surfaceIndex);
     void saveProjectToFile(const QString& filepath);
     void addRecentProject(const QString& filepath);
     void updateRecentProjectsMenu();
     QString defaultProjectDir() const;
     void configureAutoSaveTimer();
+    void syncPropertyPanelContext();
+    void refreshAssetsPointLists();
+    void updatePlacementToolbar();
 
     Viewport3D*    viewport_     = nullptr;
     LibraryPanel*  libraryPanel_ = nullptr;
@@ -101,6 +107,9 @@ private:
     QAction* actDelete_    = nullptr;
     QAction* actSelectAll_ = nullptr;
 
+    // View menu
+    QAction* actSimQueue_ = nullptr;
+
     // Settings menu
     QMenu*   settingsMenu_          = nullptr;
     QAction* actPreferences_        = nullptr;
@@ -126,7 +135,7 @@ private:
     std::optional<PlacedPoint> clipboardPoint_;
     QTimer* autoSaveTimer_ = nullptr;
     SimulationQueue* simQueue_ = nullptr;
-    SimulationQueuePanel* simQueuePanel_ = nullptr;
+    SimulationQueueWindow* simQueueWindow_ = nullptr;
 };
 
 } // namespace prs

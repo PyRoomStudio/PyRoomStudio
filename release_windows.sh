@@ -4,7 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 QT_PREFIX_PATH="${QT_PREFIX_PATH:-C:/Qt/6.10.2/mingw_64}"
-PROJECT_NAME="${PROJECT_NAME:-PyRoomStudio}"
+PROJECT_NAME="${PROJECT_NAME:-Seiche}"
 BUILD_DIR="${BUILD_DIR:-build}"
 DIST_DIR="${DIST_DIR:-dist}"
 
@@ -19,7 +19,7 @@ fi
 
 "${REPO_ROOT}/build_windows.sh"
 
-PROJECT_VERSION="$(sed -n 's/^project(PyRoomStudio VERSION \([^ ]*\) LANGUAGES.*$/\1/p' "${REPO_ROOT}/CMakeLists.txt")"
+PROJECT_VERSION="$(sed -n 's/^project([^ ]* VERSION \([^ ]*\) LANGUAGES.*$/\1/p' "${REPO_ROOT}/CMakeLists.txt")"
 if [[ -z "${PROJECT_VERSION}" ]]; then
   PROJECT_VERSION="0.0.0"
 fi

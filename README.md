@@ -4,17 +4,14 @@
 </p> -->
 
 <p align="center">
-  <img width="400" src="assets/Logo_Color.svg" alt="PyRoomStudio">
+  <img width="600px" src="assets/logo-text-color.svg" alt="Seiche">
 </p>
 
 ---
 <!------------------------------------------------------------------->
 
-**PyRoomStudio** is an open-source application for rendering and analyzing acoustical properties of 3D spaces via meshes. 
+**Seiche** is an open-source application for rendering and analyzing acoustical properties of 3D spaces via meshes. 
 The project is inspired by [pyroomacoustics](https://github.com/LCAV/pyroomacoustics), a library for testing and simulating acoustics algorithms written by Robin Scheibler.
-
-> [!NOTE]
-> PyRoomStudio is in the process of transition tech stacks from Python to C++ for improved performance. As such, the project/repo will be under a new name in the future.
 
 <p align="center">
   <img width="700" src="assets/screenshot.png" alt="PyRoomStudio ">
@@ -34,7 +31,7 @@ Evan M. Matthews (evanmm3@illinois.edu, [LinkedIn](https://www.linkedin.com/in/e
 
 ## Mission Statement
 
-PyRoomStudio has two missions:
+Seiche has two missions:
 
 1. Make room acoustics design accessible and intuitive for designers via open-source software.
 2. Connect people passionate about designing for the auditory sense, from both the technical and the creative sides.
@@ -47,7 +44,7 @@ By accomplishing these missions, we hope to increase the usage of acoustic tools
 
 ## Setup
 
-The latest build of PyRoomStudio is running on C++17 with Qt6 and Eigen3 dependencies.
+The latest build of Seiche is running on C++17 with Qt6 and Eigen3 dependencies.
 
 1. Clone the repository
 
@@ -71,10 +68,10 @@ The latest build of PyRoomStudio is running on C++17 with Qt6 and Eigen3 depende
 The version number can be different, although Qt >6 is expected. For MacOS specifically, replace `/mingw_64` with `/macos`.
 Once Cmake has built the Ninja files, follow-up compilations will only need `cmake --build build`.
 
-4. Run the `PyRoomStudio` executable.
+4. Run the `Seiche` executable.
 
 ```bash
-$ ./build/PyRoomStudio
+$ ./build/Seiche
 ```
 
 On Windows, the dev build in `build/` does not bundle Qt DLLs. Run via:
