@@ -13,18 +13,19 @@
 #include "core/ProjectFile.h"
 #include "core/Types.h"
 #include "utils/ResourcePath.h"
+#include "utils/FileDialogs.h"
 #include "dialogs/SettingsDialogs.h"
 #include "dialogs/AudioComparisonDialog.h"
 #include "dialogs/RenderOptionsDialog.h"
+#include "AppMessageBox.h"
 
 #include <QMenuBar>
 #include <QToolBar>
 #include <QSplitter>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QFileDialog>
+#include <QDir>
 #include <QFileInfo>
-#include <QMessageBox>
 #include <QStatusBar>
 #include <QApplication>
 #include <QCloseEvent>
@@ -300,7 +301,7 @@ void MainWindow::connectSignals() {
     // Viewport signals
     connect(viewport_, &Viewport3D::modelLoaded,           this, &MainWindow::onModelLoaded);
     connect(viewport_, &Viewport3D::meshOpenWarning, this, [this](int boundaryEdges) {
-        QMessageBox::warning(this, "Open Mesh Detected",
+        showWarning(this, "Open Mesh Detected",
             QString("The loaded mesh has %1 non-manifold/boundary edge(s) and is not watertight.\n\n"
                     "Acoustic simulation results may be inaccurate for open meshes.")
             .arg(boundaryEdges));
@@ -336,9 +337,8 @@ void MainWindow::connectSignals() {
     // Simulation queue
     connect(simQueue_, &SimulationQueue::jobFinished, this, [this](int, const QString& outputDir) {
         updateTitle();
-        auto answer = QMessageBox::question(this, "Simulation Complete",
-            "Output saved to:\n" + outputDir + "\n\nCompare audio files?",
-            QMessageBox::Yes | QMessageBox::No);
+        auto answer = showQuestionYesNo(this, "Simulation Complete",
+            "Output saved to:\n" + outputDir + "\n\nCompare audio files?");
         if (answer == QMessageBox::Yes) {
             auto* dlg = new AudioComparisonDialog(outputDir, this);
             dlg->setAttribute(Qt::WA_DeleteOnClose);
@@ -355,7 +355,7 @@ void MainWindow::connectSignals() {
     connect(simQueue_, &SimulationQueue::jobError, this, [this](int, const QString& msg) {
         updateTitle();
         if (msg != "Cancelled")
-            QMessageBox::warning(this, "Simulation Failed", msg);
+            showWarning(this, "Simulation Failed", msg);
         else
             statusBar()->showMessage("Simulation cancelled");
     });
@@ -398,14 +398,14 @@ void MainWindow::connectSignals() {
         if (si >= 0) viewport_->toggleSurfaceTexture(si);
     });
     connect(propertyPanel_, &PropertyPanel::loadTexture, [this]() {
-        QString path = QFileDialog::getOpenFileName(this,
+        QString path = FileDialogs::openFile(this,
             "Load Texture Image", QString(),
             "Images (*.png *.jpg *.jpeg *.bmp);;All files (*.*)");
         if (!path.isEmpty()) {
             if (viewport_->loadTexture(path))
                 statusBar()->showMessage("Texture loaded: " + QFileInfo(path).fileName());
             else
-                QMessageBox::warning(this, "Error", "Failed to load texture image.");
+                showWarning(this, "Error", "Failed to load texture image.");
         }
     });
     connect(propertyPanel_, &PropertyPanel::deselectSurface, [this]() {
@@ -424,7 +424,7 @@ void MainWindow::connectSignals() {
     connect(propertyPanel_, &PropertyPanel::selectPointAudioFile, [this]() {
         int idx = viewport_->activePointIndex();
         if (idx < 0) return;
-        QString path = QFileDialog::getOpenFileName(this,
+        QString path = FileDialogs::openFile(this,
             "Select Audio File", defaultProjectDir(),
             "Audio files (*.wav *.mp3 *.flac *.ogg);;All files (*.*)");
         if (path.isEmpty()) return;
@@ -477,14 +477,13 @@ void MainWindow::connectSignals() {
 
 void MainWindow::onNewProject() {
     if (projectDirty_) {
-        auto res = QMessageBox::question(this, "Unsaved Changes",
-            "Save current project before creating a new one?",
-            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        auto res = showQuestionSaveDiscardCancel(this, "Unsaved Changes",
+            "Save current project before creating a new one?");
         if (res == QMessageBox::Cancel) return;
         if (res == QMessageBox::Save) onSaveProject();
     }
 
-    QString path = QFileDialog::getOpenFileName(this,
+    QString path = FileDialogs::openFile(this,
         "Select Room Model for New Project", defaultProjectDir(),
         "3D Models (*.stl *.obj);;STL files (*.stl);;OBJ files (*.obj);;All files (*.*)");
     if (path.isEmpty()) return;
@@ -500,14 +499,14 @@ void MainWindow::onNewProject() {
         updateTitle();
         statusBar()->showMessage("New project created with: " + QFileInfo(path).fileName());
     } else {
-        QMessageBox::warning(this, "Error", "Failed to load 3D model: " + path);
+        showWarning(this, "Error", "Failed to load 3D model: " + path);
         updateTitle();
         statusBar()->showMessage("New project created (no model)");
     }
 }
 
 void MainWindow::onOpenProject() {
-    QString path = QFileDialog::getOpenFileName(this,
+    QString path = FileDialogs::openFile(this,
         "Open Project", defaultProjectDir(),
         "Room Projects (*.room);;3D Models (*.stl *.obj);;All files (*.*)");
     if (path.isEmpty()) return;
@@ -516,13 +515,13 @@ void MainWindow::onOpenProject() {
         if (viewport_->loadModel(path))
             statusBar()->showMessage("Loaded: " + path);
         else
-            QMessageBox::warning(this, "Error", "Failed to load 3D model: " + path);
+            showWarning(this, "Error", "Failed to load 3D model: " + path);
         return;
     }
 
     auto data = ProjectFile::load(path);
     if (!data) {
-        QMessageBox::warning(this, "Error", "Failed to load project: " + path);
+        showWarning(this, "Error", "Failed to load project: " + path);
         return;
     }
 
@@ -532,7 +531,7 @@ void MainWindow::onOpenProject() {
             stlPath = QFileInfo(path).dir().filePath(stlPath);
 
         if (!viewport_->loadModel(stlPath)) {
-            QMessageBox::warning(this, "Error", "Failed to load 3D model: " + stlPath);
+            showWarning(this, "Error", "Failed to load 3D model: " + stlPath);
             return;
         }
     }
@@ -562,7 +561,7 @@ void MainWindow::onSaveProject() {
 }
 
 void MainWindow::onSaveProjectAs() {
-    QString path = QFileDialog::getSaveFileName(this,
+    QString path = FileDialogs::saveFile(this,
         "Save Project As", defaultProjectDir(), "Room Projects (*.room)");
     if (path.isEmpty()) return;
     if (!path.endsWith(".room", Qt::CaseInsensitive))
@@ -585,7 +584,7 @@ void MainWindow::saveProjectToFile(const QString& filepath) {
         updateTitle();
         statusBar()->showMessage("Saved: " + filepath);
     } else {
-        QMessageBox::warning(this, "Error", "Failed to save project.");
+        showWarning(this, "Error", "Failed to save project.");
     }
 }
 
@@ -615,7 +614,7 @@ void MainWindow::updateRecentProjectsMenu() {
         recentProjectsMenu_->addAction(fi.fileName(), [this, path]() {
             auto data = ProjectFile::load(path);
             if (!data) {
-                QMessageBox::warning(this, "Error", "Failed to load project: " + path);
+                showWarning(this, "Error", "Failed to load project: " + path);
                 return;
             }
             if (!data->stlFilePath.isEmpty()) {
@@ -623,7 +622,7 @@ void MainWindow::updateRecentProjectsMenu() {
                 if (QFileInfo(stlPath).isRelative())
                     stlPath = QFileInfo(path).dir().filePath(stlPath);
                 if (!viewport_->loadModel(stlPath)) {
-                    QMessageBox::warning(this, "Error", "Failed to load 3D model: " + stlPath);
+                    showWarning(this, "Error", "Failed to load 3D model: " + stlPath);
                     return;
                 }
             }
@@ -653,9 +652,8 @@ void MainWindow::onExit() {
 
 void MainWindow::closeEvent(QCloseEvent* event) {
     if (projectDirty_) {
-        auto res = QMessageBox::question(this, "Unsaved Changes",
-            "Save project before closing?",
-            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        auto res = showQuestionSaveDiscardCancel(this, "Unsaved Changes",
+            "Save project before closing?");
         if (res == QMessageBox::Cancel) { event->ignore(); return; }
         if (res == QMessageBox::Save) onSaveProject();
     }
@@ -663,7 +661,7 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 }
 
 void MainWindow::onImportRoom() {
-    QString path = QFileDialog::getOpenFileName(this,
+    QString path = FileDialogs::openFile(this,
         "Import Room Model", defaultProjectDir(),
         "3D Models (*.stl *.obj);;STL files (*.stl);;OBJ files (*.obj);;All files (*.*)");
     if (path.isEmpty()) return;
@@ -671,12 +669,12 @@ void MainWindow::onImportRoom() {
     if (viewport_->loadModel(path)) {
         statusBar()->showMessage("Loaded: " + path);
     } else {
-        QMessageBox::warning(this, "Error", "Failed to load 3D model: " + path);
+        showWarning(this, "Error", "Failed to load 3D model: " + path);
     }
 }
 
 void MainWindow::onImportSound() {
-    QString path = QFileDialog::getOpenFileName(this,
+    QString path = FileDialogs::openFile(this,
         "Select Sound Source",
         defaultProjectDir(),
         "Audio files (*.wav *.mp3 *.flac *.ogg);;WAV files (*.wav);;All files (*.*)");
@@ -722,17 +720,17 @@ void MainWindow::onShowSimQueue() {
 
 void MainWindow::onRender() {
     if (!viewport_->hasModel()) {
-        QMessageBox::warning(this, "Error", "No 3D model loaded.");
+        showWarning(this, "Error", "No 3D model loaded.");
         return;
     }
 
     auto [srcCount, lstCount] = viewport_->countSourcesAndListeners();
     if (srcCount == 0) {
-        QMessageBox::warning(this, "Error", "No sound sources placed.\nPlace a point and set its type to Source.");
+        showWarning(this, "Error", "No sound sources placed.\nPlace a point and set its type to Source.");
         return;
     }
     if (lstCount == 0) {
-        QMessageBox::warning(this, "Error", "No listeners placed.\nPlace a point and set its type to Listener.");
+        showWarning(this, "Error", "No listeners placed.\nPlace a point and set its type to Listener.");
         return;
     }
 
@@ -745,7 +743,7 @@ void MainWindow::onRender() {
             missingAudio << QString::fromStdString(s.name);
     }
     if (!missingAudio.isEmpty()) {
-        QMessageBox::warning(this, "Error",
+        showWarning(this, "Error",
             QString("The following source(s) have no audio file assigned:\n  %1\n\n"
                     "Assign audio files to each source, or use Import Sound to set a default.")
             .arg(missingAudio.join(", ")));
@@ -763,7 +761,7 @@ void MainWindow::onRender() {
 
     std::vector<int> selectedListeners = renderDlg.selectedListenerIndices();
     if (selectedListeners.empty()) {
-        QMessageBox::warning(this, "Error", "No listeners selected for rendering.");
+        showWarning(this, "Error", "No listeners selected for rendering.");
         return;
     }
 
@@ -860,7 +858,7 @@ void MainWindow::onScaleChanged(float factor) {
 }
 
 void MainWindow::updateTitle() {
-    QString title = "PyRoomStudio";
+    QString title = "Seiche";
     if (!currentProjectFile_.isEmpty()) {
         QFileInfo fi(currentProjectFile_);
         title += " - " + fi.fileName();

@@ -808,15 +808,18 @@ void Viewport3D::drawSelectedSurfaceOutline() {
 
 // ==================== Ray Picking ====================
 
-std::pair<Vec3f, Vec3f> Viewport3D::getRayFromMouse(const QPoint& pos) {
+std::pair<Vec3f, Vec3f> Viewport3D::getRayFromMouse(const QPointF& logicalPos) {
     GLint viewport[4];
     GLdouble modelview[16], projection[16];
     glGetIntegerv(GL_VIEWPORT, viewport);
     glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
     glGetDoublev(GL_PROJECTION_MATRIX, projection);
 
-    double mx = pos.x();
-    double my = viewport[3] - pos.y();
+    // Mouse events are in logical (device-independent) points; GL viewport is in device pixels
+    // (Retina / high-DPI). gluUnProject must use the same coordinate space as the viewport.
+    const qreal dpr = devicePixelRatioF();
+    double mx = logicalPos.x() * dpr;
+    double my = static_cast<double>(viewport[3]) - logicalPos.y() * dpr;
 
     GLdouble nx, ny, nz, fx, fy, fz;
     gluUnProject(mx, my, 0.0, modelview, projection, viewport, &nx, &ny, &nz);
@@ -827,7 +830,7 @@ std::pair<Vec3f, Vec3f> Viewport3D::getRayFromMouse(const QPoint& pos) {
     return {origin, dir};
 }
 
-std::optional<Viewport3D::IntersectionResult> Viewport3D::getIntersectionPoint(const QPoint& pos) {
+std::optional<Viewport3D::IntersectionResult> Viewport3D::getIntersectionPoint(const QPointF& pos) {
     makeCurrent();
     glPushMatrix();
     camera_.applyViewMatrix();
@@ -856,7 +859,7 @@ std::optional<Viewport3D::IntersectionResult> Viewport3D::getIntersectionPoint(c
     return IntersectionResult{hitPoint, normal, hitIdx};
 }
 
-std::optional<int> Viewport3D::getPointAtMouse(const QPoint& pos) {
+std::optional<int> Viewport3D::getPointAtMouse(const QPointF& pos) {
     if (placedPoints_.empty()) return std::nullopt;
 
     makeCurrent();
@@ -884,7 +887,7 @@ std::optional<int> Viewport3D::getPointAtMouse(const QPoint& pos) {
     return std::nullopt;
 }
 
-bool Viewport3D::trySelectPointAtMouse(const QPoint& pos) {
+bool Viewport3D::trySelectPointAtMouse(const QPointF& pos) {
     auto idx = getPointAtMouse(pos);
     if (idx) {
         selectPoint(*idx);
@@ -893,7 +896,7 @@ bool Viewport3D::trySelectPointAtMouse(const QPoint& pos) {
     return false;
 }
 
-bool Viewport3D::trySelectSurfaceAtMouse(const QPoint& pos) {
+bool Viewport3D::trySelectSurfaceAtMouse(const QPointF& pos) {
     makeCurrent();
     glPushMatrix();
     camera_.applyViewMatrix();
@@ -927,7 +930,7 @@ bool Viewport3D::trySelectSurfaceAtMouse(const QPoint& pos) {
     return false;
 }
 
-void Viewport3D::addPointAtMouse(const QPoint& pos) {
+void Viewport3D::addPointAtMouse(const QPointF& pos) {
     auto result = getIntersectionPoint(pos);
     if (!result) return;
 
@@ -958,7 +961,7 @@ void Viewport3D::mousePressEvent(QMouseEvent* event) {
         mouseDownPos_ = event->pos();
 
         if (moveMode_ && hasModel()) {
-            auto idx = getPointAtMouse(event->pos());
+            auto idx = getPointAtMouse(event->position());
             if (idx) {
                 movingPointIndex_ = *idx;
                 moveOriginal_ = placedPoints_[movingPointIndex_];
@@ -988,7 +991,7 @@ void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
 
         if (dragDist < 5 && hasModel()) {
             if (measureMode_) {
-                auto hit = getIntersectionPoint(event->pos());
+                auto hit = getIntersectionPoint(event->position());
                 if (hit) {
                     if (!measurePoint1_) {
                         measurePoint1_ = hit->point;
@@ -998,12 +1001,12 @@ void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
                         emit measurementResult(dist);
                     }
                 }
-            } else if (trySelectPointAtMouse(event->pos())) {
+            } else if (trySelectPointAtMouse(event->position())) {
             } else if (placementMode_) {
-                addPointAtMouse(event->pos());
+                addPointAtMouse(event->position());
                 selectedSurfaceIndex_ = -1;
             } else {
-                if (!trySelectSurfaceAtMouse(event->pos())) {
+                if (!trySelectSurfaceAtMouse(event->position())) {
                     clearFullSelection();
                 }
             }
@@ -1016,7 +1019,7 @@ void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
 void Viewport3D::mouseMoveEvent(QMouseEvent* event) {
     if (mouseDown_) {
         if (moveMode_ && movingPointIndex_ >= 0) {
-            auto result = getIntersectionPoint(event->pos());
+            auto result = getIntersectionPoint(event->position());
             if (result) {
                 placedPoints_[movingPointIndex_].surfacePoint = result->point;
                 placedPoints_[movingPointIndex_].normal = result->normal;
@@ -1121,8 +1124,7 @@ void Viewport3D::dropEvent(QDropEvent* event) {
             mat.color = {c[0].toInt(160), c[1].toInt(160), c[2].toInt(160)};
     }
 
-    QPoint dropPos = event->position().toPoint();
-    auto hit = getIntersectionPoint(dropPos);
+    auto hit = getIntersectionPoint(event->position());
     if (hit) {
         auto it = triangleToSurface_.find(hit->triIndex);
         if (it != triangleToSurface_.end()) {

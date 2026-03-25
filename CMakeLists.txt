@@ -77,6 +77,7 @@ set(SOURCES
     src/acoustics/dg/DGGpuCompute.cpp
     src/audio/AudioFile.cpp
     src/audio/SignalProcessing.cpp
+    src/gui/AppMessageBox.cpp
     src/gui/MainWindow.cpp
     src/gui/LibraryPanel.cpp
     src/gui/PropertyPanel.cpp
@@ -93,6 +94,7 @@ set(SOURCES
     src/gui/widgets/SurfaceGallery.cpp
     src/gui/widgets/ColorSwatch.cpp
     src/utils/ResourcePath.cpp
+    src/utils/FileDialogs.cpp
 )
 
 set(HEADERS
@@ -132,6 +134,7 @@ set(HEADERS
     src/acoustics/dg/DGGpuCompute.h
     src/audio/AudioFile.h
     src/audio/SignalProcessing.h
+    src/gui/AppMessageBox.h
     src/gui/MainWindow.h
     src/gui/LibraryPanel.h
     src/gui/PropertyPanel.h
@@ -148,6 +151,7 @@ set(HEADERS
     src/gui/widgets/SurfaceGallery.h
     src/gui/widgets/ColorSwatch.h
     src/utils/ResourcePath.h
+    src/utils/FileDialogs.h
 )
 
 qt6_add_resources(RESOURCES resources/resources.qrc)
@@ -168,6 +172,7 @@ endif()
 if(APPLE)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.pyroomstudio.seiche"
     )
 endif()
 
@@ -183,6 +188,24 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Multimedia
     Qt6::Svg
     Eigen3::Eigen
+)
+
+# Bundle icon for Finder / system UI (dock uses setWindowIcon separately).
+if(APPLE)
+    set(SEICHE_ICNS "${CMAKE_SOURCE_DIR}/resources/Seiche.icns")
+    target_sources(${PROJECT_NAME} PRIVATE "${SEICHE_ICNS}")
+    set_source_files_properties("${SEICHE_ICNS}" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    # Filename without extension per Apple (CMake still picks up Seiche.icns in Resources).
+    set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE_ICON_FILE "Seiche")
+endif()
+
+# Materials live next to the executable (macOS: Contents/MacOS/materials) so the Library tab
+# works when running the .app from build/ or dist/, not only when cwd is the source tree.
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/materials"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/materials"
+    COMMENT "Copy materials next to executable for runtime loading"
 )
 
 if(OpenMP_CXX_FOUND)

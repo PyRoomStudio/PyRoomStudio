@@ -60,6 +60,7 @@ add_prs_test(test_project_file test_project_file.cpp)
 
 # GUI test needs MOC and more sources
 set(GUI_TEST_EXTRA
+    ${CMAKE_SOURCE_DIR}/src/gui/AppMessageBox.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/MainWindow.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/LibraryPanel.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/PropertyPanel.cpp
@@ -74,6 +75,7 @@ set(GUI_TEST_EXTRA
     ${CMAKE_SOURCE_DIR}/src/gui/widgets/SurfaceGallery.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/widgets/ColorSwatch.cpp
     ${CMAKE_SOURCE_DIR}/src/utils/ResourcePath.cpp
+    ${CMAKE_SOURCE_DIR}/src/utils/FileDialogs.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationWorker.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationQueue.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGBasis2D.cpp

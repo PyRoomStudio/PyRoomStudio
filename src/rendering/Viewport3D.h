@@ -9,6 +9,7 @@
 #include "TextureManager.h"
 
 #include <QOpenGLWidget>
+#include <QPointF>
 #include <QOpenGLFunctions>
 #include <QMouseEvent>
 #include <QWheelEvent>
@@ -161,13 +162,13 @@ private:
     void drawPlaceholder();
 
     // Ray picking
-    std::pair<Vec3f, Vec3f> getRayFromMouse(const QPoint& pos);
+    std::pair<Vec3f, Vec3f> getRayFromMouse(const QPointF& logicalPos);
     struct IntersectionResult { Vec3f point; Vec3f normal; int triIndex; };
-    std::optional<IntersectionResult> getIntersectionPoint(const QPoint& pos);
-    std::optional<int> getPointAtMouse(const QPoint& pos);
-    bool trySelectPointAtMouse(const QPoint& pos);
-    bool trySelectSurfaceAtMouse(const QPoint& pos);
-    void addPointAtMouse(const QPoint& pos);
+    std::optional<IntersectionResult> getIntersectionPoint(const QPointF& logicalPos);
+    std::optional<int> getPointAtMouse(const QPointF& logicalPos);
+    bool trySelectPointAtMouse(const QPointF& logicalPos);
+    bool trySelectSurfaceAtMouse(const QPointF& logicalPos);
+    void addPointAtMouse(const QPointF& logicalPos);
 
     // Data
     MeshData mesh_;

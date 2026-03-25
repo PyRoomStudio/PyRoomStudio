@@ -26,10 +26,20 @@ int main(int argc, char* argv[]) {
     light.setColor(QPalette::PlaceholderText, QColor(110, 110, 110));
     app.setPalette(light);
 
-    app.setApplicationName("PyRoomStudio");
+    app.setApplicationName("Seiche");
     app.setApplicationVersion("1.0.0");
     app.setOrganizationName("PyRoomStudio");
-    app.setWindowIcon(prs::iconFromSvgResource(":/logo.svg", 48));
+    // Multiple sizes so macOS uses a crisp pixmap in sheets/alerts (not the generic placeholder).
+    {
+        QIcon appIcon;
+        for (int s : {16, 32, 64, 128, 256, 512}) {
+            QIcon layer = prs::iconFromSvgResource(":/logo.svg", s);
+            if (!layer.isNull())
+                appIcon.addPixmap(layer.pixmap(s, s));
+        }
+        if (!appIcon.isNull())
+            app.setWindowIcon(appIcon);
+    }
 
     // Request OpenGL context with depth buffer
     QSurfaceFormat format;

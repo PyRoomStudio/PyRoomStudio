@@ -6,11 +6,28 @@
 #include <QScrollArea>
 #include <QGroupBox>
 #include <QDir>
-#include <QFileDialog>
+#include "utils/FileDialogs.h"
 #include <QFileInfo>
 #include <QSettings>
 #include <QCoreApplication>
 #include <QFontMetrics>
+
+namespace {
+
+/** Materials ship next to the executable (see CMake POST_BUILD / release_macos.sh). */
+QString materialsDirectoryPath()
+{
+    const QString appDir = QCoreApplication::applicationDirPath();
+    const QString nextToExe = QDir(appDir).filePath(QStringLiteral("materials"));
+    if (QDir(nextToExe).exists())
+        return nextToExe;
+    const QString inResources = QDir(appDir).filePath(QStringLiteral("../Resources/materials"));
+    if (QDir(inResources).exists())
+        return QDir(inResources).canonicalPath();
+    return QStringLiteral("materials");
+}
+
+} // namespace
 
 namespace prs {
 
@@ -58,7 +75,7 @@ void LibraryPanel::createSoundTab(QWidget* tab) {
 
     auto* browseBtn = new QPushButton("Browse Folder...");
     connect(browseBtn, &QPushButton::clicked, [this]() {
-        QString dir = QFileDialog::getExistingDirectory(this, "Select Sound Folder");
+        QString dir = FileDialogs::existingDirectory(this, "Select Sound Folder");
         if (!dir.isEmpty()) {
             scanSoundDirectory(dir);
             QSettings s("PyRoomStudio", "PyRoomStudio");
@@ -114,14 +131,7 @@ void LibraryPanel::createMaterialTab(QWidget* tab) {
     contentLayout->setContentsMargins(4, 4, 4, 4);
     contentLayout->setSpacing(4);
 
-    // Load materials from the materials/ directory next to the executable
-    QString materialsDir = QCoreApplication::applicationDirPath() + "/materials";
-    if (!QDir(materialsDir).exists()) {
-        // Fall back to source tree path for development
-        materialsDir = "materials";
-    }
-
-    auto categories = MaterialLoader::loadFromDirectory(materialsDir);
+    auto categories = MaterialLoader::loadFromDirectory(materialsDirectoryPath());
 
     for (auto& category : categories) {
         auto* gallery = new MaterialGallery(

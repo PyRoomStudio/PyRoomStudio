@@ -6,7 +6,7 @@
 #include <QGroupBox>
 #include <QPushButton>
 #include <QDialogButtonBox>
-#include <QFileDialog>
+#include "utils/FileDialogs.h"
 #include <QHeaderView>
 
 namespace prs {
@@ -28,7 +28,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent)
     projectDirEdit_->setText(s.value("defaultProjectDir", "").toString());
     auto* browseBtn = new QPushButton("Browse...");
     connect(browseBtn, &QPushButton::clicked, [this]() {
-        QString dir = QFileDialog::getExistingDirectory(this, "Default Project Directory");
+        QString dir = FileDialogs::existingDirectory(this, "Default Project Directory");
         if (!dir.isEmpty()) projectDirEdit_->setText(dir);
     });
     dirRow->addWidget(projectDirEdit_);
