@@ -1,5 +1,7 @@
 #include "DGGpuCompute.h"
 
+#ifndef __APPLE__
+
 #include <QDebug>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
@@ -1090,3 +1092,5 @@ float DGGpuCompute::readListenerPressure3D() {
 
 } // namespace dg
 } // namespace prs
+
+#endif // !__APPLE__

@@ -6,16 +6,58 @@
 #include "DGMesh3D.h"
 #include "DGTypes.h"
 
-#include <QOpenGLFunctions_4_3_Core>
-
 #include <memory>
 #include <string>
+
+#ifndef __APPLE__
+#include <QOpenGLFunctions_4_3_Core>
+#endif
 
 class QOpenGLContext;
 class QOffscreenSurface;
 
 namespace prs {
 namespace dg {
+
+#ifdef __APPLE__
+
+// macOS only supports OpenGL 4.1; compute shaders and SSBOs require 4.3+.
+// This stub always reports unavailable so callers fall back to CPU.
+class DGGpuCompute {
+  public:
+    DGGpuCompute() = default;
+    ~DGGpuCompute() = default;
+
+    bool initContext() {
+        lastError_ = "GPU compute unavailable on macOS (requires OpenGL 4.3+)";
+        return false;
+    }
+    bool isAvailable() const { return false; }
+
+    bool init2D(const Basis2D &, const Mesh2D &) { return false; }
+    void resetFields2D() {}
+    void computeRHS2D(float) {}
+    void rkStageUpdate2D(float, float, float) {}
+    float readListenerPressure2D() { return 0.0f; }
+    void setSource2D(int, const VecXd &) {}
+    void setListener2D(int, const VecXd &) {}
+
+    bool init3D(const Basis3D &, const Mesh3D &) { return false; }
+    void resetFields3D() {}
+    void computeRHS3D(float) {}
+    void rkStageUpdate3D(float, float, float) {}
+    float readListenerPressure3D() { return 0.0f; }
+    void setSource3D(int, const VecXd &) {}
+    void setListener3D(int, const VecXd &) {}
+
+    void cleanup() {}
+    std::string lastError() const { return lastError_; }
+
+  private:
+    std::string lastError_;
+};
+
+#else // !__APPLE__
 
 class DGGpuCompute {
   public:
@@ -107,6 +149,8 @@ class DGGpuCompute {
         int listenerElem = 0;
     } s3d_;
 };
+
+#endif // __APPLE__
 
 } // namespace dg
 } // namespace prs
