@@ -20,11 +20,11 @@
 
 > The current `.room` workflow stores the important data, but it still needs a more explicit contract and stronger validation.
 
-- [ ] Split project serialization concerns from UI concerns in `src/core/ProjectFile.*`
-- [ ] Add explicit schema and validation rules for meshes, materials, sources, listeners, and sample rate
-- [ ] Make project save/load round-trips deterministic so tests can compare file contents
-- [ ] Add tests for malformed project files and missing resource references
-- [ ] Document the `.room` format and coordinate conventions in `INSTRUCTIONS.md`
+- [x] Split project serialization concerns from UI concerns in `src/core/ProjectFile.*`
+- [x] Add explicit schema and validation rules for meshes, materials, sources, listeners, and sample rate
+- [x] Make project save/load round-trips deterministic so tests can compare file contents
+- [x] Add tests for malformed project files and missing resource references
+- [x] Document the `.room` format and coordinate conventions in `INSTRUCTIONS.md`
 
 ## Phase 2 — Headless Simulation and Batch Export
 

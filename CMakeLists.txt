@@ -20,12 +20,20 @@ if(NOT Eigen3_FOUND)
         GIT_TAG        3.4.0
         GIT_SHALLOW    TRUE
     )
-    set(EIGEN_BUILD_DOC OFF CACHE BOOL "" FORCE)
-    set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
-    set(EIGEN_BUILD_PKGCONFIG OFF CACHE BOOL "" FORCE)
-    set(EIGEN_BUILD_BLAS OFF CACHE BOOL "" FORCE)
-    set(EIGEN_BUILD_LAPACK OFF CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(eigen)
+    # Use Populate (not MakeAvailable) to skip Eigen's CMakeLists.txt entirely.
+    # MakeAvailable triggers BLAS detection which calls enable_language(Fortran)
+    # and fails on CI runners that have a broken gfortran in PATH.
+    # Eigen is header-only for our use; no Fortran is needed.
+    FetchContent_GetProperties(eigen)
+    if(NOT eigen_POPULATED)
+        if(POLICY CMP0168)
+            cmake_policy(SET CMP0168 OLD) # suppress FetchContent_Populate deprecation (CMake 3.30+)
+        endif()
+        FetchContent_Populate(eigen)
+    endif()
+    add_library(Eigen3::Eigen INTERFACE IMPORTED GLOBAL)
+    target_include_directories(Eigen3::Eigen INTERFACE "${eigen_SOURCE_DIR}")
+    set(EIGEN3_INCLUDE_DIR "${eigen_SOURCE_DIR}")
 endif()
 
 find_package(OpenMP)
