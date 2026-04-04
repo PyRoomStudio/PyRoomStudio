@@ -84,6 +84,38 @@ target_compile_definitions(test_render_options_dialog PRIVATE
     $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>)
 add_test(NAME test_render_options_dialog COMMAND test_render_options_dialog)
 add_prs_test(test_render_cli test_render_cli.cpp)
+add_executable(test_render_support test_render_support.cpp ${TEST_COMMON_SOURCES}
+    ${CMAKE_SOURCE_DIR}/src/acoustics/RenderExports.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/RenderPipeline.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationQueue.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationWorker.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGBasis2D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGBasis3D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGMesh2D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGMesh3D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGAcoustics2D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGAcoustics3D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGSolver.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGGpuCompute.cpp)
+target_include_directories(test_render_support PRIVATE ${TEST_INCLUDE_DIRS})
+target_link_libraries(test_render_support PRIVATE
+    Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Multimedia Eigen3::Eigen)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(test_render_support PRIVATE OpenMP::OpenMP_CXX)
+endif()
+if(WIN32)
+    target_link_libraries(test_render_support PRIVATE opengl32 glu32)
+elseif(APPLE)
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(test_render_support PRIVATE OpenGL::GL OpenGL::GLU)
+else()
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(test_render_support PRIVATE OpenGL::GL OpenGL::GLU)
+endif()
+target_compile_definitions(test_render_support PRIVATE
+    _USE_MATH_DEFINES
+    $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>)
+add_test(NAME test_render_support COMMAND test_render_support)
 
 # GUI test needs MOC and more sources
 set(GUI_TEST_EXTRA

@@ -39,6 +39,8 @@ coverage:
         --exclude '.*_autogen/.*' \
         --exclude '.*mocs_compilation.*' \
         --exclude '.*CompilerId.*' \
+        --exclude '/usr/include/.*' \
+        --exclude '/home/christian/Qt/.*' \
         --gcov-ignore-errors=no_working_dir_found \
         --merge-mode-functions=merge-use-line-min \
         --fail-under-line 80

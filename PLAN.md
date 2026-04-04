@@ -20,13 +20,13 @@
 
 > The existing suite exercises the main paths, but the coverage target is not yet enforced or evenly distributed. This phase makes coverage measurable first, then pushes the weak spots over the threshold with focused tests instead of broad refactors.
 
-> Current baseline from `gcovr` on `src/` sources, excluding tests and generated MOC/compiler-id files: 23.4% line coverage, 32.0% function coverage, and 12.8% branch coverage.
+> Current source-only coverage from `gcovr` on `src/` sources, excluding tests, generated MOC/compiler-id files, and system headers: 23.3% line coverage, 26.3% function coverage, and 13.5% branch coverage.
 
 - [x] Add a repeatable Linux coverage job using `gcovr` that reports `src/` line coverage, excludes tests and generated files, and fails the build when coverage drops below 80%
 - [x] Add unit tests for `src/core/MaterialLoader.*`, `src/core/ProjectFile.*`, and `src/utils/ResourcePath.*` to cover malformed inputs, missing files, and canonical round-trips
+- [x] Add focused tests for `src/audio/AudioFile.*`, `src/audio/SignalProcessing.*`, `src/acoustics/AcousticMetrics.*`, `src/acoustics/ImageSourceMethod.*`, and `src/acoustics/SimulationQueue.*`
+- [x] Add focused tests for `src/rendering/Camera.*`, `src/rendering/MeshData.*`, `src/rendering/RayPicking.*`, `src/rendering/SurfaceGrouper.*`, and `src/rendering/TextureManager.*`
 - [ ] Add headless GUI smoke tests for `src/gui/MainWindow.*`, `src/gui/dialogs/SettingsDialogs.*`, and `src/gui/widgets/ColorSwatch.*` to cover launch, open/save/load, and preference changes
-- [ ] Add focused tests for `src/audio/AudioFile.*`, `src/audio/SignalProcessing.*`, `src/acoustics/AcousticMetrics.*`, `src/acoustics/ImageSourceMethod.*`, and `src/acoustics/SimulationQueue.*`
-- [ ] Add focused tests for `src/rendering/Camera.*`, `src/rendering/MeshData.*`, `src/rendering/RayPicking.*`, `src/rendering/SurfaceGrouper.*`, and `src/rendering/TextureManager.*`
 - [ ] Document the coverage workflow and the 80% gate in `README.md` or `CONTRIBUTING.md`
 
 ## Phase 1 — Core Data Model and File Format
