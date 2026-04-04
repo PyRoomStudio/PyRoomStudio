@@ -23,7 +23,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent)
 
     auto* dirRow = new QHBoxLayout;
     projectDirEdit_ = new QLineEdit;
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     projectDirEdit_->setText(s.value("defaultProjectDir", "").toString());
     auto* browseBtn = new QPushButton("Browse...");
     connect(browseBtn, &QPushButton::clicked, [this]() {
@@ -51,7 +51,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent)
 }
 
 void PreferencesDialog::accept() {
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     s.setValue("defaultProjectDir", projectDirEdit_->text());
     s.setValue("autoSaveInterval", autoSaveInterval_->value());
     QDialog::accept();
@@ -65,7 +65,7 @@ DisplaySettingsDialog::DisplaySettingsDialog(QWidget* parent)
     setMinimumWidth(350);
     auto* layout = new QVBoxLayout(this);
 
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
 
     auto* form = new QFormLayout;
 
@@ -109,7 +109,7 @@ DisplaySettingsDialog::DisplaySettingsDialog(QWidget* parent)
 }
 
 void DisplaySettingsDialog::accept() {
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     s.setValue("display/gridVisible", gridVisible_->isChecked());
     s.setValue("display/gridSpacing", gridSpacing_->value());
     s.setValue("display/transparencyAlpha", transparencyAlpha_->value() / 100.0);
@@ -127,7 +127,7 @@ AudioSettingsDialog::AudioSettingsDialog(QWidget* parent)
     setMinimumWidth(300);
     auto* layout = new QVBoxLayout(this);
 
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
 
     auto* form = new QFormLayout;
     sampleRate_ = new QComboBox;
@@ -154,7 +154,7 @@ AudioSettingsDialog::AudioSettingsDialog(QWidget* parent)
 }
 
 void AudioSettingsDialog::accept() {
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     s.setValue("audio/sampleRate", sampleRate_->currentData().toInt());
     QDialog::accept();
 }
@@ -167,7 +167,7 @@ SimulationSettingsDialog::SimulationSettingsDialog(QWidget* parent)
     setMinimumWidth(400);
     auto* layout = new QVBoxLayout(this);
 
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
 
     auto* form = new QFormLayout;
 
@@ -223,7 +223,7 @@ bool SimulationSettingsDialog::airAbsorption() const {
 }
 
 void SimulationSettingsDialog::accept() {
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     s.setValue("sim/maxOrder", maxOrder_->value());
     s.setValue("sim/numRays", numRays_->value());
     s.setValue("sim/absorption", absorption_->value());

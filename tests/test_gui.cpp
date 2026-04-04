@@ -21,7 +21,7 @@ class TestGUI : public QObject {
   private slots:
     void testMainWindowCreation() {
         MainWindow w;
-        QVERIFY(w.windowTitle().contains("PyRoomStudio"));
+        QVERIFY(w.windowTitle().contains("Seiche"));
         QVERIFY(w.viewport() != nullptr);
         QVERIFY(w.propertyPanel() != nullptr);
         QVERIFY(w.libraryPanel() != nullptr);
@@ -109,13 +109,13 @@ class TestGUI : public QObject {
 
     void testWindowTitleUpdates() {
         MainWindow w;
-        QVERIFY(w.windowTitle() == "PyRoomStudio");
+        QVERIFY(w.windowTitle() == "Seiche");
     }
 
     // ==================== New Feature Tests ====================
 
     void testDisplaySettingsApplied() {
-        QSettings s("PyRoomStudio", "PyRoomStudio");
+        QSettings s("Seiche", "Seiche");
         s.setValue("display/gridVisible", false);
         s.setValue("display/gridSpacing", 2.5);
         s.setValue("display/transparencyAlpha", 0.3);
@@ -145,7 +145,7 @@ class TestGUI : public QObject {
     }
 
     void testDefaultProjectDirPreference() {
-        QSettings s("PyRoomStudio", "PyRoomStudio");
+        QSettings s("Seiche", "Seiche");
         s.setValue("defaultProjectDir", "/tmp/test_projects");
 
         MainWindow w;
@@ -153,7 +153,7 @@ class TestGUI : public QObject {
     }
 
     void testAutoSaveTimerSetup() {
-        QSettings s("PyRoomStudio", "PyRoomStudio");
+        QSettings s("Seiche", "Seiche");
         s.setValue("autoSaveInterval", 5);
 
         MainWindow w;
@@ -166,7 +166,7 @@ class TestGUI : public QObject {
     }
 
     void testAutoSaveTimerDisabled() {
-        QSettings s("PyRoomStudio", "PyRoomStudio");
+        QSettings s("Seiche", "Seiche");
         s.setValue("autoSaveInterval", 0);
 
         MainWindow w;

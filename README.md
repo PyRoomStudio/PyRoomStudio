@@ -1,13 +1,13 @@
 <!-- <p align="center">
-  <img width="180" src="assets/logo_v2.png" alt="PyRoomStudio">
-  <p align="center"><b><font size=32px>PyRoomStudio</font></b></p>
+  <img width="180" src="assets/logo_v2.png" alt="Seiche">
+  <p align="center"><b><font size=32px>Seiche</font></b></p>
 </p> -->
 
 <p align="center">
   <img width="600px" src="assets/logo-text-color.svg" alt="Seiche">
 </p>
 
-[![CI](https://github.com/PyRoomStudio/PyRoomStudio/actions/workflows/ci.yml/badge.svg)](https://github.com/PyRoomStudio/PyRoomStudio/actions/workflows/ci.yml)
+[![CI](https://github.com/CWBudde/Seiche/actions/workflows/ci.yml/badge.svg)](https://github.com/CWBudde/Seiche/actions/workflows/ci.yml)
 
 ---
 
@@ -17,7 +17,7 @@
 The project is inspired by [pyroomacoustics](https://github.com/LCAV/pyroomacoustics), a library for testing and simulating acoustics algorithms written by Robin Scheibler.
 
 <p align="center">
-  <img width="700" src="assets/screenshot.png" alt="PyRoomStudio ">
+  <img width="700" src="assets/screenshot.png" alt="Seiche">
 </p>
 
 ## **Get Involved!**
@@ -52,7 +52,7 @@ The latest build of Seiche is running on C++17 with Qt6 and Eigen3 dependencies.
 1. Clone the repository
 
    ```bash
-   $ git clone https://github.com/PyRoomStudio/PyRoomStudio.git
+   $ git clone https://github.com/CWBudde/Seiche.git
    ```
 
 2. Install [Qt6](https://doc.qt.io/qt-6/qt-online-installation.html) (the open individual license is enough to compile the software). During installation, make sure to include the **MinGW** toolchain component under _Qt > Developer and Designer Tools_.

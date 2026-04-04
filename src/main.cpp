@@ -26,9 +26,9 @@ int main(int argc, char* argv[]) {
     light.setColor(QPalette::PlaceholderText, QColor(110, 110, 110));
     app.setPalette(light);
 
-    app.setApplicationName("PyRoomStudio");
+    app.setApplicationName("Seiche");
     app.setApplicationVersion("1.0.0");
-    app.setOrganizationName("PyRoomStudio");
+    app.setOrganizationName("Seiche");
     app.setWindowIcon(prs::iconFromSvgResource(":/logo.svg", 48));
 
     // Request OpenGL context with depth buffer

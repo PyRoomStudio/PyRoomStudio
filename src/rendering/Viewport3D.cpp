@@ -33,7 +33,7 @@ Viewport3D::Viewport3D(QWidget* parent)
 }
 
 void Viewport3D::applyDisplaySettings() {
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     gridVisible_ = s.value("display/gridVisible", true).toBool();
     gridSpacing_ = static_cast<float>(s.value("display/gridSpacing", 1.0).toDouble());
     transparencyAlpha_ = static_cast<float>(s.value("display/transparencyAlpha", 0.55).toDouble());

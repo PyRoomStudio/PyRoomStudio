@@ -56,7 +56,7 @@ function(add_prs_test TEST_NAME TEST_SOURCE)
     target_compile_definitions(${TEST_NAME} PRIVATE
         _USE_MATH_DEFINES
         $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>)
-    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endfunction()
 
 add_prs_test(test_core test_core.cpp)
@@ -93,7 +93,7 @@ endif()
 target_compile_definitions(test_render_options_dialog PRIVATE
     _USE_MATH_DEFINES
     $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>)
-add_test(NAME test_render_options_dialog COMMAND test_render_options_dialog)
+add_test(NAME test_render_options_dialog COMMAND test_render_options_dialog WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 add_prs_test(test_render_cli test_render_cli.cpp)
 add_executable(test_render_support test_render_support.cpp ${TEST_COMMON_SOURCES}
     ${CMAKE_SOURCE_DIR}/src/acoustics/RenderExports.cpp
@@ -130,7 +130,7 @@ endif()
 target_compile_definitions(test_render_support PRIVATE
     _USE_MATH_DEFINES
     $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>)
-add_test(NAME test_render_support COMMAND test_render_support)
+add_test(NAME test_render_support COMMAND test_render_support WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # GUI test needs MOC and more sources
 set(GUI_TEST_EXTRA

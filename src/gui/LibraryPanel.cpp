@@ -61,7 +61,7 @@ void LibraryPanel::createSoundTab(QWidget* tab) {
         QString dir = QFileDialog::getExistingDirectory(this, "Select Sound Folder");
         if (!dir.isEmpty()) {
             scanSoundDirectory(dir);
-            QSettings s("PyRoomStudio", "PyRoomStudio");
+            QSettings s("Seiche", "Seiche");
             s.setValue("soundDirectory", dir);
         }
     });
@@ -80,7 +80,7 @@ void LibraryPanel::createSoundTab(QWidget* tab) {
     hintLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(hintLabel);
 
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     QString savedDir = s.value("soundDirectory", "sounds/sources").toString();
     if (QDir(savedDir).exists())
         scanSoundDirectory(savedDir);
