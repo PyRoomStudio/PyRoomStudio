@@ -180,10 +180,10 @@
 
 #### Phase 11.1 — Toolchain and build support
 
-- [ ] Add a Qt for WebAssembly build target and document the required toolchain/version pairing
-- [ ] Add a browser-specific CMake preset or build script that produces a runnable `.html` + `.wasm` bundle
-- [ ] Define a minimal local run workflow for serving the Web build during development
-- [ ] Add CI notes or scripts for verifying that the Web build still configures after dependency changes
+- [x] Add a Qt for WebAssembly build target and document the required toolchain/version pairing
+- [x] Add a browser-specific CMake preset or build script that produces a runnable `.html` + `.wasm` bundle
+- [x] Define a minimal local run workflow for serving the Web build during development
+- [x] Add CI notes or scripts for verifying that the Web build still configures after dependency changes
 
 #### Phase 11.2 — Native dependency and runtime boundaries
 

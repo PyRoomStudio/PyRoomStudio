@@ -9,6 +9,8 @@
 
 [![CI](https://github.com/CWBudde/Seiche/actions/workflows/ci.yml/badge.svg)](https://github.com/CWBudde/Seiche/actions/workflows/ci.yml)
 
+> **Note: This is a personal fork** of the original [Seiche](https://github.com/evanmm3/Seiche) project by William (Zhiwen) Chen and Evan M. Matthews. It is maintained independently and may diverge from the upstream project. All credit for the original work belongs to the original authors.
+
 ---
 
 <!------------------------------------------------------------------->

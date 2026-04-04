@@ -1,0 +1,153 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    name: Build / ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-22.04
+            qt-arch: ""
+            artifact-suffix: linux
+            archive-ext: tar.gz
+          - name: Windows
+            os: windows-latest
+            qt-arch: win64_msvc2019_64
+            artifact-suffix: windows
+            archive-ext: zip
+          - name: macOS
+            os: macos-latest
+            qt-arch: clang_64
+            artifact-suffix: macos
+            archive-ext: zip
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: "6.7.3"
+          arch: ${{ matrix.qt-arch }}
+          modules: "qtmultimedia"
+          cache: true
+
+      - name: Platform dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ninja-build libeigen3-dev libgl1-mesa-dev libglu1-mesa-dev
+
+      - name: Platform dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja eigen
+
+      - name: Platform dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ninja --no-progress
+
+      - name: Set up MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure (release preset)
+        run: cmake --preset release
+
+      - name: Build
+        run: cmake --build --preset release
+
+      - name: Extract version from tag
+        id: version
+        shell: bash
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      # ── Linux packaging ─────────────────────────────────────────────────────
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          STAGE="dist/Seiche-${VERSION}-linux"
+          mkdir -p "${STAGE}"
+          cp build/release/Seiche "${STAGE}/"
+          cp -R materials "${STAGE}/materials"
+          (cd dist && tar -czf "Seiche-${VERSION}-linux.tar.gz" "Seiche-${VERSION}-linux")
+          echo "ASSET=dist/Seiche-${VERSION}-linux.tar.gz" >> "$GITHUB_ENV"
+
+      # ── Windows packaging ────────────────────────────────────────────────────
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          STAGE="dist/Seiche-${VERSION}-windows"
+          mkdir -p "${STAGE}"
+          cp build/release/Seiche.exe "${STAGE}/"
+          cp -R materials "${STAGE}/materials"
+          windeployqt6 --release "${STAGE}/Seiche.exe" || \
+            windeployqt --release "${STAGE}/Seiche.exe"
+          (cd dist && 7z a "Seiche-${VERSION}-windows.zip" "Seiche-${VERSION}-windows")
+          echo "ASSET=dist/Seiche-${VERSION}-windows.zip" >> "$GITHUB_ENV"
+
+      # ── macOS packaging ──────────────────────────────────────────────────────
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          STAGE="dist/Seiche-${VERSION}-macos"
+          mkdir -p "${STAGE}"
+
+          # Locate the .app bundle produced by the build
+          APP_PATH=""
+          for candidate in \
+            build/release/Seiche.app \
+            build/release/Release/Seiche.app; do
+            if [[ -d "${candidate}" ]]; then
+              APP_PATH="${candidate}"
+              break
+            fi
+          done
+          if [[ -z "${APP_PATH}" ]]; then
+            echo "Error: Seiche.app not found" >&2; exit 1
+          fi
+
+          cp -R "${APP_PATH}" "${STAGE}/"
+          cp -R materials "${STAGE}/Seiche.app/Contents/MacOS/materials"
+          macdeployqt "${STAGE}/Seiche.app"
+          (cd dist && zip -r "Seiche-${VERSION}-macos.zip" "Seiche-${VERSION}-macos")
+          echo "ASSET=dist/Seiche-${VERSION}-macos.zip" >> "$GITHUB_ENV"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: seiche-${{ matrix.artifact-suffix }}
+          path: ${{ env.ASSET }}
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
