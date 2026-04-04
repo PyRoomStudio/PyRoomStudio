@@ -80,7 +80,8 @@ jobs:
       - name: Platform dependencies (Linux)
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y ninja-build libeigen3-dev libgl1-mesa-dev libglu1-mesa-dev gcovr
+          sudo apt-get install -y ninja-build libeigen3-dev libgl1-mesa-dev libglu1-mesa-dev
+          pip install gcovr
 
       - name: Configure
         run: cmake --preset coverage
