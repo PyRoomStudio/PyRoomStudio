@@ -28,6 +28,7 @@ public:
         float scattering = DEFAULT_SCATTERING;
         bool airAbsorption = true;
         std::vector<int> selectedListenerIndices;
+        QString outputDir; // if empty, a timestamped subdirectory is created automatically
 
         SimMethod method = SimMethod::RayTracing;
         int dgPolyOrder = 3;

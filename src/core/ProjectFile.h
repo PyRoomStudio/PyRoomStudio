@@ -14,6 +14,7 @@ namespace prs {
 struct ProjectData {
     QString stlFilePath;
     float scaleFactor = 1.0f;
+    int sampleRate = DEFAULT_SAMPLE_RATE;
     std::vector<Color3f> surfaceColors;
     std::vector<std::optional<Material>> surfaceMaterials;
     std::vector<PlacedPoint> placedPoints;
