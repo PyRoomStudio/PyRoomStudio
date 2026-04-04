@@ -1,4 +1,5 @@
 #include "acoustics/HrtfDataset.h"
+#include "acoustics/HrtfLookup.h"
 
 #include <QTemporaryDir>
 #include <QtTest/QtTest>
@@ -63,6 +64,85 @@ class TestHrtf : public QObject {
         auto dataset = loadSofaHrtfDataset(QTemporaryDir().filePath("missing.sofa"), 48000, &error);
         QVERIFY(!dataset);
         QVERIFY(!error.isEmpty());
+    }
+
+    // --- Phase 3.2: head-frame direction transform ---
+
+    void testToHeadFrameSourceDirectlyAhead() {
+        // Listener at origin facing +X; source is also along +X → azimuth 0, elevation 0.
+        const HeadFrameDirection dir =
+            toHeadFrame(Vec3f{1.0f, 0.0f, 0.0f}, Vec3f::Zero(), Vec3f{1.0f, 0.0f, 0.0f});
+        QCOMPARE(qRound(dir.azimuthDeg), 0);
+        QCOMPARE(qRound(dir.elevationDeg), 0);
+    }
+
+    void testToHeadFrameSourceToListenerRight() {
+        // Listener at origin facing +X with Y-up.
+        // right = forward × worldUp = (1,0,0) × (0,1,0) = (0,0,1).
+        // Source at (0,0,1) → azimuth = +90°.
+        const HeadFrameDirection dir =
+            toHeadFrame(Vec3f{0.0f, 0.0f, 1.0f}, Vec3f::Zero(), Vec3f{1.0f, 0.0f, 0.0f});
+        QCOMPARE(qRound(dir.azimuthDeg), 90);
+        QCOMPARE(qRound(dir.elevationDeg), 0);
+    }
+
+    void testToHeadFrameSourceToListenerLeft() {
+        // Source at (0,0,-1) → azimuth = -90°.
+        const HeadFrameDirection dir =
+            toHeadFrame(Vec3f{0.0f, 0.0f, -1.0f}, Vec3f::Zero(), Vec3f{1.0f, 0.0f, 0.0f});
+        QCOMPARE(qRound(dir.azimuthDeg), -90);
+        QCOMPARE(qRound(dir.elevationDeg), 0);
+    }
+
+    void testToHeadFrameSourceAboveListener() {
+        // Source directly above listener → elevation = +90°.
+        const HeadFrameDirection dir =
+            toHeadFrame(Vec3f{0.0f, 1.0f, 0.0f}, Vec3f::Zero(), Vec3f{1.0f, 0.0f, 0.0f});
+        QCOMPARE(qRound(dir.elevationDeg), 90);
+    }
+
+    void testListenerOrientationChangesLRResponse() {
+        // Source fixed at world (0,0,1).  When the listener faces +Z the source
+        // is straight ahead (azimuth ≈ 0°).  When the listener faces +X the source
+        // is to the listener's right (azimuth ≈ 90°).
+        // The synthetic dataset has distinct L/R levels for front vs. right, so
+        // the two orientations must produce different left channel amplitudes.
+        auto dataset = makeSyntheticHrtfDataset();
+        const Vec3f sourcePos{0.0f, 0.0f, 1.0f};
+        const Vec3f listenerPos = Vec3f::Zero();
+
+        // Listener facing toward source (+Z)
+        const auto dirFacing = toHeadFrame(sourcePos, listenerPos, Vec3f{0.0f, 0.0f, 1.0f});
+        const HrtfSample facingSample = lookupWithFallback(*dataset, dirFacing.azimuthDeg, dirFacing.elevationDeg);
+
+        // Listener facing +X (source is to the right)
+        const auto dirTurned = toHeadFrame(sourcePos, listenerPos, Vec3f{1.0f, 0.0f, 0.0f});
+        const HrtfSample turnedSample = lookupWithFallback(*dataset, dirTurned.azimuthDeg, dirTurned.elevationDeg);
+
+        // The left channel amplitudes must differ between the two orientations.
+        QVERIFY(!facingSample.left.empty());
+        QVERIFY(!turnedSample.left.empty());
+        QVERIFY(facingSample.left != turnedSample.left);
+    }
+
+    void testLookupWithFallbackReturnsImpulseForEmptyDataset() {
+        // An InMemoryHrtfDataset with no samples cannot satisfy any lookup; the
+        // fallback must supply a unit-impulse passthrough.
+        HrtfMetadata meta;
+        meta.name = "empty";
+        meta.format = "memory";
+        meta.sampleRate = 48000;
+        meta.filterLength = 4;
+        meta.normalized = false;
+        InMemoryHrtfDataset empty(meta, {});
+
+        const HrtfSample sample = lookupWithFallback(empty, 0.0f, 0.0f);
+        QCOMPARE(static_cast<int>(sample.left.size()), 4);
+        QCOMPARE(static_cast<int>(sample.right.size()), 4);
+        QCOMPARE(sample.left[0], 1.0f);
+        QCOMPARE(sample.right[0], 1.0f);
+        QCOMPARE(sample.leftDelaySamples, 0);
+        QCOMPARE(sample.rightDelaySamples, 0);
     }
 };
 

@@ -48,19 +48,19 @@
 
 #### Phase 3.1 — HRTF model and data loading
 
-- [ ] Define a format-agnostic HRTF dataset interface for lookup, metadata, and filter length
-- [ ] Add a SOFA-backed dataset loader using `libmysofa`
-- [ ] Normalize the in-memory representation so the renderer can query any dataset by direction
-- [ ] Add validation for missing metadata, unsupported sample rates, and invalid filter lengths
-- [ ] Add a synthetic HRTF fixture that exercises the lookup path without external files
+- [x] Define a format-agnostic HRTF dataset interface for lookup, metadata, and filter length
+- [x] Add a SOFA-backed dataset loader using `libmysofa`
+- [x] Normalize the in-memory representation so the renderer can query any dataset by direction
+- [x] Add validation for missing metadata, unsupported sample rates, and invalid filter lengths
+- [x] Add a synthetic HRTF fixture that exercises the lookup path without external files
 
 #### Phase 3.2 — Binaural lookup and listener orientation
 
-- [ ] Convert listener orientation into a head-centric listener frame
-- [ ] Add head-orientation-aware direction lookup before HRTF convolution
-- [ ] Add nearest-neighbor or interpolated HRTF selection for azimuth/elevation queries
-- [ ] Define fallback behavior for missing or out-of-range directions
-- [ ] Add tests that confirm the same source produces different left/right responses as the listener turns
+- [x] Convert listener orientation into a head-centric listener frame
+- [x] Add head-orientation-aware direction lookup before HRTF convolution
+- [x] Add nearest-neighbor or interpolated HRTF selection for azimuth/elevation queries
+- [x] Define fallback behavior for missing or out-of-range directions
+- [x] Add tests that confirm the same source produces different left/right responses as the listener turns
 
 #### Phase 3.3 — Audio rendering modes and export
 

@@ -21,6 +21,7 @@ set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/acoustics/RayTracer.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/RoomImpulseResponse.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/HrtfDataset.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/HrtfLookup.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/SofaHrtfLoader.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/AcousticSimulator.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/AcousticMetrics.cpp
