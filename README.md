@@ -68,8 +68,12 @@ The latest build of Seiche is running on C++17 with Qt6 and Eigen3 dependencies.
    $ cmake --build build
    ```
 
-The version number can be different, although Qt >6 is expected. For MacOS specifically, replace `/mingw_64` with `/macos`.
-Once Cmake has built the Ninja files, follow-up compilations will only need `cmake --build build`.
+   Optional SOFA HRTF support can be controlled explicitly with `-DSEICHE_USE_LIBMYSOFA=AUTO|ON|OFF`.
+   `AUTO` is the default, `ON` requires a libmysofa install, and `OFF` forces the built-in fallback path.
+   If you want to use a local libmysofa install, add it to `CMAKE_PREFIX_PATH` or set `mysofa_DIR`.
+
+   The version number can be different, although Qt >6 is expected. For MacOS specifically, replace `/mingw_64` with `/macos`.
+   Once Cmake has built the Ninja files, follow-up compilations will only need `cmake --build build`.
 
 4. Run the `Seiche` executable.
 
