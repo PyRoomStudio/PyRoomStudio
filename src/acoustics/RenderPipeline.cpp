@@ -111,6 +111,8 @@ bool buildSimulationParams(const QString& projectPath, const ProjectData& projec
     params->method = toSimMethod(options.method);
     params->dgPolyOrder = options.dgPolyOrder;
     params->dgMaxFrequency = options.dgMaxFrequency;
+    params->outputMode = options.outputMode;
+    params->hrtfDatasetPath = options.hrtfDatasetPath;
     params->outputDir = outputDir;
 
     return true;

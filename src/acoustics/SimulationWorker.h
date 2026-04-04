@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Types.h"
+#include "RenderOptions.h"
 #include "rendering/Viewport3D.h"
 #include "scene/SceneManager.h"
 
@@ -34,6 +35,10 @@ class SimulationWorker : public QObject {
         SimMethod method = SimMethod::RayTracing;
         int dgPolyOrder = 3;
         float dgMaxFrequency = 1000.0f;
+
+        // Binaural output
+        AudioOutputMode outputMode = AudioOutputMode::Stereo;
+        QString hrtfDatasetPath;
     };
 
     explicit SimulationWorker(const Params& params, QObject* parent = nullptr);

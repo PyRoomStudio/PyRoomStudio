@@ -16,4 +16,16 @@ QJsonObject buildMetricsSummary(const QJsonArray& pairs, int sampleRate);
 bool saveJsonObject(const QString& path, const QJsonObject& obj);
 bool saveMetricsCsv(const QString& path, const QJsonArray& pairs);
 
+// --- Binaural export helpers ---
+
+// Returns the canonical output path for a binaural render of one source-listener pair.
+// Layout: <outputDir>/binaural/<listenerName>/<sourceName>.wav
+// Both listenerName and sourceName are sanitised (spaces → underscores) internally.
+QString binauralListenerOutputPath(const QString& outputDir, const QString& listenerName,
+                                   const QString& sourceName);
+
+// Adds HRTF provenance fields to an existing metrics JSON object.
+// hrtfDatasetPath may be empty when no external HRTF file was used.
+void addHrtfMetadata(QJsonObject& obj, const QString& hrtfDatasetPath);
+
 } // namespace prs::RenderExports

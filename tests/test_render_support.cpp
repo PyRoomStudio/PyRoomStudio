@@ -1,4 +1,5 @@
 #include "acoustics/RenderExports.h"
+#include "acoustics/RenderOptions.h"
 #include "acoustics/RenderPipeline.h"
 #include "acoustics/SimulationQueue.h"
 #include "audio/AudioFile.h"
@@ -211,6 +212,84 @@ class TestRenderSupport : public QObject {
         QVERIFY(!textures.has("missing.png"));
         textures.release("missing.png");
         textures.releaseAll();
+    }
+
+    // --- Phase 3.3: binaural export modes and naming ---
+
+    void testBinauralOutputPathLayoutAndSanitisation() {
+        // Spaces in names must be replaced with underscores.
+        const QString path = RenderExports::binauralListenerOutputPath(
+            "/out", "Main Listener", "Source A");
+        QVERIFY(path.contains("binaural"));
+        QVERIFY(path.contains("Main_Listener"));
+        QVERIFY(path.contains("Source_A.wav"));
+        // Must be under outputDir
+        QVERIFY(path.startsWith("/out"));
+    }
+
+    void testBinauralOutputPathDistinctListeners() {
+        const QString p1 = RenderExports::binauralListenerOutputPath("/o", "L1", "S1");
+        const QString p2 = RenderExports::binauralListenerOutputPath("/o", "L2", "S1");
+        QVERIFY(p1 != p2);
+    }
+
+    void testAddHrtfMetadataWithExplicitPath() {
+        QJsonObject obj;
+        obj["sample_rate"] = 48000;
+        RenderExports::addHrtfMetadata(obj, "/datasets/kemarSmall.sofa");
+        QVERIFY(obj.contains("hrtf"));
+        const QJsonObject hrtf = obj.value("hrtf").toObject();
+        QCOMPARE(hrtf.value("output_mode").toString(), QStringLiteral("binaural"));
+        QCOMPARE(hrtf.value("dataset_path").toString(), QStringLiteral("/datasets/kemarSmall.sofa"));
+        // Original fields must be preserved
+        QCOMPARE(obj.value("sample_rate").toInt(), 48000);
+    }
+
+    void testAddHrtfMetadataEmptyPathYieldsSynthetic() {
+        QJsonObject obj;
+        RenderExports::addHrtfMetadata(obj, {});
+        QCOMPARE(obj.value("hrtf").toObject().value("dataset_path").toString(),
+                 QStringLiteral("synthetic"));
+    }
+
+    void testRenderOptionsBinauralFieldsFlowThroughPipeline() {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+
+        writeSquarePlaneObj(dir.filePath("model.obj"));
+        writeAudio(dir.filePath("source.wav"));
+        ProjectData project = makeProject();
+        QVERIFY(ProjectFile::save(dir.filePath("fixture.room"), project));
+
+        RenderOptions options;
+        options.sampleRate = 22050;
+        options.outputMode = AudioOutputMode::Binaural;
+        options.hrtfDatasetPath = "/tmp/test.sofa";
+
+        SimulationWorker::Params params;
+        QString error;
+        QVERIFY(RenderPipeline::buildSimulationParams(dir.filePath("fixture.room"), project, options, {},
+                                                      dir.filePath("out"), &params, &error));
+        QCOMPARE(params.outputMode, AudioOutputMode::Binaural);
+        QCOMPARE(params.hrtfDatasetPath, QStringLiteral("/tmp/test.sofa"));
+    }
+
+    void testStereoWavRoundTripPreservesSampleRate() {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+
+        const std::vector<float> left  = {0.1f, 0.2f, -0.1f, -0.2f};
+        const std::vector<float> right = {-0.1f, -0.2f, 0.1f, 0.2f};
+        const QString path = dir.filePath("binaural.wav");
+        QVERIFY(RenderExports::saveStereoWav(path, 48000, left, right));
+
+        AudioFile loaded;
+        QVERIFY(loaded.load(path));
+        QCOMPARE(loaded.sampleRate(), 48000);
+        // AudioFile loads stereo as a single (mixed/first-channel) buffer;
+        // the important thing is the file round-trips with the correct sample rate
+        // and a non-empty sample buffer.
+        QVERIFY(!loaded.samples().empty());
     }
 };
 

@@ -497,6 +497,8 @@ void SimulationWorker::process() {
         metricsRoot["sample_rate"] = params_.sampleRate;
         metricsRoot["pairs"] = metricsArray;
 
+        if (params_.outputMode == AudioOutputMode::Binaural)
+            RenderExports::addHrtfMetadata(metricsRoot, params_.hrtfDatasetPath);
         if (RenderExports::saveJsonObject(QDir(outputDir).filePath("metrics.json"), metricsRoot)) {
             qInfo() << "Saved metrics for" << metricsArray.size() << "source-listener pairs";
         }

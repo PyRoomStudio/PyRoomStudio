@@ -2,6 +2,7 @@
 
 #include "audio/AudioFile.h"
 
+#include <QDir>
 #include <QFile>
 #include <QJsonDocument>
 
@@ -94,6 +95,20 @@ bool saveMetricsCsv(const QString& path, const QJsonArray& pairs) {
     }
 
     return file.write(contents) == contents.size();
+}
+
+QString binauralListenerOutputPath(const QString& outputDir, const QString& listenerName,
+                                   const QString& sourceName) {
+    const QString safeListener = QString(listenerName).replace(' ', '_');
+    const QString safeSource = QString(sourceName).replace(' ', '_');
+    return QDir(outputDir).filePath(QDir("binaural").filePath(QDir(safeListener).filePath(safeSource + ".wav")));
+}
+
+void addHrtfMetadata(QJsonObject& obj, const QString& hrtfDatasetPath) {
+    QJsonObject hrtf;
+    hrtf["output_mode"] = "binaural";
+    hrtf["dataset_path"] = hrtfDatasetPath.isEmpty() ? QStringLiteral("synthetic") : hrtfDatasetPath;
+    obj["hrtf"] = hrtf;
 }
 
 } // namespace prs::RenderExports
