@@ -34,21 +34,21 @@ class DGGpuCompute {
     }
     bool isAvailable() const { return false; }
 
-    bool init2D(const Basis2D &, const Mesh2D &) { return false; }
+    bool init2D(const Basis2D&, const Mesh2D&) { return false; }
     void resetFields2D() {}
     void computeRHS2D(float) {}
     void rkStageUpdate2D(float, float, float) {}
     float readListenerPressure2D() { return 0.0f; }
-    void setSource2D(int, const VecXd &) {}
-    void setListener2D(int, const VecXd &) {}
+    void setSource2D(int, const VecXd&) {}
+    void setListener2D(int, const VecXd&) {}
 
-    bool init3D(const Basis3D &, const Mesh3D &) { return false; }
+    bool init3D(const Basis3D&, const Mesh3D&) { return false; }
     void resetFields3D() {}
     void computeRHS3D(float) {}
     void rkStageUpdate3D(float, float, float) {}
     float readListenerPressure3D() { return 0.0f; }
-    void setSource3D(int, const VecXd &) {}
-    void setListener3D(int, const VecXd &) {}
+    void setSource3D(int, const VecXd&) {}
+    void setListener3D(int, const VecXd&) {}
 
     void cleanup() {}
     std::string lastError() const { return lastError_; }
@@ -57,7 +57,7 @@ class DGGpuCompute {
     std::string lastError_;
 };
 
-#else // !__APPLE__
+#else  // !__APPLE__
 
 class DGGpuCompute {
   public:

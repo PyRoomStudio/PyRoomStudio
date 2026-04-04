@@ -24,9 +24,7 @@ namespace {
 
 struct CurrentDirGuard {
     QString original;
-    ~CurrentDirGuard() {
-        QDir::setCurrent(original);
-    }
+    ~CurrentDirGuard() { QDir::setCurrent(original); }
 };
 
 bool writeTextFile(const QString& path, const QByteArray& contents) {
@@ -172,8 +170,7 @@ class TestCoverage : public QObject {
         badPoint.close();
         QVERIFY(writeTextFile(
             badPointPath,
-            R"({"version":1,"stlFilePath":"model.stl","scaleFactor":1,"soundSourceFile":"source.wav","surfaceColors":[[0.1,0.2,0.3]],"surfaceMaterials":[null],"placedPoints":[{"surfacePoint":{"x":0,"y":0,"z":0},"normal":{"x":0,"y":0,"z":1},"distance":0,"color":[0.1,0.2,0.3],"pointType":"speaker","name":"bad","volume":1,"audioFile":"","orientationYaw":0}]})"
-        ));
+            R"({"version":1,"stlFilePath":"model.stl","scaleFactor":1,"soundSourceFile":"source.wav","surfaceColors":[[0.1,0.2,0.3]],"surfaceMaterials":[null],"placedPoints":[{"surfacePoint":{"x":0,"y":0,"z":0},"normal":{"x":0,"y":0,"z":1},"distance":0,"color":[0.1,0.2,0.3],"pointType":"speaker","name":"bad","volume":1,"audioFile":"","orientationYaw":0}]})"));
 
         auto badLoaded = ProjectFile::load(badPointPath);
         QVERIFY(!badLoaded.has_value());

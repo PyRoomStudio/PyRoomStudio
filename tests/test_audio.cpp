@@ -3,6 +3,7 @@
 
 #include <QTemporaryFile>
 #include <QtTest/QtTest>
+
 #include <array>
 
 using namespace prs;

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "RenderOptions.h"
-#include "core/ProjectFile.h"
 #include "acoustics/SimulationWorker.h"
+#include "core/ProjectFile.h"
+#include "RenderOptions.h"
 
 #include <QString>
 

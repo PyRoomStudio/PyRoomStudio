@@ -34,7 +34,8 @@ bool saveMonoWav(const QString& path, int sampleRate, const std::vector<float>& 
     return file.save(path, sampleRate);
 }
 
-bool saveStereoWav(const QString& path, int sampleRate, const std::vector<float>& left, const std::vector<float>& right) {
+bool saveStereoWav(const QString& path, int sampleRate, const std::vector<float>& left,
+                   const std::vector<float>& right) {
     return AudioFile::saveStereo(path, sampleRate, left, right);
 }
 

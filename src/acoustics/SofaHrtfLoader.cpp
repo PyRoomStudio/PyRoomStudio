@@ -1,8 +1,7 @@
 #include "SofaHrtfLoader.h"
 
-#include <QtGlobal>
-
 #include <QFileInfo>
+#include <QtGlobal>
 
 #include <utility>
 
@@ -39,9 +38,7 @@ class SofaHrtfDataset final : public HrtfDataset {
             mysofa_close(handle_);
     }
 
-    HrtfMetadata metadata() const override {
-        return metadata_;
-    }
+    HrtfMetadata metadata() const override { return metadata_; }
 
     bool validate(QString* error = nullptr) const override {
         if (!handle_) {

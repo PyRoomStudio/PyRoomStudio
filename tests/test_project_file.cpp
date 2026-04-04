@@ -72,7 +72,8 @@ class TestProjectFile : public QObject {
         QTemporaryFile tmp;
         tmp.setAutoRemove(true);
         QVERIFY(tmp.open());
-        tmp.write(R"({"version":1,"stlFilePath":"model.stl","scaleFactor":1,"soundSourceFile":"","surfaceColors":[],"surfaceMaterials":[]})");
+        tmp.write(
+            R"({"version":1,"stlFilePath":"model.stl","scaleFactor":1,"soundSourceFile":"","surfaceColors":[],"surfaceMaterials":[]})");
         QString path = tmp.fileName();
         tmp.close();
 
@@ -84,7 +85,8 @@ class TestProjectFile : public QObject {
         QTemporaryFile tmp;
         tmp.setAutoRemove(true);
         QVERIFY(tmp.open());
-        tmp.write(R"({"version":1,"stlFilePath":"model.stl","scaleFactor":1,"soundSourceFile":"","surfaceColors":[[0.1,0.2,0.3],[0.4,0.5,0.6]],"surfaceMaterials":[null],"placedPoints":[]})");
+        tmp.write(
+            R"({"version":1,"stlFilePath":"model.stl","scaleFactor":1,"soundSourceFile":"","surfaceColors":[[0.1,0.2,0.3],[0.4,0.5,0.6]],"surfaceMaterials":[null],"placedPoints":[]})");
         QString path = tmp.fileName();
         tmp.close();
 
@@ -170,7 +172,8 @@ class TestProjectFile : public QObject {
         QTemporaryFile tmp;
         tmp.setAutoRemove(true);
         QVERIFY(tmp.open());
-        tmp.write(R"({"version":1,"stlFilePath":"model.stl","scaleFactor":1,"soundSourceFile":"","sampleRate":44100,"surfaceColors":[[0.1,0.2,0.3]],"surfaceMaterials":[null],"placedPoints":[{"surfacePoint":{"x":0,"y":0,"z":0},"normal":{"x":0,"y":0,"z":1},"distance":0,"color":[-1,0,0],"pointType":"source","name":"","volume":1,"audioFile":"","orientationYaw":0}]})");
+        tmp.write(
+            R"({"version":1,"stlFilePath":"model.stl","scaleFactor":1,"soundSourceFile":"","sampleRate":44100,"surfaceColors":[[0.1,0.2,0.3]],"surfaceMaterials":[null],"placedPoints":[{"surfacePoint":{"x":0,"y":0,"z":0},"normal":{"x":0,"y":0,"z":1},"distance":0,"color":[-1,0,0],"pointType":"source","name":"","volume":1,"audioFile":"","orientationYaw":0}]})");
         QString path = tmp.fileName();
         tmp.close();
 
@@ -182,7 +185,8 @@ class TestProjectFile : public QObject {
         QTemporaryFile tmp;
         tmp.setAutoRemove(true);
         QVERIFY(tmp.open());
-        tmp.write(R"({"version":1,"stlFilePath":"default.stl","scaleFactor":1,"soundSourceFile":"","surfaceColors":[[0.1,0.2,0.3]],"surfaceMaterials":[null],"placedPoints":[]})");
+        tmp.write(
+            R"({"version":1,"stlFilePath":"default.stl","scaleFactor":1,"soundSourceFile":"","surfaceColors":[[0.1,0.2,0.3]],"surfaceMaterials":[null],"placedPoints":[]})");
         QString path = tmp.fileName();
         tmp.close();
 

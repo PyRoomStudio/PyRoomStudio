@@ -2,8 +2,8 @@
 #include "core/PlacedPoint.h"
 #include "core/ProjectFile.h"
 
-#include <QDir>
 #include <QCoreApplication>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
@@ -105,9 +105,9 @@ class TestRenderCli : public QObject {
         const QString outputDir = QDir(projectDir).filePath("out");
         QProcess proc;
         proc.setProgram(cliPath);
-        proc.setArguments({"--project", QDir(projectDir).filePath("fixture.room"), "--output", outputDir,
-                           "--method", "ray", "--max-order", "1", "--n-rays", "128", "--scattering", "0.1",
-                           "--air-absorption", "off", "--sample-rate", "22050"});
+        proc.setArguments({"--project", QDir(projectDir).filePath("fixture.room"), "--output", outputDir, "--method",
+                           "ray", "--max-order", "1", "--n-rays", "128", "--scattering", "0.1", "--air-absorption",
+                           "off", "--sample-rate", "22050"});
         proc.setWorkingDirectory(projectDir);
         proc.start();
         QVERIFY2(proc.waitForStarted(), qPrintable(proc.errorString()));

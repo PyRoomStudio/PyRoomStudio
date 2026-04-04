@@ -81,11 +81,10 @@ std::optional<HrtfSample> InMemoryHrtfDataset::lookup(float azimuthDeg, float el
     if (samples_.empty())
         return std::nullopt;
 
-    const auto it = std::min_element(samples_.begin(), samples_.end(),
-                                     [azimuthDeg, elevationDeg](const HrtfSample& a, const HrtfSample& b) {
-                                         return angularDistance(azimuthDeg, elevationDeg, a) <
-                                                angularDistance(azimuthDeg, elevationDeg, b);
-                                     });
+    const auto it = std::min_element(
+        samples_.begin(), samples_.end(), [azimuthDeg, elevationDeg](const HrtfSample& a, const HrtfSample& b) {
+            return angularDistance(azimuthDeg, elevationDeg, a) < angularDistance(azimuthDeg, elevationDeg, b);
+        });
     if (it == samples_.end())
         return std::nullopt;
     return *it;

@@ -119,7 +119,8 @@ int main(int argc, char* argv[]) {
     if (parser.isSet(sampleRateOpt))
         options.sampleRate = parser.value(sampleRateOpt).toInt();
 
-    const QString outputDir = parser.isSet(outputOpt) ? QFileInfo(parser.value(outputOpt)).absoluteFilePath() : QString();
+    const QString outputDir =
+        parser.isSet(outputOpt) ? QFileInfo(parser.value(outputOpt)).absoluteFilePath() : QString();
 
     prs::SimulationWorker::Params params;
     QString error;

@@ -59,8 +59,8 @@ int main(int argc, char* argv[]) {
     body->setAlignment(Qt::AlignCenter);
     layout->addWidget(body);
 
-    QLabel* resourceState = new QLabel(
-        QFile::exists(":/logo.svg") ? "Qt resource bundle: loaded" : "Qt resource bundle: missing");
+    QLabel* resourceState =
+        new QLabel(QFile::exists(":/logo.svg") ? "Qt resource bundle: loaded" : "Qt resource bundle: missing");
     resourceState->setAlignment(Qt::AlignCenter);
     layout->addWidget(resourceState);
 

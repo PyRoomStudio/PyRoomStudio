@@ -11,8 +11,7 @@ class TestRenderOptionsDialog : public QObject {
     Q_OBJECT
   private slots:
     void testDialogExposesRenderModel() {
-        std::vector<RenderOptionsDialog::ListenerEntry> listeners = {{"Listener A", true},
-                                                                     {"Listener B", false}};
+        std::vector<RenderOptionsDialog::ListenerEntry> listeners = {{"Listener A", true}, {"Listener B", false}};
 
         RenderOptionsDialog dlg(listeners);
 

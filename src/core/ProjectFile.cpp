@@ -1,11 +1,11 @@
 #include "ProjectFile.h"
 
+#include <QDebug>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonParseError>
-#include <QDebug>
 #include <QJsonValue>
 
 #include <cmath>
@@ -250,7 +250,8 @@ bool validateProjectData(const ProjectData& data, QString* error) {
                 *error = "placed point normal must be non-zero";
             return false;
         }
-        if (pt.pointType != POINT_TYPE_NONE && pt.pointType != POINT_TYPE_SOURCE && pt.pointType != POINT_TYPE_LISTENER) {
+        if (pt.pointType != POINT_TYPE_NONE && pt.pointType != POINT_TYPE_SOURCE &&
+            pt.pointType != POINT_TYPE_LISTENER) {
             if (error)
                 *error = "placed point pointType must be none, source, or listener";
             return false;

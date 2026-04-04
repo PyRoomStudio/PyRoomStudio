@@ -50,10 +50,8 @@ class TestHrtf : public QObject {
         metadata.filterLength = 4;
         metadata.normalized = true;
 
-        InMemoryHrtfDataset dataset(
-            metadata,
-            {HrtfSample{0.0f, 0.0f, 0, 0, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-             HrtfSample{90.0f, 0.0f, 0, 0, {1.0f, 0.0f}, {1.0f, 0.0f}}});
+        InMemoryHrtfDataset dataset(metadata, {HrtfSample{0.0f, 0.0f, 0, 0, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+                                               HrtfSample{90.0f, 0.0f, 0, 0, {1.0f, 0.0f}, {1.0f, 0.0f}}});
 
         QString error;
         QVERIFY(!dataset.validate(&error));
