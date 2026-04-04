@@ -767,15 +767,33 @@ void MainWindow::onRender() {
     params.walls = viewport_->getWallsForAcoustic();
     params.roomCenter = viewport_->getScaledRoomCenter();
     params.modelVertices = viewport_->getScaledModelVertices();
-    params.sampleRate = settings.value("audio/sampleRate", DEFAULT_SAMPLE_RATE).toInt();
-    params.maxOrder = settings.value("sim/maxOrder", DEFAULT_MAX_ORDER).toInt();
-    params.nRays = settings.value("sim/numRays", DEFAULT_N_RAYS).toInt();
-    params.scattering = settings.value("sim/scattering", DEFAULT_SCATTERING).toFloat();
-    params.airAbsorption = settings.value("sim/airAbsorption", true).toBool();
+    RenderOptions options = renderDlg.renderOptions();
+    options.sampleRate = settings.value("audio/sampleRate", DEFAULT_SAMPLE_RATE).toInt();
+    options.maxOrder = settings.value("sim/maxOrder", DEFAULT_MAX_ORDER).toInt();
+    options.nRays = settings.value("sim/numRays", DEFAULT_N_RAYS).toInt();
+    options.scattering = settings.value("sim/scattering", DEFAULT_SCATTERING).toFloat();
+    options.airAbsorption = settings.value("sim/airAbsorption", true).toBool();
+
+    params.sampleRate = options.sampleRate;
+    params.maxOrder = options.maxOrder;
+    params.nRays = options.nRays;
+    params.scattering = options.scattering;
+    params.airAbsorption = options.airAbsorption;
     params.selectedListenerIndices = selectedListeners;
-    params.method = renderDlg.selectedMethod();
-    params.dgPolyOrder = renderDlg.dgPolynomialOrder();
-    params.dgMaxFrequency = renderDlg.dgMaxFrequency();
+    switch (options.method) {
+        case RenderMethod::DG_2D:
+            params.method = SimMethod::DG_2D;
+            break;
+        case RenderMethod::DG_3D:
+            params.method = SimMethod::DG_3D;
+            break;
+        case RenderMethod::RayTracing:
+        default:
+            params.method = SimMethod::RayTracing;
+            break;
+    }
+    params.dgPolyOrder = options.dgPolyOrder;
+    params.dgMaxFrequency = options.dgMaxFrequency;
 
     QString methodName = (params.method == SimMethod::DG_2D)   ? "DG-2D"
                          : (params.method == SimMethod::DG_3D) ? "DG-3D"

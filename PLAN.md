@@ -47,11 +47,11 @@
 
 > The app is GUI-first today. A headless path makes it easier to automate validation, benchmark changes, and compare outputs across solvers.
 
-- [ ] Add a command-line render entry point that loads a project and writes RIR/WAV output
-- [ ] Separate simulation parameter handling from dialog widgets in `src/gui/dialogs/RenderOptionsDialog.*`
-- [ ] Add a batch renderer that can process all listeners in a project without user interaction
-- [ ] Add export helpers for WAV, CSV, and a compact metrics summary
-- [ ] Add tests that render a small fixture project and compare output metadata
+- [x] Add a command-line render entry point that loads a project and writes RIR/WAV output
+- [x] Separate simulation parameter handling from dialog widgets in `src/gui/dialogs/RenderOptionsDialog.*`
+- [x] Add a batch renderer that can process all listeners in a project without user interaction
+- [x] Add export helpers for WAV, CSV, and a compact metrics summary
+- [x] Add tests that render a small fixture project and compare output metadata
 
 ## Phase 3 — True Binaural Rendering
 

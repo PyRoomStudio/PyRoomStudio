@@ -62,6 +62,28 @@ add_prs_test(test_acoustics test_acoustics.cpp)
 add_prs_test(test_project_file test_project_file.cpp)
 add_prs_test(test_coverage test_coverage.cpp)
 add_prs_test(test_material_loader test_material_loader.cpp)
+add_executable(test_render_options_dialog test_render_options_dialog.cpp ${TEST_COMMON_SOURCES}
+    ${CMAKE_SOURCE_DIR}/src/gui/dialogs/RenderOptionsDialog.cpp)
+target_include_directories(test_render_options_dialog PRIVATE ${TEST_INCLUDE_DIRS})
+target_link_libraries(test_render_options_dialog PRIVATE
+    Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Eigen3::Eigen)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(test_render_options_dialog PRIVATE OpenMP::OpenMP_CXX)
+endif()
+if(WIN32)
+    target_link_libraries(test_render_options_dialog PRIVATE opengl32 glu32)
+elseif(APPLE)
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(test_render_options_dialog PRIVATE OpenGL::GL OpenGL::GLU)
+else()
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(test_render_options_dialog PRIVATE OpenGL::GL OpenGL::GLU)
+endif()
+target_compile_definitions(test_render_options_dialog PRIVATE
+    _USE_MATH_DEFINES
+    $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>)
+add_test(NAME test_render_options_dialog COMMAND test_render_options_dialog)
+add_prs_test(test_render_cli test_render_cli.cpp)
 
 # GUI test needs MOC and more sources
 set(GUI_TEST_EXTRA
@@ -80,6 +102,7 @@ set(GUI_TEST_EXTRA
     ${CMAKE_SOURCE_DIR}/src/gui/widgets/ColorSwatch.cpp
     ${CMAKE_SOURCE_DIR}/src/utils/ResourcePath.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationWorker.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/RenderExports.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationQueue.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGBasis2D.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGBasis3D.cpp

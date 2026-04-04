@@ -1,5 +1,7 @@
 #include "RenderOptionsDialog.h"
 
+#include "acoustics/SimulationWorker.h"
+
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -104,12 +106,21 @@ std::vector<int> RenderOptionsDialog::selectedListenerIndices() const {
     return indices;
 }
 
+RenderOptions RenderOptionsDialog::renderOptions() const {
+    RenderOptions options;
+    options.method = static_cast<RenderMethod>(methodCombo_->currentIndex());
+    options.dgPolyOrder = polyOrderSpin_->value();
+    options.dgMaxFrequency = static_cast<float>(maxFreqSpin_->value());
+    return options;
+}
+
 SimMethod RenderOptionsDialog::selectedMethod() const {
-    switch (methodCombo_->currentIndex()) {
-        case 1:
+    switch (renderOptions().method) {
+        case RenderMethod::DG_2D:
             return SimMethod::DG_2D;
-        case 2:
+        case RenderMethod::DG_3D:
             return SimMethod::DG_3D;
+        case RenderMethod::RayTracing:
         default:
             return SimMethod::RayTracing;
     }

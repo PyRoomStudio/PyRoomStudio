@@ -1,6 +1,6 @@
 #pragma once
 
-#include "acoustics/SimulationWorker.h"
+#include "acoustics/RenderOptions.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -14,6 +14,8 @@
 
 namespace prs {
 
+enum class SimMethod;
+
 class RenderOptionsDialog : public QDialog {
     Q_OBJECT
 
@@ -26,6 +28,7 @@ class RenderOptionsDialog : public QDialog {
     explicit RenderOptionsDialog(const std::vector<ListenerEntry>& listeners, QWidget* parent = nullptr);
 
     std::vector<int> selectedListenerIndices() const;
+    RenderOptions renderOptions() const;
     SimMethod selectedMethod() const;
     int dgPolynomialOrder() const;
     float dgMaxFrequency() const;

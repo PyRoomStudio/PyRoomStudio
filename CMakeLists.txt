@@ -77,6 +77,7 @@ set(SOURCES
     src/acoustics/RoomImpulseResponse.cpp
     src/acoustics/Wall.cpp
     src/acoustics/SimulationWorker.cpp
+    src/acoustics/RenderExports.cpp
     src/acoustics/SimulationQueue.cpp
     src/acoustics/AcousticMetrics.cpp
     src/acoustics/dg/DGBasis2D.cpp
@@ -131,6 +132,9 @@ set(HEADERS
     src/acoustics/RoomImpulseResponse.h
     src/acoustics/Wall.h
     src/acoustics/SimulationWorker.h
+    src/acoustics/RenderOptions.h
+    src/acoustics/RenderExports.h
+    src/acoustics/RenderPipeline.h
     src/acoustics/SimulationQueue.h
     src/acoustics/AcousticMetrics.h
     src/acoustics/dg/DGTypes.h
@@ -160,6 +164,44 @@ set(HEADERS
     src/gui/widgets/SurfaceGallery.h
     src/gui/widgets/ColorSwatch.h
     src/utils/ResourcePath.h
+)
+
+set(CLI_SOURCES
+    src/cli/main.cpp
+    src/core/Material.cpp
+    src/core/MaterialLoader.cpp
+    src/core/SoundSource.cpp
+    src/core/Listener.cpp
+    src/core/PlacedPoint.cpp
+    src/core/ProjectFile.cpp
+    src/scene/SceneManager.cpp
+    src/rendering/Camera.cpp
+    src/rendering/MeshData.cpp
+    src/rendering/SurfaceGrouper.cpp
+    src/rendering/RayPicking.cpp
+    src/rendering/MeshSimplifier.cpp
+    src/rendering/TextureManager.cpp
+    src/acoustics/AcousticSimulator.cpp
+    src/acoustics/Bvh.cpp
+    src/acoustics/ImageSourceMethod.cpp
+    src/acoustics/RayTracer.cpp
+    src/acoustics/RoomImpulseResponse.cpp
+    src/acoustics/Wall.cpp
+    src/acoustics/SimulationWorker.cpp
+    src/acoustics/RenderExports.cpp
+    src/acoustics/RenderPipeline.cpp
+    src/acoustics/AcousticMetrics.cpp
+    src/acoustics/dg/DGBasis2D.cpp
+    src/acoustics/dg/DGBasis3D.cpp
+    src/acoustics/dg/DGMesh2D.cpp
+    src/acoustics/dg/DGMesh3D.cpp
+    src/acoustics/dg/DGAcoustics2D.cpp
+    src/acoustics/dg/DGAcoustics3D.cpp
+    src/acoustics/dg/DGSolver.cpp
+    src/acoustics/dg/DGGpuCompute.cpp
+    src/audio/AudioFile.cpp
+    src/audio/SignalProcessing.cpp
+    src/utils/ResourcePath.cpp
 )
 
 qt6_add_resources(RESOURCES resources/resources.qrc)
@@ -220,13 +262,66 @@ else()
     target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
 endif()
 
+add_executable(SeicheRender ${CLI_SOURCES})
+
+target_include_directories(SeicheRender PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${EIGEN3_INCLUDE_DIR}
+)
+
+target_link_libraries(SeicheRender PRIVATE
+    Qt6::Widgets
+    Qt6::OpenGL
+    Qt6::OpenGLWidgets
+    Qt6::Multimedia
+    Qt6::Svg
+    Eigen3::Eigen
+)
+
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(SeicheRender PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
+if(SNDFILE_LIBRARIES)
+    target_include_directories(SeicheRender PRIVATE ${SNDFILE_INCLUDE_DIRS})
+    target_link_libraries(SeicheRender PRIVATE ${SNDFILE_LIBRARIES})
+    target_compile_definitions(SeicheRender PRIVATE HAS_SNDFILE)
+endif()
+
+if(FFTW3_LIBRARIES)
+    target_include_directories(SeicheRender PRIVATE ${FFTW3_INCLUDE_DIRS})
+    target_link_libraries(SeicheRender PRIVATE ${FFTW3_LIBRARIES})
+    target_compile_definitions(SeicheRender PRIVATE HAS_FFTW3)
+endif()
+
+if(WIN32)
+    target_link_libraries(SeicheRender PRIVATE opengl32 glu32)
+elseif(APPLE)
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(SeicheRender PRIVATE OpenGL::GL OpenGL::GLU)
+else()
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(SeicheRender PRIVATE OpenGL::GL OpenGL::GLU)
+endif()
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Debug>:QT_QML_DEBUG>
     _USE_MATH_DEFINES
     $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>
 )
 
+target_compile_definitions(SeicheRender PRIVATE
+    _USE_MATH_DEFINES
+    $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>
+)
+
 install(TARGETS ${PROJECT_NAME}
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(TARGETS SeicheRender
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

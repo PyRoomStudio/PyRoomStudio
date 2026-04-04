@@ -29,6 +29,7 @@ class SimulationWorker : public QObject {
         float scattering = DEFAULT_SCATTERING;
         bool airAbsorption = true;
         std::vector<int> selectedListenerIndices;
+        QString outputDir;
 
         SimMethod method = SimMethod::RayTracing;
         int dgPolyOrder = 3;
