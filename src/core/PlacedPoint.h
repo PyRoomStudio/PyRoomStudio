@@ -16,7 +16,7 @@ struct PlacedPoint {
     std::string name;
     float volume = 1.0f;
     std::string audioFile;
-    float orientationYaw = 0.0f; // degrees, listener facing direction (rotation around Y axis)
+    float orientationYaw = 0.0f; // degrees, listener facing direction in the horizontal plane
 
     Vec3f getPosition() const { return surfacePoint + normal * distance; }
 

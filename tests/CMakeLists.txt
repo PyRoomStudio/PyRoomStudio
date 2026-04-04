@@ -46,7 +46,9 @@ function(add_prs_test TEST_NAME TEST_SOURCE)
         find_package(OpenGL REQUIRED)
         target_link_libraries(${TEST_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
     endif()
-    target_compile_definitions(${TEST_NAME} PRIVATE _USE_MATH_DEFINES)
+    target_compile_definitions(${TEST_NAME} PRIVATE
+        _USE_MATH_DEFINES
+        $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>)
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endfunction()
 
@@ -105,6 +107,8 @@ else()
     find_package(OpenGL REQUIRED)
     target_link_libraries(test_gui PRIVATE OpenGL::GL OpenGL::GLU)
 endif()
-target_compile_definitions(test_gui PRIVATE _USE_MATH_DEFINES)
+target_compile_definitions(test_gui PRIVATE
+    _USE_MATH_DEFINES
+    $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>)
 set_target_properties(test_gui PROPERTIES AUTOMOC ON AUTORCC ON)
 add_test(NAME test_gui COMMAND test_gui)

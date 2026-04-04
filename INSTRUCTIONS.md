@@ -6,6 +6,23 @@ This document will guide you through all the controls and features of the Seiche
 
 To start a new project, use **ctrl + N** or go to File -> "New Project", and select a 3D mesh. Currently, the accepted file types are `.stl` and `.obj`. Saved work will be stored as a `.room` file, keeping track of mesh scaling, source/listening points, materials, and other details of your workflow. These files can be opened later using **ctrl + O** or by going to File -> "Open Project". You can also see recently opened projects in File -> Recent Projects.
 
+## `.room` Project Format
+
+`.room` files are JSON documents with a fixed top-level schema:
+
+- `version`: currently `1`
+- `stlFilePath`: the mesh file path stored with the project
+- `scaleFactor`: the room scale multiplier
+- `sampleRate`: the audio sample rate used for render/export defaults
+- `soundSourceFile`: the default source audio file path
+- `surfaceColors`: one RGB triplet per surface
+- `surfaceMaterials`: one entry per surface, or an empty array when no materials have been assigned yet
+- `placedPoints`: all source and listener objects in the scene
+
+Each point stores `surfacePoint`, `normal`, `distance`, `pointType`, `name`, `volume`, `audioFile`, `color`, and optional `orientationYaw`.
+
+Positions are reconstructed as `surfacePoint + normal * distance`. In the current editor conventions, `orientationYaw` is measured in degrees in the horizontal plane, with `0` pointing along the positive X axis and positive angles rotating toward positive Y.
+
 ## Simulation Workflow
 
 It's important to understand the application workflow before jumping into fine details.

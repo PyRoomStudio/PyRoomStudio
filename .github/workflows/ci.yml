@@ -22,7 +22,7 @@ jobs:
             qt-arch: win64_msvc2019_64
           - name: macOS
             os: macos-latest
-            qt-arch: ""
+            qt-arch: mac_arm64
 
     steps:
       - uses: actions/checkout@v4

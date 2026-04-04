@@ -379,7 +379,7 @@ bool Viewport3D::loadTexture(const QString& filepath) {
     if (img.isNull())
         return false;
 
-    textureImage_ = img.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
+    textureImage_ = img.convertToFormat(QImage::Format_RGBA8888).mirrored(false, true);
     makeCurrent();
     if (textureId_ != 0)
         glDeleteTextures(1, &textureId_);

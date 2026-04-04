@@ -23,6 +23,8 @@ if(NOT Eigen3_FOUND)
     set(EIGEN_BUILD_DOC OFF CACHE BOOL "" FORCE)
     set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
     set(EIGEN_BUILD_PKGCONFIG OFF CACHE BOOL "" FORCE)
+    set(EIGEN_BUILD_BLAS OFF CACHE BOOL "" FORCE)
+    set(EIGEN_BUILD_LAPACK OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(eigen)
 endif()
 
@@ -213,6 +215,7 @@ endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Debug>:QT_QML_DEBUG>
     _USE_MATH_DEFINES
+    $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>
 )
 
 install(TARGETS ${PROJECT_NAME}
