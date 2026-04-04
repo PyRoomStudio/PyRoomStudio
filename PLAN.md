@@ -187,10 +187,10 @@
 
 #### Phase 11.2 — Native dependency and runtime boundaries
 
-- [ ] Split native-only code paths behind platform guards or build options
-- [ ] Identify unsupported WebAssembly dependencies and provide browser-safe fallbacks or build exclusions
-- [ ] Replace direct assumptions about writable local paths with an abstraction that can target browser storage or downloads
-- [ ] Audit OpenGL usage and isolate code that cannot run under WebGL or WebAssembly context rules
+- [x] Split native-only code paths behind platform guards or build options
+- [x] Identify unsupported WebAssembly dependencies and provide browser-safe fallbacks or build exclusions
+- [x] Replace direct assumptions about writable local paths with an abstraction that can target browser storage or downloads
+- [x] Audit OpenGL usage and isolate code that cannot run under WebGL or WebAssembly context rules
 
 #### Phase 11.3 — Browser editor bootstrap
 

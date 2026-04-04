@@ -1,5 +1,10 @@
 #pragma once
 
+// AudioComparisonDialog depends on Qt Multimedia (QMediaPlayer, QAudioOutput)
+// which is not available in WebAssembly builds.  The entire class is excluded
+// when SEICHE_WEB_BUILD is defined.
+#ifndef SEICHE_WEB_BUILD
+
 #include <QAudioOutput>
 #include <QComboBox>
 #include <QDialog>
@@ -61,3 +66,5 @@ class AudioComparisonDialog : public QDialog {
 };
 
 } // namespace prs
+
+#endif // !SEICHE_WEB_BUILD

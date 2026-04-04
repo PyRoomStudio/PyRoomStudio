@@ -1,6 +1,6 @@
 #include "DGGpuCompute.h"
 
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__EMSCRIPTEN__) && !defined(SEICHE_WEB_BUILD)
 
 #include <QDebug>
 #include <QOffscreenSurface>
@@ -1093,4 +1093,4 @@ float DGGpuCompute::readListenerPressure3D() {
 } // namespace dg
 } // namespace prs
 
-#endif // !__APPLE__
+#endif // desktop GPU compute guard

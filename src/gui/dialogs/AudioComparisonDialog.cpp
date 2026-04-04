@@ -1,5 +1,7 @@
 #include "AudioComparisonDialog.h"
 
+#ifndef SEICHE_WEB_BUILD
+
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -265,3 +267,5 @@ QString AudioComparisonDialog::formatTime(qint64 ms) const {
 }
 
 } // namespace prs
+
+#endif // !SEICHE_WEB_BUILD

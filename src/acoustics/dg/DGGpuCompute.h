@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__EMSCRIPTEN__) && !defined(SEICHE_WEB_BUILD)
 #include <QOpenGLFunctions_4_3_Core>
 #endif
 
@@ -19,9 +19,10 @@ class QOffscreenSurface;
 namespace prs {
 namespace dg {
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__EMSCRIPTEN__) || defined(SEICHE_WEB_BUILD)
 
 // macOS only supports OpenGL 4.1; compute shaders and SSBOs require 4.3+.
+// WebAssembly/WebGL2 has no compute shaders at all.
 // This stub always reports unavailable so callers fall back to CPU.
 class DGGpuCompute {
   public:
@@ -57,7 +58,7 @@ class DGGpuCompute {
     std::string lastError_;
 };
 
-#else  // !__APPLE__
+#else  // native desktop (not macOS, not WASM)
 
 class DGGpuCompute {
   public:
@@ -150,7 +151,7 @@ class DGGpuCompute {
     } s3d_;
 };
 
-#endif // __APPLE__
+#endif // desktop GPU compute guard
 
 } // namespace dg
 } // namespace prs

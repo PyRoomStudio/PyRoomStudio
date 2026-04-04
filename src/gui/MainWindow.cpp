@@ -7,7 +7,9 @@
 #include "BottomToolbar.h"
 #include "core/ProjectFile.h"
 #include "core/Types.h"
+#ifndef SEICHE_WEB_BUILD
 #include "dialogs/AudioComparisonDialog.h"
+#endif
 #include "dialogs/RenderOptionsDialog.h"
 #include "dialogs/SettingsDialogs.h"
 #include "IconUtils.h"
@@ -21,7 +23,9 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDesktopServices>
+#ifndef SEICHE_WEB_BUILD
 #include <QFileDialog>
+#endif
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QImage>
@@ -30,7 +34,9 @@
 #include <QPixmap>
 #include <QProgressDialog>
 #include <QScrollArea>
+#ifndef SEICHE_WEB_BUILD
 #include <QSettings>
+#endif
 #include <QSplitter>
 #include <QStatusBar>
 #include <QThread>
@@ -410,12 +416,16 @@ void MainWindow::connectSignals() {
         int idx = viewport_->activePointIndex();
         if (idx < 0)
             return;
+#ifndef SEICHE_WEB_BUILD
         QString path = QFileDialog::getOpenFileName(this, "Select Audio File", defaultProjectDir(),
                                                     "Audio files (*.wav *.mp3 *.flac *.ogg);;All files (*.*)");
         if (path.isEmpty())
             return;
         viewport_->placedPoints()[idx].audioFile = path.toStdString();
         propertyPanel_->setPointAudioFile(QFileInfo(path).fileName());
+#else
+        statusBar()->showMessage("File selection is not supported in the browser build.");
+#endif
     });
 
     // Surface material change -> PropertyPanel update
@@ -466,6 +476,9 @@ void MainWindow::onNewProject() {
             onSaveProject();
     }
 
+#ifdef SEICHE_WEB_BUILD
+    statusBar()->showMessage("File import is not supported in the browser build.");
+#else
     QString path =
         QFileDialog::getOpenFileName(this, "Select Room Model for New Project", defaultProjectDir(),
                                      "3D Models (*.stl *.obj);;STL files (*.stl);;OBJ files (*.obj);;All files (*.*)");
@@ -487,9 +500,13 @@ void MainWindow::onNewProject() {
         updateTitle();
         statusBar()->showMessage("New project created (no model)");
     }
+#endif // !SEICHE_WEB_BUILD
 }
 
 void MainWindow::onOpenProject() {
+#ifdef SEICHE_WEB_BUILD
+    statusBar()->showMessage("File open is not supported in the browser build.");
+#else
     QString path = QFileDialog::getOpenFileName(this, "Open Project", defaultProjectDir(),
                                                 "Room Projects (*.room);;3D Models (*.stl *.obj);;All files (*.*)");
     if (path.isEmpty())
@@ -534,6 +551,7 @@ void MainWindow::onOpenProject() {
     addRecentProject(path);
     updateTitle();
     statusBar()->showMessage("Project opened: " + path);
+#endif // !SEICHE_WEB_BUILD
 }
 
 void MainWindow::onSaveProject() {
@@ -545,12 +563,16 @@ void MainWindow::onSaveProject() {
 }
 
 void MainWindow::onSaveProjectAs() {
+#ifdef SEICHE_WEB_BUILD
+    statusBar()->showMessage("File save is not supported in the browser build.");
+#else
     QString path = QFileDialog::getSaveFileName(this, "Save Project As", defaultProjectDir(), "Room Projects (*.room)");
     if (path.isEmpty())
         return;
     if (!path.endsWith(".room", Qt::CaseInsensitive))
         path += ".room";
     saveProjectToFile(path);
+#endif // !SEICHE_WEB_BUILD
 }
 
 void MainWindow::saveProjectToFile(const QString& filepath) {
@@ -573,6 +595,7 @@ void MainWindow::saveProjectToFile(const QString& filepath) {
 }
 
 void MainWindow::addRecentProject(const QString& filepath) {
+#ifndef SEICHE_WEB_BUILD
     QSettings settings("Seiche", "Seiche");
     QStringList recent = settings.value("recentProjects").toStringList();
     recent.removeAll(filepath);
@@ -581,10 +604,17 @@ void MainWindow::addRecentProject(const QString& filepath) {
         recent.removeLast();
     settings.setValue("recentProjects", recent);
     updateRecentProjectsMenu();
+#else
+    Q_UNUSED(filepath)
+#endif
 }
 
 void MainWindow::updateRecentProjectsMenu() {
     recentProjectsMenu_->clear();
+#ifdef SEICHE_WEB_BUILD
+    recentProjectsMenu_->addAction("(not available in browser build)")->setEnabled(false);
+    return;
+#else
     QSettings settings("Seiche", "Seiche");
     QStringList recent = settings.value("recentProjects").toStringList();
 
@@ -628,6 +658,7 @@ void MainWindow::updateRecentProjectsMenu() {
         s.remove("recentProjects");
         updateRecentProjectsMenu();
     });
+#endif // !SEICHE_WEB_BUILD
 }
 
 void MainWindow::onExit() {
@@ -649,6 +680,9 @@ void MainWindow::closeEvent(QCloseEvent* event) {
 }
 
 void MainWindow::onImportRoom() {
+#ifdef SEICHE_WEB_BUILD
+    statusBar()->showMessage("File import is not supported in the browser build.");
+#else
     QString path =
         QFileDialog::getOpenFileName(this, "Import Room Model", defaultProjectDir(),
                                      "3D Models (*.stl *.obj);;STL files (*.stl);;OBJ files (*.obj);;All files (*.*)");
@@ -660,9 +694,13 @@ void MainWindow::onImportRoom() {
     } else {
         QMessageBox::warning(this, "Error", "Failed to load 3D model: " + path);
     }
+#endif // !SEICHE_WEB_BUILD
 }
 
 void MainWindow::onImportSound() {
+#ifdef SEICHE_WEB_BUILD
+    statusBar()->showMessage("File import is not supported in the browser build.");
+#else
     QString path =
         QFileDialog::getOpenFileName(this, "Select Sound Source", defaultProjectDir(),
                                      "Audio files (*.wav *.mp3 *.flac *.ogg);;WAV files (*.wav);;All files (*.*)");
@@ -671,6 +709,7 @@ void MainWindow::onImportSound() {
     soundSourceFile_ = path;
     updateTitle();
     statusBar()->showMessage("Sound loaded: " + path);
+#endif // !SEICHE_WEB_BUILD
 }
 
 void MainWindow::onAddSourcePlacement() {
@@ -760,19 +799,28 @@ void MainWindow::onRender() {
     for (auto& l : listeners)
         simScene.addListener(l.position, l.name, l.orientation);
 
-    QSettings settings("Seiche", "Seiche");
-
     SimulationWorker::Params params;
     params.scene = simScene;
     params.walls = viewport_->getWallsForAcoustic();
     params.roomCenter = viewport_->getScaledRoomCenter();
     params.modelVertices = viewport_->getScaledModelVertices();
     RenderOptions options = renderDlg.renderOptions();
-    options.sampleRate = settings.value("audio/sampleRate", DEFAULT_SAMPLE_RATE).toInt();
-    options.maxOrder = settings.value("sim/maxOrder", DEFAULT_MAX_ORDER).toInt();
-    options.nRays = settings.value("sim/numRays", DEFAULT_N_RAYS).toInt();
-    options.scattering = settings.value("sim/scattering", DEFAULT_SCATTERING).toFloat();
-    options.airAbsorption = settings.value("sim/airAbsorption", true).toBool();
+#ifndef SEICHE_WEB_BUILD
+    {
+        QSettings settings("Seiche", "Seiche");
+        options.sampleRate = settings.value("audio/sampleRate", DEFAULT_SAMPLE_RATE).toInt();
+        options.maxOrder = settings.value("sim/maxOrder", DEFAULT_MAX_ORDER).toInt();
+        options.nRays = settings.value("sim/numRays", DEFAULT_N_RAYS).toInt();
+        options.scattering = settings.value("sim/scattering", DEFAULT_SCATTERING).toFloat();
+        options.airAbsorption = settings.value("sim/airAbsorption", true).toBool();
+    }
+#else
+    options.sampleRate = DEFAULT_SAMPLE_RATE;
+    options.maxOrder = DEFAULT_MAX_ORDER;
+    options.nRays = DEFAULT_N_RAYS;
+    options.scattering = DEFAULT_SCATTERING;
+    options.airAbsorption = true;
+#endif
 
     params.sampleRate = options.sampleRate;
     params.maxOrder = options.maxOrder;
@@ -875,11 +923,16 @@ void MainWindow::updateTitle() {
 }
 
 QString MainWindow::defaultProjectDir() const {
+#ifndef SEICHE_WEB_BUILD
     QSettings s("Seiche", "Seiche");
     return s.value("defaultProjectDir", "").toString();
+#else
+    return {};
+#endif
 }
 
 void MainWindow::configureAutoSaveTimer() {
+#ifndef SEICHE_WEB_BUILD
     QSettings s("Seiche", "Seiche");
     int minutes = s.value("autoSaveInterval", 0).toInt();
     if (minutes > 0) {
@@ -887,6 +940,9 @@ void MainWindow::configureAutoSaveTimer() {
     } else {
         autoSaveTimer_->stop();
     }
+#else
+    autoSaveTimer_->stop();
+#endif
 }
 
 void MainWindow::syncPropertyPanelContext() {

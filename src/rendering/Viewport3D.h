@@ -1,5 +1,14 @@
 #pragma once
 
+// WASM/WebGL2 compatibility note:
+// Viewport3D uses QOpenGLWidget and the OpenGL fixed-function pipeline
+// (glBegin/glEnd, glMatrixMode, matrix stack, line stipple, etc.) which are
+// NOT available in WebGL2 (OpenGL ES 3.0).  Before this class can be included
+// in the SeicheWeb build, all rendering code must be rewritten to use
+// shader-based VBO/VAO rendering compatible with WebGL2.
+// See Phase 11.3 of PLAN.md.
+#ifndef SEICHE_WEB_BUILD
+
 #include "Camera.h"
 #include "core/Material.h"
 #include "core/PlacedPoint.h"
@@ -240,3 +249,5 @@ class Viewport3D : public QOpenGLWidget, protected QOpenGLFunctions {
 };
 
 } // namespace prs
+
+#endif // !SEICHE_WEB_BUILD

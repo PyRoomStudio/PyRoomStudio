@@ -29,6 +29,7 @@ if(SEICHE_WEB_BUILD)
     target_link_libraries(SeicheWeb PRIVATE Qt6::Widgets Qt6::Svg)
     target_compile_definitions(SeicheWeb PRIVATE
         _USE_MATH_DEFINES
+        SEICHE_WEB_BUILD
     )
 
     if(EMSCRIPTEN)

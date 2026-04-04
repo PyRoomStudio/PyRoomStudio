@@ -1,3 +1,6 @@
+// See Viewport3D.h for WASM/WebGL2 compatibility notes.
+#ifndef SEICHE_WEB_BUILD
+
 #include "Viewport3D.h"
 
 #include "GLHeaders.h"
@@ -1187,3 +1190,5 @@ void Viewport3D::dropEvent(QDropEvent* event) {
 }
 
 } // namespace prs
+
+#endif // !SEICHE_WEB_BUILD
