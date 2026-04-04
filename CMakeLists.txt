@@ -7,97 +7,124 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets Multimedia Svg)
+option(SEICHE_BUILD_WEB "Build the browser-oriented WebAssembly shell target" OFF)
 
-# Eigen3: try system install first, fall back to FetchContent
-find_package(Eigen3 3.3 QUIET)
-if(NOT Eigen3_FOUND)
-    message(STATUS "Eigen3 not found on system -- downloading via FetchContent")
-    include(FetchContent)
-    FetchContent_Declare(
-        eigen
-        GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-        GIT_TAG        3.4.0
-        GIT_SHALLOW    TRUE
+set(SEICHE_WEB_BUILD FALSE)
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    set(SEICHE_WEB_BUILD TRUE)
+elseif(SEICHE_BUILD_WEB)
+    message(FATAL_ERROR "SEICHE_BUILD_WEB requires the Emscripten toolchain")
+endif()
+
+if(SEICHE_WEB_BUILD)
+    find_package(Qt6 REQUIRED COMPONENTS Widgets Svg)
+else()
+    find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets Multimedia Svg)
+endif()
+
+if(SEICHE_WEB_BUILD)
+    qt6_add_resources(WEB_RESOURCES resources/resources.qrc)
+    add_executable(SeicheWeb src/web/main.cpp ${WEB_RESOURCES})
+    target_include_directories(SeicheWeb PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    target_link_libraries(SeicheWeb PRIVATE Qt6::Widgets Qt6::Svg)
+    target_compile_definitions(SeicheWeb PRIVATE
+        _USE_MATH_DEFINES
     )
-    # Use Populate (not MakeAvailable) to skip Eigen's CMakeLists.txt entirely.
-    # MakeAvailable triggers BLAS detection which calls enable_language(Fortran)
-    # and fails on CI runners that have a broken gfortran in PATH.
-    # Eigen is header-only for our use; no Fortran is needed.
-    FetchContent_GetProperties(eigen)
-    if(NOT eigen_POPULATED)
-        if(POLICY CMP0168)
-            cmake_policy(SET CMP0168 OLD) # suppress FetchContent_Populate deprecation (CMake 3.30+)
-        endif()
-        FetchContent_Populate(eigen)
-    endif()
-    add_library(Eigen3::Eigen INTERFACE IMPORTED GLOBAL)
-    target_include_directories(Eigen3::Eigen INTERFACE "${eigen_SOURCE_DIR}")
-    set(EIGEN3_INCLUDE_DIR "${eigen_SOURCE_DIR}")
-endif()
 
-find_package(OpenMP)
-
-find_package(PkgConfig QUIET)
-if(PkgConfig_FOUND)
-    pkg_check_modules(SNDFILE sndfile)
-    pkg_check_modules(FFTW3 fftw3f)
-endif()
-
-set(SEICHE_USE_LIBMYSOFA "AUTO" CACHE STRING "Control libmysofa support: AUTO, ON, or OFF")
-set_property(CACHE SEICHE_USE_LIBMYSOFA PROPERTY STRINGS AUTO ON OFF)
-string(TOUPPER "${SEICHE_USE_LIBMYSOFA}" SEICHE_USE_LIBMYSOFA)
-
-set(MYSOFA_TARGET "")
-
-if(NOT SEICHE_USE_LIBMYSOFA STREQUAL "OFF")
-    find_package(mysofa CONFIG QUIET)
-    if(TARGET mysofa::mysofa-shared)
-        set(MYSOFA_TARGET mysofa::mysofa-shared)
-    elseif(TARGET mysofa::mysofa-static)
-        set(MYSOFA_TARGET mysofa::mysofa-static)
-    endif()
-
-    if(NOT MYSOFA_TARGET AND PkgConfig_FOUND)
-        pkg_check_modules(MYSOFA QUIET mysofa)
-        if(MYSOFA_FOUND)
-            add_library(mysofa::mysofa INTERFACE IMPORTED)
-            target_link_libraries(mysofa::mysofa INTERFACE PkgConfig::MYSOFA)
-            set(MYSOFA_TARGET mysofa::mysofa)
-        endif()
-    endif()
-
-    if(NOT MYSOFA_TARGET)
-        find_library(MYSOFA_LIBRARIES NAMES mysofa libmysofa)
-        find_path(MYSOFA_INCLUDE_DIRS mysofa.h)
-        if(MYSOFA_LIBRARIES AND MYSOFA_INCLUDE_DIRS)
-            add_library(mysofa::mysofa INTERFACE IMPORTED)
-            target_link_libraries(mysofa::mysofa INTERFACE ${MYSOFA_LIBRARIES})
-            target_include_directories(mysofa::mysofa INTERFACE ${MYSOFA_INCLUDE_DIRS})
-            set(MYSOFA_TARGET mysofa::mysofa)
-        endif()
-    endif()
-
-    if(NOT MYSOFA_TARGET AND SEICHE_USE_LIBMYSOFA STREQUAL "ON")
-        message(FATAL_ERROR "SEICHE_USE_LIBMYSOFA=ON but libmysofa was not found")
-    elseif(NOT MYSOFA_TARGET)
-        message(STATUS "libmysofa not found; building without SOFA support")
+    if(EMSCRIPTEN)
+        target_link_options(SeicheWeb PRIVATE -sALLOW_MEMORY_GROWTH=1)
     endif()
 else()
-    message(STATUS "libmysofa support disabled by SEICHE_USE_LIBMYSOFA=OFF")
-endif()
 
-if(NOT SNDFILE_FOUND)
-    find_library(SNDFILE_LIBRARIES NAMES sndfile libsndfile-1)
-    find_path(SNDFILE_INCLUDE_DIRS sndfile.h)
-endif()
+    # Eigen3: try system install first, fall back to FetchContent
+    find_package(Eigen3 3.3 QUIET)
+    if(NOT Eigen3_FOUND)
+        message(STATUS "Eigen3 not found on system -- downloading via FetchContent")
+        include(FetchContent)
+        FetchContent_Declare(
+            eigen
+            GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+            GIT_TAG        3.4.0
+            GIT_SHALLOW    TRUE
+        )
+        # Use Populate (not MakeAvailable) to skip Eigen's CMakeLists.txt entirely.
+        # MakeAvailable triggers BLAS detection which calls enable_language(Fortran)
+        # and fails on CI runners that have a broken gfortran in PATH.
+        # Eigen is header-only for our use; no Fortran is needed.
+        FetchContent_GetProperties(eigen)
+        if(NOT eigen_POPULATED)
+            if(POLICY CMP0168)
+                cmake_policy(SET CMP0168 OLD) # suppress FetchContent_Populate deprecation (CMake 3.30+)
+            endif()
+            FetchContent_Populate(eigen)
+        endif()
+        add_library(Eigen3::Eigen INTERFACE IMPORTED GLOBAL)
+        target_include_directories(Eigen3::Eigen INTERFACE "${eigen_SOURCE_DIR}")
+        set(EIGEN3_INCLUDE_DIR "${eigen_SOURCE_DIR}")
+    endif()
 
-if(NOT FFTW3_FOUND)
-    find_library(FFTW3_LIBRARIES NAMES fftw3f libfftw3f-3)
-    find_path(FFTW3_INCLUDE_DIRS fftw3.h)
-endif()
+    find_package(OpenMP)
 
-set(SOURCES
+    find_package(PkgConfig QUIET)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(SNDFILE sndfile)
+        pkg_check_modules(FFTW3 fftw3f)
+    endif()
+
+    set(SEICHE_USE_LIBMYSOFA "AUTO" CACHE STRING "Control libmysofa support: AUTO, ON, or OFF")
+    set_property(CACHE SEICHE_USE_LIBMYSOFA PROPERTY STRINGS AUTO ON OFF)
+    string(TOUPPER "${SEICHE_USE_LIBMYSOFA}" SEICHE_USE_LIBMYSOFA)
+
+    set(MYSOFA_TARGET "")
+
+    if(NOT SEICHE_USE_LIBMYSOFA STREQUAL "OFF")
+        find_package(mysofa CONFIG QUIET)
+        if(TARGET mysofa::mysofa-shared)
+            set(MYSOFA_TARGET mysofa::mysofa-shared)
+        elseif(TARGET mysofa::mysofa-static)
+            set(MYSOFA_TARGET mysofa::mysofa-static)
+        endif()
+
+        if(NOT MYSOFA_TARGET AND PkgConfig_FOUND)
+            pkg_check_modules(MYSOFA QUIET mysofa)
+            if(MYSOFA_FOUND)
+                add_library(mysofa::mysofa INTERFACE IMPORTED)
+                target_link_libraries(mysofa::mysofa INTERFACE PkgConfig::MYSOFA)
+                set(MYSOFA_TARGET mysofa::mysofa)
+            endif()
+        endif()
+
+        if(NOT MYSOFA_TARGET)
+            find_library(MYSOFA_LIBRARIES NAMES mysofa libmysofa)
+            find_path(MYSOFA_INCLUDE_DIRS mysofa.h)
+            if(MYSOFA_LIBRARIES AND MYSOFA_INCLUDE_DIRS)
+                add_library(mysofa::mysofa INTERFACE IMPORTED)
+                target_link_libraries(mysofa::mysofa INTERFACE ${MYSOFA_LIBRARIES})
+                target_include_directories(mysofa::mysofa INTERFACE ${MYSOFA_INCLUDE_DIRS})
+                set(MYSOFA_TARGET mysofa::mysofa)
+            endif()
+        endif()
+
+        if(NOT MYSOFA_TARGET AND SEICHE_USE_LIBMYSOFA STREQUAL "ON")
+            message(FATAL_ERROR "SEICHE_USE_LIBMYSOFA=ON but libmysofa was not found")
+        elseif(NOT MYSOFA_TARGET)
+            message(STATUS "libmysofa not found; building without SOFA support")
+        endif()
+    else()
+        message(STATUS "libmysofa support disabled by SEICHE_USE_LIBMYSOFA=OFF")
+    endif()
+
+    if(NOT SNDFILE_FOUND)
+        find_library(SNDFILE_LIBRARIES NAMES sndfile libsndfile-1)
+        find_path(SNDFILE_INCLUDE_DIRS sndfile.h)
+    endif()
+
+    if(NOT FFTW3_FOUND)
+        find_library(FFTW3_LIBRARIES NAMES fftw3f libfftw3f-3)
+        find_path(FFTW3_INCLUDE_DIRS fftw3.h)
+    endif()
+
+    set(SOURCES
     src/main.cpp
     src/core/Material.cpp
     src/core/MaterialLoader.cpp
@@ -153,7 +180,7 @@ set(SOURCES
     src/utils/ResourcePath.cpp
 )
 
-set(HEADERS
+    set(HEADERS
     src/core/Types.h
     src/core/Material.h
     src/core/MaterialLoader.h
@@ -213,7 +240,7 @@ set(HEADERS
     src/utils/ResourcePath.h
 )
 
-set(CLI_SOURCES
+    set(CLI_SOURCES
     src/cli/main.cpp
     src/core/Material.cpp
     src/core/MaterialLoader.cpp
@@ -253,133 +280,134 @@ set(CLI_SOURCES
     src/utils/ResourcePath.cpp
 )
 
-qt6_add_resources(RESOURCES resources/resources.qrc)
+    qt6_add_resources(RESOURCES resources/resources.qrc)
 
-if(WIN32)
-    set(APP_RC resources/app.rc)
-    add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
-else()
-    # APP_RC is only used on Windows; keep it defined to avoid accidental expansion issues.
-    set(APP_RC "")
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
-endif()
+    if(WIN32)
+        set(APP_RC resources/app.rc)
+        add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
+    else()
+        # APP_RC is only used on Windows; keep it defined to avoid accidental expansion issues.
+        set(APP_RC "")
+        add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
+    endif()
 
-# On macOS, build a proper .app bundle so macdeployqt can package it.
-if(APPLE)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        MACOSX_BUNDLE TRUE
+    # On macOS, build a proper .app bundle so macdeployqt can package it.
+    if(APPLE)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            MACOSX_BUNDLE TRUE
+        )
+    endif()
+
+    target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${EIGEN3_INCLUDE_DIR}
+)
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+    Qt6::Widgets
+    Qt6::OpenGL
+    Qt6::OpenGLWidgets
+    Qt6::Multimedia
+    Qt6::Svg
+    Eigen3::Eigen
+)
+
+    if(OpenMP_CXX_FOUND)
+        target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
+    endif()
+
+    if(SNDFILE_LIBRARIES)
+        target_include_directories(${PROJECT_NAME} PRIVATE ${SNDFILE_INCLUDE_DIRS})
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${SNDFILE_LIBRARIES})
+        target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_SNDFILE)
+    endif()
+
+    if(FFTW3_LIBRARIES)
+        target_include_directories(${PROJECT_NAME} PRIVATE ${FFTW3_INCLUDE_DIRS})
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${FFTW3_LIBRARIES})
+        target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_FFTW3)
+    endif()
+
+    if(MYSOFA_TARGET)
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${MYSOFA_TARGET})
+        target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_LIBMYSOFA)
+    endif()
+
+    if(WIN32)
+        target_link_libraries(${PROJECT_NAME} PRIVATE opengl32 glu32)
+    elseif(APPLE)
+        find_package(OpenGL REQUIRED)
+        target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
+    else()
+        find_package(OpenGL REQUIRED)
+        target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
+    endif()
+
+    add_executable(SeicheRender ${CLI_SOURCES})
+
+    target_include_directories(SeicheRender PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${EIGEN3_INCLUDE_DIR}
+)
+
+    target_link_libraries(SeicheRender PRIVATE
+    Qt6::Widgets
+    Qt6::OpenGL
+    Qt6::OpenGLWidgets
+    Qt6::Multimedia
+    Qt6::Svg
+    Eigen3::Eigen
+)
+
+    if(OpenMP_CXX_FOUND)
+        target_link_libraries(SeicheRender PRIVATE OpenMP::OpenMP_CXX)
+    endif()
+
+    if(SNDFILE_LIBRARIES)
+        target_include_directories(SeicheRender PRIVATE ${SNDFILE_INCLUDE_DIRS})
+        target_link_libraries(SeicheRender PRIVATE ${SNDFILE_LIBRARIES})
+        target_compile_definitions(SeicheRender PRIVATE HAS_SNDFILE)
+    endif()
+
+    if(FFTW3_LIBRARIES)
+        target_include_directories(SeicheRender PRIVATE ${FFTW3_INCLUDE_DIRS})
+        target_link_libraries(SeicheRender PRIVATE ${FFTW3_LIBRARIES})
+        target_compile_definitions(SeicheRender PRIVATE HAS_FFTW3)
+    endif()
+
+    if(WIN32)
+        target_link_libraries(SeicheRender PRIVATE opengl32 glu32)
+    elseif(APPLE)
+        find_package(OpenGL REQUIRED)
+        target_link_libraries(SeicheRender PRIVATE OpenGL::GL OpenGL::GLU)
+    else()
+        find_package(OpenGL REQUIRED)
+        target_link_libraries(SeicheRender PRIVATE OpenGL::GL OpenGL::GLU)
+    endif()
+
+    target_compile_definitions(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:QT_QML_DEBUG>
+        _USE_MATH_DEFINES
+        $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>
     )
+
+    target_compile_definitions(SeicheRender PRIVATE
+        _USE_MATH_DEFINES
+        $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>
+    )
+
+    install(TARGETS ${PROJECT_NAME}
+        BUNDLE DESTINATION .
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+
+    install(TARGETS SeicheRender
+        BUNDLE DESTINATION .
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+
+    enable_testing()
+    add_subdirectory(tests)
 endif()
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${EIGEN3_INCLUDE_DIR}
-)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    Qt6::Widgets
-    Qt6::OpenGL
-    Qt6::OpenGLWidgets
-    Qt6::Multimedia
-    Qt6::Svg
-    Eigen3::Eigen
-)
-
-if(OpenMP_CXX_FOUND)
-    target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
-endif()
-
-if(SNDFILE_LIBRARIES)
-    target_include_directories(${PROJECT_NAME} PRIVATE ${SNDFILE_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${SNDFILE_LIBRARIES})
-    target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_SNDFILE)
-endif()
-
-if(FFTW3_LIBRARIES)
-    target_include_directories(${PROJECT_NAME} PRIVATE ${FFTW3_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${FFTW3_LIBRARIES})
-    target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_FFTW3)
-endif()
-
-if(MYSOFA_TARGET)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${MYSOFA_TARGET})
-    target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_LIBMYSOFA)
-endif()
-
-if(WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE opengl32 glu32)
-elseif(APPLE)
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
-else()
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
-endif()
-
-add_executable(SeicheRender ${CLI_SOURCES})
-
-target_include_directories(SeicheRender PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${EIGEN3_INCLUDE_DIR}
-)
-
-target_link_libraries(SeicheRender PRIVATE
-    Qt6::Widgets
-    Qt6::OpenGL
-    Qt6::OpenGLWidgets
-    Qt6::Multimedia
-    Qt6::Svg
-    Eigen3::Eigen
-)
-
-if(OpenMP_CXX_FOUND)
-    target_link_libraries(SeicheRender PRIVATE OpenMP::OpenMP_CXX)
-endif()
-
-if(SNDFILE_LIBRARIES)
-    target_include_directories(SeicheRender PRIVATE ${SNDFILE_INCLUDE_DIRS})
-    target_link_libraries(SeicheRender PRIVATE ${SNDFILE_LIBRARIES})
-    target_compile_definitions(SeicheRender PRIVATE HAS_SNDFILE)
-endif()
-
-if(FFTW3_LIBRARIES)
-    target_include_directories(SeicheRender PRIVATE ${FFTW3_INCLUDE_DIRS})
-    target_link_libraries(SeicheRender PRIVATE ${FFTW3_LIBRARIES})
-    target_compile_definitions(SeicheRender PRIVATE HAS_FFTW3)
-endif()
-
-if(WIN32)
-    target_link_libraries(SeicheRender PRIVATE opengl32 glu32)
-elseif(APPLE)
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(SeicheRender PRIVATE OpenGL::GL OpenGL::GLU)
-else()
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(SeicheRender PRIVATE OpenGL::GL OpenGL::GLU)
-endif()
-
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-    $<$<CONFIG:Debug>:QT_QML_DEBUG>
-    _USE_MATH_DEFINES
-    $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>
-)
-
-target_compile_definitions(SeicheRender PRIVATE
-    _USE_MATH_DEFINES
-    $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>
-)
-
-install(TARGETS ${PROJECT_NAME}
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-install(TARGETS SeicheRender
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-enable_testing()
-add_subdirectory(tests)

@@ -178,11 +178,40 @@
 
 > This phase is about proving that Seiche can cross the Qt for WebAssembly boundary without rewriting the whole product. The goal is not feature parity yet; the goal is to get the editor booting in a browser with a browser-safe build and a narrow but useful core workflow.
 
-- [ ] Add a WebAssembly build target with a Qt for WebAssembly toolchain and a documented local run workflow
-- [ ] Split native-only dependencies and code paths behind platform guards or build options
-- [ ] Replace direct filesystem assumptions with browser-safe import/export flows for project, mesh, and audio inputs
-- [ ] Make the editor launch in-browser with a minimal scene workflow using CPU-only simulation paths
-- [ ] Add a small set of WebAssembly build and smoke tests that verify startup, resource loading, and project open/save
+#### Phase 11.1 — Toolchain and build support
+
+- [ ] Add a Qt for WebAssembly build target and document the required toolchain/version pairing
+- [ ] Add a browser-specific CMake preset or build script that produces a runnable `.html` + `.wasm` bundle
+- [ ] Define a minimal local run workflow for serving the Web build during development
+- [ ] Add CI notes or scripts for verifying that the Web build still configures after dependency changes
+
+#### Phase 11.2 — Native dependency and runtime boundaries
+
+- [ ] Split native-only code paths behind platform guards or build options
+- [ ] Identify unsupported WebAssembly dependencies and provide browser-safe fallbacks or build exclusions
+- [ ] Replace direct assumptions about writable local paths with an abstraction that can target browser storage or downloads
+- [ ] Audit OpenGL usage and isolate code that cannot run under WebGL or WebAssembly context rules
+
+#### Phase 11.3 — Browser editor bootstrap
+
+- [ ] Launch the app in a browser with the main window or a browser-safe equivalent
+- [ ] Load a minimal project or sample scene successfully in the browser
+- [ ] Keep the core editor interactions working for selection, placement, and basic scene editing
+- [ ] Make sure the browser build starts without requiring unsupported native dialogs or platform hooks
+
+#### Phase 11.4 — Browser-safe import and export
+
+- [ ] Replace native file-open flows with browser-compatible project and asset import flows
+- [ ] Replace native file-save flows with browser-compatible download or export flows
+- [ ] Preserve the ability to load room meshes, textures, and audio assets from browser-supported inputs
+- [ ] Define a fallback story for assets that cannot be accessed as raw file paths in the browser
+
+#### Phase 11.5 — Web smoke coverage
+
+- [ ] Add a minimal WebAssembly smoke test for startup and resource loading
+- [ ] Add a test or scripted check for opening a project and restoring the scene state in the browser build
+- [ ] Add a test or scripted check for exporting a result artifact from the Web build
+- [ ] Document the browser build limitations that remain at the end of this phase
 
 ## Phase 12 — Browser Workflow and Performance
 
@@ -190,11 +219,40 @@
 
 > Once the app can start in the browser, the next step is making the workflow feel intentional instead of merely functional. This phase focuses on persistence, long-running work, and output handling in the constraints of the web platform.
 
-- [ ] Add browser storage support for recently opened projects and user preferences
-- [ ] Add explicit upload/download handling for project bundles, rendered audio, and simulation reports
-- [ ] Move long-running simulation work onto browser-safe background execution where supported, with responsive progress reporting
-- [ ] Define browser-appropriate fallbacks for unsupported features such as native folder selection, unrestricted local paths, and desktop audio device integration
-- [ ] Add WebAssembly regression fixtures for the editor workflow, simulation launch, and export path
+#### Phase 12.1 — Browser persistence
+
+- [ ] Store recent projects and UI preferences in browser-safe storage
+- [ ] Restore the last-used browser state on reload when possible
+- [ ] Define how project metadata survives across browser sessions
+- [ ] Add a clear reset/clear-data path for browser storage
+
+#### Phase 12.2 — Upload, download, and asset bundles
+
+- [ ] Add explicit upload handling for project bundles and external assets
+- [ ] Add explicit download handling for rendered audio, reports, and exports
+- [ ] Define a packaging format for browser-friendly project bundles when raw file paths are unavailable
+- [ ] Make the export story clear for single-file outputs versus multi-file output directories
+
+#### Phase 12.3 — Background work and responsiveness
+
+- [ ] Move long-running simulation work onto browser-safe background execution where supported
+- [ ] Keep the UI responsive during loading, simulation setup, and export
+- [ ] Add progress reporting that makes browser execution delays understandable to the user
+- [ ] Define cancellation behavior for long-running browser tasks
+
+#### Phase 12.4 — Unsupported-feature fallbacks
+
+- [ ] Define fallback behavior for native folder selection, unrestricted local paths, and desktop audio device integration
+- [ ] Replace any remaining desktop-only assumptions in dialogs, settings, and output workflows
+- [ ] Make unsupported features fail gracefully with browser-specific messaging
+- [ ] Document the browser capability gaps that remain after the phase is complete
+
+#### Phase 12.5 — Web regression and performance checks
+
+- [ ] Add browser regression fixtures for the editor workflow, simulation launch, and export path
+- [ ] Add a small performance baseline for startup time and first-scene load time
+- [ ] Add a smoke check that the browser build still round-trips a project bundle
+- [ ] Document the scenarios that should be re-tested after browser-related changes
 
 ## Milestone Summary
 

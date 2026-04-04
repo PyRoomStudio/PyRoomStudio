@@ -87,6 +87,30 @@ On Windows, the dev build in `build/` does not bundle Qt DLLs. Run via:
 $ ./run_windows.sh
 ```
 
+## WebAssembly Preview
+
+Seiche also has an early Qt for WebAssembly shell target. It proves the browser build toolchain, packaging, and
+resource loading path before the full editor is ported.
+
+1. Install Qt for WebAssembly and Emscripten.
+2. Set `QT_WASM_PREFIX` to the Qt for WebAssembly prefix path.
+3. Set `EMSCRIPTEN`, or set `EMSDK` so the build script can derive it.
+4. Build the browser target:
+
+   ```bash
+   ./build_web.sh
+   ```
+
+5. Serve the generated files from `build/web/`:
+
+   ```bash
+   python -m http.server --directory build/web 8000
+   ```
+
+6. Open the generated `SeicheWeb.html` in a browser, for example:
+
+   `http://localhost:8000/SeicheWeb.html`
+
 ## Releasing
 
 These scripts create a clean, upload-ready archive in `dist/` containing the app plus `materials/`.

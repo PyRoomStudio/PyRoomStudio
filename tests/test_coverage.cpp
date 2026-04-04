@@ -46,7 +46,7 @@ QString makeLegacyProjectJson(int sampleRate, bool includeSampleRate) {
     if (includeSampleRate)
         root["sampleRate"] = sampleRate;
     root["soundSourceFile"] = "source.wav";
-    root["surfaceColors"] = QJsonArray{QJsonArray{0.1, 0.2, 0.3}};
+    root["surfaceColors"] = QJsonArray{QJsonValue(QJsonArray{0.1, 0.2, 0.3})};
     root["surfaceMaterials"] = QJsonArray{QJsonValue()};
     root["placedPoints"] = QJsonArray();
     return QString::fromUtf8(QJsonDocument(root).toJson(QJsonDocument::Compact));
