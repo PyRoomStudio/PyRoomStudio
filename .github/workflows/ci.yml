@@ -61,3 +61,45 @@ jobs:
 
       - name: Test
         run: ctest --preset test
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: "6.7.3"
+          arch: ""
+          modules: "qtmultimedia"
+          cache: true
+
+      - name: Platform dependencies (Linux)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ninja-build libeigen3-dev libgl1-mesa-dev libglu1-mesa-dev gcovr
+
+      - name: Configure
+        run: cmake --preset coverage
+
+      - name: Build
+        run: cmake --build --preset coverage
+
+      - name: Test
+        run: ctest --preset coverage
+
+      - name: Coverage report
+        run: |
+          gcovr --root . --object-directory build/coverage \
+            --txt-summary --print-summary \
+            --exclude 'tests/.*' \
+            --exclude 'build/.*' \
+            --exclude '.*_autogen/.*' \
+            --exclude '.*mocs_compilation.*' \
+            --exclude '.*CompilerId.*' \
+            --gcov-ignore-errors=no_working_dir_found \
+            --merge-mode-functions=merge-use-line-min \
+            --fail-under-line 80

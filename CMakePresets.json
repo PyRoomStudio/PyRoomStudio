@@ -31,6 +31,19 @@
       "inherits": "debug",
       "displayName": "Test",
       "description": "Debug build used for running the Qt test suite"
+    },
+    {
+      "name": "coverage",
+      "inherits": "base",
+      "displayName": "Coverage",
+      "description": "Coverage build instrumented for gcov",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS": "-O0 --coverage",
+        "CMAKE_CXX_FLAGS": "-O0 --coverage",
+        "CMAKE_EXE_LINKER_FLAGS": "--coverage",
+        "CMAKE_SHARED_LINKER_FLAGS": "--coverage"
+      }
     }
   ],
   "buildPresets": [
@@ -45,12 +58,26 @@
     {
       "name": "test",
       "configurePreset": "test"
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage"
     }
   ],
   "testPresets": [
     {
       "name": "test",
       "configurePreset": "test",
+      "output": {
+        "outputOnFailure": true
+      },
+      "environment": {
+        "QT_QPA_PLATFORM": "offscreen"
+      }
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage",
       "output": {
         "outputOnFailure": true
       },

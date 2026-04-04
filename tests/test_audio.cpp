@@ -3,6 +3,7 @@
 
 #include <QTemporaryFile>
 #include <QtTest/QtTest>
+#include <array>
 
 using namespace prs;
 
@@ -77,6 +78,21 @@ class TestAudio : public QObject {
         QVERIFY(std::abs(result[1] - 2.0f) < 1e-4f);
         QVERIFY(std::abs(result[2] - 3.0f) < 1e-4f);
         QVERIFY(std::abs(result[3] - 4.0f) < 1e-4f);
+    }
+
+    void testBandpassFilterDegenerate() {
+        std::vector<float> signal = {0.2f, -0.2f, 0.3f};
+        auto filtered = SignalProcessing::bandpassFilter(signal, 44100, 60000);
+        QCOMPARE(filtered.size(), signal.size());
+        QVERIFY(std::abs(filtered[0] - signal[0]) < 1e-6f);
+    }
+
+    void testCombineMultibandRIRSkipsEmptyBands() {
+        std::array<std::vector<float>, NUM_FREQ_BANDS> bands;
+        bands[0] = {0.1f, 0.2f};
+        bands[3] = {0.3f, 0.4f};
+        auto combined = SignalProcessing::combineMultibandRIR(bands, 48000);
+        QVERIFY(!combined.empty());
     }
 };
 

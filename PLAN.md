@@ -14,6 +14,21 @@
 - [x] Add a test runner script that builds `tests/` and executes all Qt tests headlessly
 - [x] Add build-status badges and a short contributor note to `README.md`
 
+## Phase X — Coverage Foundation and High-Risk Gaps
+
+### Milestone: measurable repo-wide coverage above 80%
+
+> The existing suite exercises the main paths, but the coverage target is not yet enforced or evenly distributed. This phase makes coverage measurable first, then pushes the weak spots over the threshold with focused tests instead of broad refactors.
+
+> Current baseline from `gcovr` on `src/` sources, excluding tests and generated MOC/compiler-id files: 23.4% line coverage, 32.0% function coverage, and 12.8% branch coverage.
+
+- [x] Add a repeatable Linux coverage job using `gcovr` that reports `src/` line coverage, excludes tests and generated files, and fails the build when coverage drops below 80%
+- [x] Add unit tests for `src/core/MaterialLoader.*`, `src/core/ProjectFile.*`, and `src/utils/ResourcePath.*` to cover malformed inputs, missing files, and canonical round-trips
+- [ ] Add headless GUI smoke tests for `src/gui/MainWindow.*`, `src/gui/dialogs/SettingsDialogs.*`, and `src/gui/widgets/ColorSwatch.*` to cover launch, open/save/load, and preference changes
+- [ ] Add focused tests for `src/audio/AudioFile.*`, `src/audio/SignalProcessing.*`, `src/acoustics/AcousticMetrics.*`, `src/acoustics/ImageSourceMethod.*`, and `src/acoustics/SimulationQueue.*`
+- [ ] Add focused tests for `src/rendering/Camera.*`, `src/rendering/MeshData.*`, `src/rendering/RayPicking.*`, `src/rendering/SurfaceGrouper.*`, and `src/rendering/TextureManager.*`
+- [ ] Document the coverage workflow and the 80% gate in `README.md` or `CONTRIBUTING.md`
+
 ## Phase 1 — Core Data Model and File Format
 
 ### Milestone: deterministic project files and clearer model boundaries
@@ -127,12 +142,13 @@
 | Milestone | Phases | Deliverable                          |
 | --------- | ------ | ------------------------------------ |
 | A         | 0      | Buildable, testable repo with CI     |
-| B         | 1      | Stable project format and validation |
-| C         | 2      | Headless rendering and export        |
-| D         | 3      | Real binaural output                 |
-| E         | 4      | Directivity-aware sources            |
-| F         | 5      | Cleaner solver architecture          |
-| G         | 6      | Working GPU acceleration             |
-| H         | 7      | Better DG low-frequency accuracy     |
-| I         | 8      | Regression and comparison workflow   |
-| J         | 9      | Release packaging and docs           |
+| B         | X      | Coverage workflow and >80% gate      |
+| C         | 1      | Stable project format and validation |
+| D         | 2      | Headless rendering and export        |
+| E         | 3      | Real binaural output                 |
+| F         | 4      | Directivity-aware sources            |
+| G         | 5      | Cleaner solver architecture          |
+| H         | 6      | Working GPU acceleration             |
+| I         | 7      | Better DG low-frequency accuracy     |
+| J         | 8      | Regression and comparison workflow   |
+| K         | 9      | Release packaging and docs           |

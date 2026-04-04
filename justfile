@@ -28,6 +28,21 @@ test:
     cmake --build --preset test
     ctest --preset test
 
+coverage:
+    cmake --preset coverage
+    cmake --build --preset coverage
+    ctest --preset coverage
+    gcovr --root . --object-directory build/coverage \
+        --txt-summary --print-summary \
+        --exclude 'tests/.*' \
+        --exclude 'build/.*' \
+        --exclude '.*_autogen/.*' \
+        --exclude '.*mocs_compilation.*' \
+        --exclude '.*CompilerId.*' \
+        --gcov-ignore-errors=no_working_dir_found \
+        --merge-mode-functions=merge-use-line-min \
+        --fail-under-line 80
+
 # Run all CI checks (formatting + tests)
 ci: check-formatted test
 

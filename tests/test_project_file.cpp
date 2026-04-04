@@ -153,6 +153,43 @@ class TestProjectFile : public QObject {
         QVERIFY(loaded->placedPoints.empty());
         QVERIFY(loaded->surfaceColors.empty());
     }
+
+    void testSaveRejectsInvalidSampleRate() {
+        ProjectData data;
+        data.sampleRate = -1;
+        QTemporaryFile tmp;
+        tmp.setAutoRemove(true);
+        QVERIFY(tmp.open());
+        QString path = tmp.fileName();
+        tmp.close();
+
+        QVERIFY(!ProjectFile::save(path, data));
+    }
+
+    void testLoadRejectsInvalidPlacedPointColor() {
+        QTemporaryFile tmp;
+        tmp.setAutoRemove(true);
+        QVERIFY(tmp.open());
+        tmp.write(R"({"version":1,"stlFilePath":"model.stl","scaleFactor":1,"soundSourceFile":"","sampleRate":44100,"surfaceColors":[[0.1,0.2,0.3]],"surfaceMaterials":[null],"placedPoints":[{"surfacePoint":{"x":0,"y":0,"z":0},"normal":{"x":0,"y":0,"z":1},"distance":0,"color":[-1,0,0],"pointType":"source","name":"","volume":1,"audioFile":"","orientationYaw":0}]})");
+        QString path = tmp.fileName();
+        tmp.close();
+
+        auto result = ProjectFile::load(path);
+        QVERIFY(!result.has_value());
+    }
+
+    void testLoadDefaultsSampleRate() {
+        QTemporaryFile tmp;
+        tmp.setAutoRemove(true);
+        QVERIFY(tmp.open());
+        tmp.write(R"({"version":1,"stlFilePath":"default.stl","scaleFactor":1,"soundSourceFile":"","surfaceColors":[[0.1,0.2,0.3]],"surfaceMaterials":[null],"placedPoints":[]})");
+        QString path = tmp.fileName();
+        tmp.close();
+
+        auto result = ProjectFile::load(path);
+        QVERIFY(result.has_value());
+        QCOMPARE(result->sampleRate, DEFAULT_SAMPLE_RATE);
+    }
 };
 
 QTEST_MAIN(TestProjectFile)

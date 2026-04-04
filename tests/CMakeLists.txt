@@ -14,6 +14,7 @@ set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/rendering/RayPicking.cpp
     ${CMAKE_SOURCE_DIR}/src/rendering/MeshSimplifier.cpp
     ${CMAKE_SOURCE_DIR}/src/rendering/TextureManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/utils/ResourcePath.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/Wall.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/Bvh.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/ImageSourceMethod.cpp
@@ -59,6 +60,8 @@ add_prs_test(test_mesh test_mesh.cpp)
 add_prs_test(test_rendering test_rendering.cpp)
 add_prs_test(test_acoustics test_acoustics.cpp)
 add_prs_test(test_project_file test_project_file.cpp)
+add_prs_test(test_coverage test_coverage.cpp)
+add_prs_test(test_material_loader test_material_loader.cpp)
 
 # GUI test needs MOC and more sources
 set(GUI_TEST_EXTRA
