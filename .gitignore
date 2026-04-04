@@ -1,3 +1,5 @@
 build/
 sounds/
 dist/
+test_files/
+test_files.zip

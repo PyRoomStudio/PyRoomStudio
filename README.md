@@ -46,24 +46,21 @@ By accomplishing these missions, we hope to increase the usage of acoustic tools
 
 The latest build of Seiche is running on C++17 with Qt6 and Eigen3 dependencies.
 
+### Distributable
+
+### Self-Compiling
+
+
+
 1. Clone the repository
 
     ```bash
-    $ git clone https://github.com/PyRoomStudio/PyRoomStudio.git
+    $ git clone https://github.com/SeicheAcoustics/Seiche.git
     ```
 
-2. Install [Qt6](https://doc.qt.io/qt-6/qt-online-installation.html) (the open individual license is enough to compile the software). During installation, make sure to include the **MinGW** toolchain component under *Qt > Developer and Designer Tools*.
+2. Install [Qt6](https://doc.qt.io/qt-6/qt-online-installation.html) (the open individual license is enough to compile the software). For windows installation, make sure to include the **MinGW** toolchain component under *Qt > Developer and Designer Tools*.
 
-3. Compiling the software is done through Cmake/Ninja. The provided commands work on Windows/MacOS, but will require your system's specific Qt path.
-
-    ```bash
-    $ cmake -S . -B build \
-        -DCMAKE_PREFIX_PATH="C:/Qt/6.10.2/mingw_64" \
-        -DCMAKE_BUILD_TYPE=Release \
-        -G Ninja
-        
-    $ cmake --build build
-    ```
+3. Compiling the software is done through Cmake/Ninja. The provided scripts are `build_windows.sh` and `build_macos.sh`, respectively, and will require slight tweaks to your respective Qt6 and compiler paths.
 
 The version number can be different, although Qt >6 is expected. For MacOS specifically, replace `/mingw_64` with `/macos`.
 Once Cmake has built the Ninja files, follow-up compilations will only need `cmake --build build`.
@@ -71,13 +68,9 @@ Once Cmake has built the Ninja files, follow-up compilations will only need `cma
 4. Run the `Seiche` executable.
 
 ```bash
-$ ./build/Seiche
-```
+$ ./build/Seiche # windows
 
-On Windows, the dev build in `build/` does not bundle Qt DLLs. Run via:
-
-```bash
-$ ./run_windows.sh
+$ ./build/Contents/MacOS/Seiche # MacOS
 ```
 
 ## Releasing
