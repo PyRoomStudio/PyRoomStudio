@@ -1,12 +1,14 @@
 #include "Material.h"
-#include <cmath>
+
 #include <algorithm>
+#include <cmath>
 
 namespace prs {
 
 float Material::averageAbsorption() const {
     float sum = 0.0f;
-    for (float a : absorption) sum += a;
+    for (float a : absorption)
+        sum += a;
     return sum / NUM_FREQ_BANDS;
 }
 

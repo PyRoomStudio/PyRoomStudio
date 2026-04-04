@@ -1,20 +1,20 @@
 #pragma once
 
-#include <QWidget>
-#include <QGroupBox>
-#include <QSlider>
 #include <QDial>
+#include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QSlider>
 #include <QString>
+#include <QWidget>
 
 namespace prs {
 
 class PropertyPanel : public QWidget {
     Q_OBJECT
 
-public:
+  public:
     enum class Context { Room, Point, Surface };
 
     explicit PropertyPanel(QWidget* parent = nullptr);
@@ -35,7 +35,7 @@ public:
     void setPointOrientationYaw(float yaw);
     void setOrientationControlsVisible(bool visible);
 
-signals:
+  signals:
     void scaleChanged(float value);
     void pointDistanceChanged(float value);
     void setPointSource();
@@ -50,37 +50,37 @@ signals:
     void pointOrientationYawChanged(float yaw);
     void selectPointAudioFile();
 
-private:
+  private:
     void setupUI();
 
     Context context_ = Context::Room;
 
-    QGroupBox*   roomGroup_           = nullptr;
-    QGroupBox*   pointDistGroup_      = nullptr;
-    QGroupBox*   pointGroup_          = nullptr;
-    QGroupBox*   surfaceGroup_        = nullptr;
+    QGroupBox* roomGroup_ = nullptr;
+    QGroupBox* pointDistGroup_ = nullptr;
+    QGroupBox* pointGroup_ = nullptr;
+    QGroupBox* surfaceGroup_ = nullptr;
 
-    QSlider*     scaleSlider_         = nullptr;
-    QLabel*      scaleValueLabel_     = nullptr;
-    QLabel*      dimensionLabel_      = nullptr;
-    QSlider*     pointDistSlider_     = nullptr;
-    QLabel*      pointDistValueLabel_ = nullptr;
-    QPushButton* sourceBtn_           = nullptr;
-    QPushButton* listenerBtn_         = nullptr;
-    QPushButton* deletePointBtn_      = nullptr;
-    QPushButton* deselectPointBtn_    = nullptr;
-    QLineEdit*   pointNameEdit_       = nullptr;
-    QSlider*     pointVolumeSlider_   = nullptr;
-    QLabel*      pointVolumeLabel_    = nullptr;
-    QPushButton* pointAudioBtn_       = nullptr;
-    QLabel*      pointAudioLabel_     = nullptr;
-    QPushButton* textureBtn_          = nullptr;
-    QPushButton* loadTextureBtn_      = nullptr;
-    QPushButton* deselectSurfBtn_     = nullptr;
-    QLabel*      materialLabel_       = nullptr;
-    QWidget*     orientationWidget_   = nullptr;
-    QDial*       orientationDial_     = nullptr;
-    QLabel*      orientationLabel_    = nullptr;
+    QSlider* scaleSlider_ = nullptr;
+    QLabel* scaleValueLabel_ = nullptr;
+    QLabel* dimensionLabel_ = nullptr;
+    QSlider* pointDistSlider_ = nullptr;
+    QLabel* pointDistValueLabel_ = nullptr;
+    QPushButton* sourceBtn_ = nullptr;
+    QPushButton* listenerBtn_ = nullptr;
+    QPushButton* deletePointBtn_ = nullptr;
+    QPushButton* deselectPointBtn_ = nullptr;
+    QLineEdit* pointNameEdit_ = nullptr;
+    QSlider* pointVolumeSlider_ = nullptr;
+    QLabel* pointVolumeLabel_ = nullptr;
+    QPushButton* pointAudioBtn_ = nullptr;
+    QLabel* pointAudioLabel_ = nullptr;
+    QPushButton* textureBtn_ = nullptr;
+    QPushButton* loadTextureBtn_ = nullptr;
+    QPushButton* deselectSurfBtn_ = nullptr;
+    QLabel* materialLabel_ = nullptr;
+    QWidget* orientationWidget_ = nullptr;
+    QDial* orientationDial_ = nullptr;
+    QLabel* orientationLabel_ = nullptr;
 
     bool updatingSlider_ = false;
 };

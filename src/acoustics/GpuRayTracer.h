@@ -2,27 +2,20 @@
 
 #include "RayTracer.h"
 
-#include <vector>
 #include <array>
+#include <vector>
 
 namespace prs {
 
 class GpuRayTracer {
-public:
+  public:
     GpuRayTracer();
     ~GpuRayTracer();
 
-    std::vector<RayContribution> trace(
-        const Vec3f& sourcePos,
-        const Vec3f& listenerPos,
-        const std::vector<Wall>& walls,
-        const Bvh& bvh,
-        int numRays,
-        float listenerRadius = 0.5f,
-        int maxBounces = 100,
-        float minEnergy = 1e-6f,
-        const Vec3f* headCenter = nullptr,
-        float headRadius = 0.0f);
+    std::vector<RayContribution> trace(const Vec3f& sourcePos, const Vec3f& listenerPos, const std::vector<Wall>& walls,
+                                       const Bvh& bvh, int numRays, float listenerRadius = 0.5f, int maxBounces = 100,
+                                       float minEnergy = 1e-6f, const Vec3f* headCenter = nullptr,
+                                       float headRadius = 0.0f);
 
     struct GpuWall {
         Vec3f v0;
@@ -33,7 +26,7 @@ public:
         float scattering;
     };
 
-private:
+  private:
     void buildWallCache(const std::vector<Wall>& walls);
 
     std::vector<GpuWall> wallsCache_;

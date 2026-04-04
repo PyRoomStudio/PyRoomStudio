@@ -1,8 +1,8 @@
 #pragma once
 
-#include "DGTypes.h"
 #include "DGBasis3D.h"
 #include "DGMesh3D.h"
+#include "DGTypes.h"
 
 #include <vector>
 
@@ -17,23 +17,18 @@ struct AcousticsResult3D {
 };
 
 class DGAcoustics3D {
-public:
+  public:
     DGAcoustics3D(const Basis3D& basis, const Mesh3D& mesh, const DGParams& params);
 
-    AcousticsResult3D solve(
-        const Vec3d& sourcePos,
-        const Vec3d& listenerPos,
-        ProgressCallback progress = nullptr,
-        CancelCheck cancel = nullptr);
+    AcousticsResult3D solve(const Vec3d& sourcePos, const Vec3d& listenerPos, ProgressCallback progress = nullptr,
+                            CancelCheck cancel = nullptr);
 
     int findElement(const Vec3d& pos) const;
     double computeTimeStep() const;
 
-private:
-    void computeRHS(
-        const MatXd& p, const MatXd& ux, const MatXd& uy, const MatXd& uz,
-        MatXd& rhsP, MatXd& rhsUx, MatXd& rhsUy, MatXd& rhsUz,
-        double time);
+  private:
+    void computeRHS(const MatXd& p, const MatXd& ux, const MatXd& uy, const MatXd& uz, MatXd& rhsP, MatXd& rhsUx,
+                    MatXd& rhsUy, MatXd& rhsUz, double time);
 
     void addSourceTerm(MatXd& rhsP, double time);
 

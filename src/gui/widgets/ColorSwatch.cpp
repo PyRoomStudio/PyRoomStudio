@@ -1,16 +1,17 @@
 #include "ColorSwatch.h"
 
-#include <QPainter>
-#include <QMouseEvent>
+#include <QApplication>
 #include <QDrag>
 #include <QMimeData>
-#include <QApplication>
+#include <QMouseEvent>
+#include <QPainter>
 
 namespace prs {
 
 ColorSwatch::ColorSwatch(const QString& label, const Color3i& color, QWidget* parent)
-    : QWidget(parent), label_(label), color_(color)
-{
+    : QWidget(parent)
+    , label_(label)
+    , color_(color) {
     setMinimumSize(60, 60);
     setCursor(Qt::PointingHandCursor);
 }
@@ -52,8 +53,7 @@ void ColorSwatch::paintEvent(QPaintEvent*) {
     QColor qcolor(color_[0], color_[1], color_[2]);
     if (!previewPixmap_.isNull()) {
         p.fillRect(colorRect, qcolor);
-        QPixmap scaled = previewPixmap_.scaled(colorRect.size(), Qt::KeepAspectRatio,
-                                               Qt::SmoothTransformation);
+        QPixmap scaled = previewPixmap_.scaled(colorRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
         int x = colorRect.x() + (colorRect.width() - scaled.width()) / 2;
         int y = colorRect.y() + (colorRect.height() - scaled.height()) / 2;
         p.drawPixmap(x, y, scaled);

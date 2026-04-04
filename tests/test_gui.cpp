@@ -1,24 +1,24 @@
-#include <QtTest/QtTest>
+#include "gui/AssetsPanel.h"
+#include "gui/BottomToolbar.h"
+#include "gui/dialogs/SettingsDialogs.h"
+#include "gui/LibraryPanel.h"
+#include "gui/MainWindow.h"
+#include "gui/PropertyPanel.h"
+#include "gui/UndoCommands.h"
+#include "gui/widgets/ColorSwatch.h"
+#include "rendering/Viewport3D.h"
+
 #include <QApplication>
 #include <QMenuBar>
 #include <QSettings>
 #include <QTimer>
-
-#include "gui/MainWindow.h"
-#include "gui/PropertyPanel.h"
-#include "gui/LibraryPanel.h"
-#include "gui/AssetsPanel.h"
-#include "gui/BottomToolbar.h"
-#include "gui/UndoCommands.h"
-#include "gui/widgets/ColorSwatch.h"
-#include "gui/dialogs/SettingsDialogs.h"
-#include "rendering/Viewport3D.h"
+#include <QtTest/QtTest>
 
 using namespace prs;
 
 class TestGUI : public QObject {
     Q_OBJECT
-private slots:
+  private slots:
     void testMainWindowCreation() {
         MainWindow w;
         QVERIFY(w.windowTitle().contains("PyRoomStudio"));
@@ -35,7 +35,8 @@ private slots:
         QVERIFY(menuBar != nullptr);
         auto actions = menuBar->actions();
         QStringList menuTitles;
-        for (auto* a : actions) menuTitles << a->text();
+        for (auto* a : actions)
+            menuTitles << a->text();
         QVERIFY(menuTitles.contains("&File"));
         QVERIFY(menuTitles.contains("&Edit"));
         QVERIFY(menuTitles.contains("&View"));

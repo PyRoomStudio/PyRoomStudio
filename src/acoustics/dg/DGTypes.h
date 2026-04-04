@@ -2,9 +2,9 @@
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
-#include <vector>
-#include <string>
 #include <functional>
+#include <string>
+#include <vector>
 
 namespace prs {
 namespace dg {

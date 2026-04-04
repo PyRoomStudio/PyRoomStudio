@@ -1,16 +1,17 @@
 #include "DGBasis3D.h"
-#include "DGBasis2D.h"  // reuse jacobiP, jacobiGL, jacobiGQ, vandermonde2D
-#include <cmath>
+
+#include "DGBasis2D.h" // reuse jacobiP, jacobiGL, jacobiGQ, vandermonde2D
+
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 
 namespace prs {
 namespace dg {
 
 // ---------- Coordinate transforms for 3D reference tetrahedron ----------
 
-void rstToABC(const VecXd& r, const VecXd& s, const VecXd& t,
-              VecXd& a, VecXd& b, VecXd& c) {
+void rstToABC(const VecXd& r, const VecXd& s, const VecXd& t, VecXd& a, VecXd& b, VecXd& c) {
     int np = static_cast<int>(r.size());
     a.resize(np);
     b.resize(np);
@@ -33,16 +34,12 @@ void rstToABC(const VecXd& r, const VecXd& s, const VecXd& t,
 
 // ---------- 3D orthonormal basis on reference tetrahedron ----------
 
-static double simplex3DP(const VecXd& a, const VecXd& b, const VecXd& c,
-                         int i, int j, int k, int idx) {
+static double simplex3DP(const VecXd& a, const VecXd& b, const VecXd& c, int i, int j, int k, int idx) {
     double h1 = jacobiP(a(idx), 0.0, 0.0, i);
     double h2 = jacobiP(b(idx), 2.0 * i + 1.0, 0.0, j);
     double h3 = jacobiP(c(idx), 2.0 * (i + j) + 2.0, 0.0, k);
 
-    return 2.0 * std::sqrt(2.0) * h1 * h2
-         * std::pow(1.0 - b(idx), i)
-         * h3
-         * std::pow(1.0 - c(idx), i + j);
+    return 2.0 * std::sqrt(2.0) * h1 * h2 * std::pow(1.0 - b(idx), i) * h3 * std::pow(1.0 - c(idx), i + j);
 }
 
 MatXd vandermonde3D(int N, const VecXd& r, const VecXd& s, const VecXd& t) {
@@ -64,8 +61,7 @@ MatXd vandermonde3D(int N, const VecXd& r, const VecXd& s, const VecXd& t) {
     return V3D;
 }
 
-void gradVandermonde3D(int N, const VecXd& r, const VecXd& s, const VecXd& t,
-                       MatXd& V3Dr, MatXd& V3Ds, MatXd& V3Dt) {
+void gradVandermonde3D(int N, const VecXd& r, const VecXd& s, const VecXd& t, MatXd& V3Dr, MatXd& V3Ds, MatXd& V3Dt) {
     int Np = (N + 1) * (N + 2) * (N + 3) / 6;
     int npts = static_cast<int>(r.size());
     V3Dr.resize(npts, Np);
@@ -80,11 +76,11 @@ void gradVandermonde3D(int N, const VecXd& r, const VecXd& s, const VecXd& t,
         for (int j = 0; j <= N - i; ++j) {
             for (int k = 0; k <= N - i - j; ++k) {
                 for (int n = 0; n < npts; ++n) {
-                    double fa  = jacobiP(a(n), 0.0, 0.0, i);
+                    double fa = jacobiP(a(n), 0.0, 0.0, i);
                     double dfa = gradJacobiP(a(n), 0.0, 0.0, i);
-                    double gb  = jacobiP(b(n), 2.0 * i + 1.0, 0.0, j);
+                    double gb = jacobiP(b(n), 2.0 * i + 1.0, 0.0, j);
                     double dgb = gradJacobiP(b(n), 2.0 * i + 1.0, 0.0, j);
-                    double hc  = jacobiP(cv(n), 2.0 * (i + j) + 2.0, 0.0, k);
+                    double hc = jacobiP(cv(n), 2.0 * (i + j) + 2.0, 0.0, k);
                     double dhc = gradJacobiP(cv(n), 2.0 * (i + j) + 2.0, 0.0, k);
 
                     double bfac = std::pow(1.0 - b(n), i);
@@ -104,8 +100,7 @@ void gradVandermonde3D(int N, const VecXd& r, const VecXd& s, const VecXd& t,
                     // d/dc
                     double dMdc = 0.0;
                     if (i + j > 0) {
-                        dMdc += fa * gb * bfac * hc * (-static_cast<double>(i + j))
-                              * std::pow(1.0 - cv(n), i + j - 1);
+                        dMdc += fa * gb * bfac * hc * (-static_cast<double>(i + j)) * std::pow(1.0 - cv(n), i + j - 1);
                         // Also contribution from dfa * ... via chain rule through a(c)
                         // But a doesn't depend on c (it depends on r,s,t through different path)
                     }
@@ -197,7 +192,8 @@ void warpAndBlendNodes3D(int N, VecXd& r, VecXd& s, VecXd& t) {
     }
 
     // For low order (N <= 2), equidistant nodes are adequate
-    if (N <= 2) return;
+    if (N <= 2)
+        return;
 
     // For higher order, apply warp & blend.
     // The 3D version is more complex (4 faces, 6 edges).
@@ -249,23 +245,29 @@ Basis3D buildBasis3D(int N) {
     double tol = 1e-7;
     std::vector<int> f1, f2, f3, f4;
     for (int i = 0; i < B.Np; ++i) {
-        if (std::abs(B.t(i) + 1.0) < tol) f1.push_back(i);
-        if (std::abs(B.s(i) + 1.0) < tol) f2.push_back(i);
-        if (std::abs(B.r(i) + B.s(i) + B.t(i) + 1.0) < tol) f3.push_back(i);
-        if (std::abs(B.r(i) + 1.0) < tol) f4.push_back(i);
+        if (std::abs(B.t(i) + 1.0) < tol)
+            f1.push_back(i);
+        if (std::abs(B.s(i) + 1.0) < tol)
+            f2.push_back(i);
+        if (std::abs(B.r(i) + B.s(i) + B.t(i) + 1.0) < tol)
+            f3.push_back(i);
+        if (std::abs(B.r(i) + 1.0) < tol)
+            f4.push_back(i);
     }
 
     // Sort by (r,s) or (r,t) or (s,t) order for consistent face ordering
     auto sortByRS = [&](std::vector<int>& v) {
         std::sort(v.begin(), v.end(), [&](int a, int b) {
-            if (std::abs(B.r(a) - B.r(b)) > tol) return B.r(a) < B.r(b);
+            if (std::abs(B.r(a) - B.r(b)) > tol)
+                return B.r(a) < B.r(b);
             return B.s(a) < B.s(b);
         });
     };
     sortByRS(f1);
     auto sortByRT = [&](std::vector<int>& v) {
         std::sort(v.begin(), v.end(), [&](int a, int b) {
-            if (std::abs(B.r(a) - B.r(b)) > tol) return B.r(a) < B.r(b);
+            if (std::abs(B.r(a) - B.r(b)) > tol)
+                return B.r(a) < B.r(b);
             return B.t(a) < B.t(b);
         });
     };
@@ -273,16 +275,21 @@ Basis3D buildBasis3D(int N) {
     sortByRS(f3);
     auto sortByST = [&](std::vector<int>& v) {
         std::sort(v.begin(), v.end(), [&](int a, int b) {
-            if (std::abs(B.s(a) - B.s(b)) > tol) return B.s(a) < B.s(b);
+            if (std::abs(B.s(a) - B.s(b)) > tol)
+                return B.s(a) < B.s(b);
             return B.t(a) < B.t(b);
         });
     };
     sortByST(f4);
 
-    for (int i = 0; i < B.Nfp && i < static_cast<int>(f1.size()); ++i) B.Fmask(i, 0) = f1[i];
-    for (int i = 0; i < B.Nfp && i < static_cast<int>(f2.size()); ++i) B.Fmask(i, 1) = f2[i];
-    for (int i = 0; i < B.Nfp && i < static_cast<int>(f3.size()); ++i) B.Fmask(i, 2) = f3[i];
-    for (int i = 0; i < B.Nfp && i < static_cast<int>(f4.size()); ++i) B.Fmask(i, 3) = f4[i];
+    for (int i = 0; i < B.Nfp && i < static_cast<int>(f1.size()); ++i)
+        B.Fmask(i, 0) = f1[i];
+    for (int i = 0; i < B.Nfp && i < static_cast<int>(f2.size()); ++i)
+        B.Fmask(i, 1) = f2[i];
+    for (int i = 0; i < B.Nfp && i < static_cast<int>(f3.size()); ++i)
+        B.Fmask(i, 2) = f3[i];
+    for (int i = 0; i < B.Nfp && i < static_cast<int>(f4.size()); ++i)
+        B.Fmask(i, 3) = f4[i];
 
     // LIFT matrix
     // For 3D, LIFT = M^{-1} * Emat, where M = V*V^T (the mass matrix)
@@ -296,7 +303,7 @@ Basis3D buildBasis3D(int N) {
         for (int i = 0; i < B.Nfp; ++i) {
             int idx = B.Fmask(i, f);
             // Project to 2D coordinates on each face
-            if (f == 0) {        // t = -1: use (r, s)
+            if (f == 0) { // t = -1: use (r, s)
                 faceR(i) = B.r(idx);
                 faceS(i) = B.s(idx);
             } else if (f == 1) { // s = -1: use (r, t)
@@ -305,7 +312,7 @@ Basis3D buildBasis3D(int N) {
             } else if (f == 2) { // r+s+t=-1: use (r, s) (projected)
                 faceR(i) = B.r(idx);
                 faceS(i) = B.s(idx);
-            } else {             // r = -1: use (s, t)
+            } else { // r = -1: use (s, t)
                 faceR(i) = B.s(idx);
                 faceS(i) = B.t(idx);
             }

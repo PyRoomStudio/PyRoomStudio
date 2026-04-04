@@ -1,56 +1,59 @@
 #pragma once
 
-#include <QDialog>
-#include <QSpinBox>
-#include <QDoubleSpinBox>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QSlider>
+#include <QDialog>
+#include <QDoubleSpinBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QSettings>
+#include <QSlider>
+#include <QSpinBox>
 #include <QTableWidget>
 
 namespace prs {
 
 class PreferencesDialog : public QDialog {
     Q_OBJECT
-public:
+  public:
     explicit PreferencesDialog(QWidget* parent = nullptr);
-private:
+
+  private:
     void accept() override;
-    QLineEdit*  projectDirEdit_ = nullptr;
-    QSpinBox*   autoSaveInterval_ = nullptr;
+    QLineEdit* projectDirEdit_ = nullptr;
+    QSpinBox* autoSaveInterval_ = nullptr;
 };
 
 class DisplaySettingsDialog : public QDialog {
     Q_OBJECT
-public:
+  public:
     explicit DisplaySettingsDialog(QWidget* parent = nullptr);
-signals:
+  signals:
     void settingsChanged();
-private:
+
+  private:
     void accept() override;
-    QCheckBox*      gridVisible_ = nullptr;
+    QCheckBox* gridVisible_ = nullptr;
     QDoubleSpinBox* gridSpacing_ = nullptr;
-    QSlider*        transparencyAlpha_ = nullptr;
-    QLabel*         alphaLabel_ = nullptr;
-    QSpinBox*       markerSize_ = nullptr;
-    QCheckBox*      solidColorsOnly_ = nullptr;
+    QSlider* transparencyAlpha_ = nullptr;
+    QLabel* alphaLabel_ = nullptr;
+    QSpinBox* markerSize_ = nullptr;
+    QCheckBox* solidColorsOnly_ = nullptr;
 };
 
 class AudioSettingsDialog : public QDialog {
     Q_OBJECT
-public:
+  public:
     explicit AudioSettingsDialog(QWidget* parent = nullptr);
-private:
+
+  private:
     void accept() override;
     QComboBox* sampleRate_ = nullptr;
 };
 
 class SimulationSettingsDialog : public QDialog {
     Q_OBJECT
-public:
+  public:
     explicit SimulationSettingsDialog(QWidget* parent = nullptr);
 
     int maxOrder() const;
@@ -59,20 +62,21 @@ public:
     float scattering() const;
     bool airAbsorption() const;
 
-private:
+  private:
     void accept() override;
-    QSpinBox*       maxOrder_ = nullptr;
-    QSpinBox*       numRays_ = nullptr;
+    QSpinBox* maxOrder_ = nullptr;
+    QSpinBox* numRays_ = nullptr;
     QDoubleSpinBox* absorption_ = nullptr;
     QDoubleSpinBox* scattering_ = nullptr;
-    QCheckBox*      airAbsorption_ = nullptr;
+    QCheckBox* airAbsorption_ = nullptr;
 };
 
 class KeyboardShortcutsDialog : public QDialog {
     Q_OBJECT
-public:
+  public:
     explicit KeyboardShortcutsDialog(QWidget* parent = nullptr);
-private:
+
+  private:
     QTableWidget* table_ = nullptr;
 };
 

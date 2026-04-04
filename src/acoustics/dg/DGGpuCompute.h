@@ -1,12 +1,13 @@
 #pragma once
 
-#include "DGTypes.h"
 #include "DGBasis2D.h"
-#include "DGMesh2D.h"
 #include "DGBasis3D.h"
+#include "DGMesh2D.h"
 #include "DGMesh3D.h"
+#include "DGTypes.h"
 
 #include <QOpenGLFunctions_4_3_Core>
+
 #include <memory>
 #include <string>
 
@@ -17,7 +18,7 @@ namespace prs {
 namespace dg {
 
 class DGGpuCompute {
-public:
+  public:
     DGGpuCompute();
     ~DGGpuCompute();
 
@@ -48,7 +49,7 @@ public:
 
     std::string lastError() const { return lastError_; }
 
-private:
+  private:
     bool compileProgram(GLuint& program, const std::string& source);
     GLuint createBuffer(GLenum usage, GLsizeiptr size, const void* data = nullptr);
     void uploadBuffer(GLuint buf, GLsizeiptr size, const void* data);
@@ -71,16 +72,16 @@ private:
     // 2D-specific
     struct State2D {
         GLuint rhsProgram = 0;
-        GLuint fieldBuf = 0;     // p, ux, uy packed (3 * Np * K floats)
-        GLuint rhsBuf = 0;       // rhsP, rhsUx, rhsUy (3 * Np * K)
-        GLuint resBuf = 0;       // resP, resUx, resUy (3 * Np * K)
-        GLuint opBuf = 0;        // Dr, Ds, LIFT packed
-        GLuint geoBuf = 0;       // rx, ry, sx, sy (4 * Np * K)
-        GLuint surfBuf = 0;      // nx, ny, Fscale, boundaryImpedance
-        GLuint connBuf = 0;      // vmapM, vmapP, EToE, EToF (int arrays)
-        GLuint srcBuf = 0;       // source weights + listener weights + readback
-        GLuint physicsBuf = 0;   // UBO for constants
-        GLuint rkParamsBuf = 0;  // UBO for RK params
+        GLuint fieldBuf = 0;    // p, ux, uy packed (3 * Np * K floats)
+        GLuint rhsBuf = 0;      // rhsP, rhsUx, rhsUy (3 * Np * K)
+        GLuint resBuf = 0;      // resP, resUx, resUy (3 * Np * K)
+        GLuint opBuf = 0;       // Dr, Ds, LIFT packed
+        GLuint geoBuf = 0;      // rx, ry, sx, sy (4 * Np * K)
+        GLuint surfBuf = 0;     // nx, ny, Fscale, boundaryImpedance
+        GLuint connBuf = 0;     // vmapM, vmapP, EToE, EToF (int arrays)
+        GLuint srcBuf = 0;      // source weights + listener weights + readback
+        GLuint physicsBuf = 0;  // UBO for constants
+        GLuint rkParamsBuf = 0; // UBO for RK params
         int Np = 0, K = 0, Nfp = 0, Nfaces = 0, totalFaceNodes = 0;
         int localSize = 0;
         int sourceElem = 0;
@@ -90,13 +91,13 @@ private:
     // 3D-specific
     struct State3D {
         GLuint rhsProgram = 0;
-        GLuint fieldBuf = 0;     // p, ux, uy, uz (4 * Np * K)
-        GLuint rhsBuf = 0;       // 4 * Np * K
-        GLuint resBuf = 0;       // 4 * Np * K
-        GLuint opBuf = 0;        // Dr, Ds, Dt, LIFT
-        GLuint geoBuf = 0;       // rx,ry,rz, sx,sy,sz, tx,ty,tz (9 * Np * K)
-        GLuint surfBuf = 0;      // nx,ny,nz, Fscale, boundaryImpedance
-        GLuint connBuf = 0;      // vmapM, vmapP, EToE, EToF
+        GLuint fieldBuf = 0; // p, ux, uy, uz (4 * Np * K)
+        GLuint rhsBuf = 0;   // 4 * Np * K
+        GLuint resBuf = 0;   // 4 * Np * K
+        GLuint opBuf = 0;    // Dr, Ds, Dt, LIFT
+        GLuint geoBuf = 0;   // rx,ry,rz, sx,sy,sz, tx,ty,tz (9 * Np * K)
+        GLuint surfBuf = 0;  // nx,ny,nz, Fscale, boundaryImpedance
+        GLuint connBuf = 0;  // vmapM, vmapP, EToE, EToF
         GLuint srcBuf = 0;
         GLuint physicsBuf = 0;
         GLuint rkParamsBuf = 0;

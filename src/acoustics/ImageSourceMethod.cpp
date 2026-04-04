@@ -1,24 +1,23 @@
 #include "ImageSourceMethod.h"
+
 #include "rendering/RayPicking.h"
-#include <cmath>
+
 #include <algorithm>
+#include <cmath>
 
 namespace prs {
 
 static bool allBelowThreshold(const std::array<float, NUM_FREQ_BANDS>& att, float threshold) {
     for (float a : att)
-        if (a > threshold) return false;
+        if (a > threshold)
+            return false;
     return true;
 }
 
 // Per-triangle interface
 
-std::vector<ImageSource> ImageSourceMethod::compute(
-    const Vec3f& sourcePos,
-    const Vec3f& listenerPos,
-    const std::vector<Wall>& walls,
-    int maxOrder)
-{
+std::vector<ImageSource> ImageSourceMethod::compute(const Vec3f& sourcePos, const Vec3f& listenerPos,
+                                                    const std::vector<Wall>& walls, int maxOrder) {
     std::vector<ImageSource> results;
 
     std::array<float, NUM_FREQ_BANDS> unity;
@@ -56,18 +55,15 @@ std::vector<ImageSource> ImageSourceMethod::compute(
     return valid;
 }
 
-void ImageSourceMethod::generateImageSources(
-    const Vec3f& source,
-    const std::vector<Wall>& walls,
-    int order, int maxOrder,
-    const std::array<float, NUM_FREQ_BANDS>& attenuation,
-    const std::vector<int>& path,
-    std::vector<ImageSource>& results)
-{
-    if (order > maxOrder) return;
+void ImageSourceMethod::generateImageSources(const Vec3f& source, const std::vector<Wall>& walls, int order,
+                                             int maxOrder, const std::array<float, NUM_FREQ_BANDS>& attenuation,
+                                             const std::vector<int>& path, std::vector<ImageSource>& results) {
+    if (order > maxOrder)
+        return;
 
     for (int wi = 0; wi < static_cast<int>(walls.size()); ++wi) {
-        if (!path.empty() && path.back() == wi) continue;
+        if (!path.empty() && path.back() == wi)
+            continue;
 
         Vec3f reflected = walls[wi].reflectPoint(source);
 
@@ -75,28 +71,28 @@ void ImageSourceMethod::generateImageSources(
         for (int b = 0; b < NUM_FREQ_BANDS; ++b)
             newAtt[b] = attenuation[b] * (1.0f - walls[wi].absorption[b]);
 
-        if (allBelowThreshold(newAtt, 1e-6f)) continue;
+        if (allBelowThreshold(newAtt, 1e-6f))
+            continue;
 
         auto newPath = path;
         newPath.push_back(wi);
 
         ImageSource is;
-        is.position    = reflected;
+        is.position = reflected;
         is.attenuation = newAtt;
-        is.order       = order;
-        is.wallPath    = newPath;
+        is.order = order;
+        is.wallPath = newPath;
         results.push_back(is);
 
-        generateImageSources(reflected, walls, order + 1, maxOrder,
-                             newAtt, newPath, results);
+        generateImageSources(reflected, walls, order + 1, maxOrder, newAtt, newPath, results);
     }
 }
 
-bool ImageSourceMethod::isVisible(const Vec3f& from, const Vec3f& to,
-                                   const std::vector<Wall>& walls) const {
+bool ImageSourceMethod::isVisible(const Vec3f& from, const Vec3f& to, const std::vector<Wall>& walls) const {
     Vec3f dir = to - from;
     float maxDist = dir.norm();
-    if (maxDist < 1e-8f) return true;
+    if (maxDist < 1e-8f)
+        return true;
     dir /= maxDist;
 
     for (auto& wall : walls) {
@@ -110,13 +106,9 @@ bool ImageSourceMethod::isVisible(const Vec3f& from, const Vec3f& to,
 
 // Surface-level ISM with BVH visibility
 
-std::vector<ImageSource> ImageSourceMethod::compute(
-    const Vec3f& sourcePos,
-    const Vec3f& listenerPos,
-    const std::vector<AcousticSurface>& surfaces,
-    const Bvh& bvh,
-    int maxOrder)
-{
+std::vector<ImageSource> ImageSourceMethod::compute(const Vec3f& sourcePos, const Vec3f& listenerPos,
+                                                    const std::vector<AcousticSurface>& surfaces, const Bvh& bvh,
+                                                    int maxOrder) {
     std::vector<ImageSource> results;
 
     std::array<float, NUM_FREQ_BANDS> unity;
@@ -154,18 +146,16 @@ std::vector<ImageSource> ImageSourceMethod::compute(
     return valid;
 }
 
-void ImageSourceMethod::generateImageSources(
-    const Vec3f& source,
-    const std::vector<AcousticSurface>& surfaces,
-    int order, int maxOrder,
-    const std::array<float, NUM_FREQ_BANDS>& attenuation,
-    const std::vector<int>& path,
-    std::vector<ImageSource>& results)
-{
-    if (order > maxOrder) return;
+void ImageSourceMethod::generateImageSources(const Vec3f& source, const std::vector<AcousticSurface>& surfaces,
+                                             int order, int maxOrder,
+                                             const std::array<float, NUM_FREQ_BANDS>& attenuation,
+                                             const std::vector<int>& path, std::vector<ImageSource>& results) {
+    if (order > maxOrder)
+        return;
 
     for (int si = 0; si < static_cast<int>(surfaces.size()); ++si) {
-        if (!path.empty() && path.back() == si) continue;
+        if (!path.empty() && path.back() == si)
+            continue;
 
         Vec3f reflected = surfaces[si].reflectPoint(source);
 
@@ -173,28 +163,28 @@ void ImageSourceMethod::generateImageSources(
         for (int b = 0; b < NUM_FREQ_BANDS; ++b)
             newAtt[b] = attenuation[b] * (1.0f - surfaces[si].absorption[b]);
 
-        if (allBelowThreshold(newAtt, 1e-6f)) continue;
+        if (allBelowThreshold(newAtt, 1e-6f))
+            continue;
 
         auto newPath = path;
         newPath.push_back(si);
 
         ImageSource is;
-        is.position    = reflected;
+        is.position = reflected;
         is.attenuation = newAtt;
-        is.order       = order;
-        is.wallPath    = newPath;
+        is.order = order;
+        is.wallPath = newPath;
         results.push_back(is);
 
-        generateImageSources(reflected, surfaces, order + 1, maxOrder,
-                             newAtt, newPath, results);
+        generateImageSources(reflected, surfaces, order + 1, maxOrder, newAtt, newPath, results);
     }
 }
 
-bool ImageSourceMethod::isVisible(const Vec3f& from, const Vec3f& to,
-                                   const Bvh& bvh) const {
+bool ImageSourceMethod::isVisible(const Vec3f& from, const Vec3f& to, const Bvh& bvh) const {
     Vec3f dir = to - from;
     float maxDist = dir.norm();
-    if (maxDist < 1e-8f) return true;
+    if (maxDist < 1e-8f)
+        return true;
     dir /= maxDist;
 
     return !bvh.anyHit(from, dir, 1e-4f, maxDist - 1e-4f);

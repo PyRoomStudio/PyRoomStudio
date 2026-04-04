@@ -7,10 +7,13 @@
   <img width="600px" src="assets/logo-text-color.svg" alt="Seiche">
 </p>
 
+[![CI](https://github.com/PyRoomStudio/PyRoomStudio/actions/workflows/ci.yml/badge.svg)](https://github.com/PyRoomStudio/PyRoomStudio/actions/workflows/ci.yml)
+
 ---
+
 <!------------------------------------------------------------------->
 
-**Seiche** is an open-source application for rendering and analyzing acoustical properties of 3D spaces via meshes. 
+**Seiche** is an open-source application for rendering and analyzing acoustical properties of 3D spaces via meshes.
 The project is inspired by [pyroomacoustics](https://github.com/LCAV/pyroomacoustics), a library for testing and simulating acoustics algorithms written by Robin Scheibler.
 
 <p align="center">
@@ -23,9 +26,9 @@ The project is inspired by [pyroomacoustics](https://github.com/LCAV/pyroomacous
 
 #### Contacts:
 
-William (Zhiwen) Chen (willc@illinois.edu, [LinkedIn](https://www.linkedin.com/in/william-chen-821300149/)), *Co-Founder & Designer*
+William (Zhiwen) Chen (willc@illinois.edu, [LinkedIn](https://www.linkedin.com/in/william-chen-821300149/)), _Co-Founder & Designer_
 
-Evan M. Matthews (evanmm3@illinois.edu, [LinkedIn](https://www.linkedin.com/in/ematth)), *Co-Founder & Progammer*
+Evan M. Matthews (evanmm3@illinois.edu, [LinkedIn](https://www.linkedin.com/in/ematth)), _Co-Founder & Progammer_
 
 <!------------------------------------------------------------------->
 
@@ -48,22 +51,22 @@ The latest build of Seiche is running on C++17 with Qt6 and Eigen3 dependencies.
 
 1. Clone the repository
 
-    ```bash
-    $ git clone https://github.com/PyRoomStudio/PyRoomStudio.git
-    ```
+   ```bash
+   $ git clone https://github.com/PyRoomStudio/PyRoomStudio.git
+   ```
 
-2. Install [Qt6](https://doc.qt.io/qt-6/qt-online-installation.html) (the open individual license is enough to compile the software). During installation, make sure to include the **MinGW** toolchain component under *Qt > Developer and Designer Tools*.
+2. Install [Qt6](https://doc.qt.io/qt-6/qt-online-installation.html) (the open individual license is enough to compile the software). During installation, make sure to include the **MinGW** toolchain component under _Qt > Developer and Designer Tools_.
 
 3. Compiling the software is done through Cmake/Ninja. The provided commands work on Windows/MacOS, but will require your system's specific Qt path.
 
-    ```bash
-    $ cmake -S . -B build \
-        -DCMAKE_PREFIX_PATH="C:/Qt/6.10.2/mingw_64" \
-        -DCMAKE_BUILD_TYPE=Release \
-        -G Ninja
-        
-    $ cmake --build build
-    ```
+   ```bash
+   $ cmake -S . -B build \
+       -DCMAKE_PREFIX_PATH="C:/Qt/6.10.2/mingw_64" \
+       -DCMAKE_BUILD_TYPE=Release \
+       -G Ninja
+
+   $ cmake --build build
+   ```
 
 The version number can be different, although Qt >6 is expected. For MacOS specifically, replace `/mingw_64` with `/macos`.
 Once Cmake has built the Ninja files, follow-up compilations will only need `cmake --build build`.
@@ -128,10 +131,16 @@ Check `INSTRUCTIONS.md` for details on how to use the application.
 
 <!------------------------------------------------------------------->
 
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on setting up a development environment and submitting changes. To run the full test suite locally:
+
+```bash
+./run_tests.sh -DCMAKE_PREFIX_PATH=/path/to/Qt/6.x/gcc_64
+```
+
 ## Credits
 
 - Big thanks to [Robin Scheibler](https://www.robinscheibler.org), [Zackery Belanger](https://empac.rpi.edu/program/people/researchers/zackery-belanger), [Mohamed Boubekri](https://arch.illinois.edu/people/profiles/mohamed-boubekri), and [Paris Smaragdis](https://www.mit.edu/~paris) for providing initial feedback and collaborating with us.
 
 <!------------------------------------------------------------------->
-
-

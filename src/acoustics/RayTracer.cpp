@@ -1,6 +1,6 @@
+#include <algorithm>
 #include <cmath>
 #include <random>
-#include <algorithm>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -13,23 +13,15 @@ namespace prs {
 
 static bool allBelowThreshold(const std::array<float, NUM_FREQ_BANDS>& energy, float threshold) {
     for (float e : energy)
-        if (e > threshold) return false;
+        if (e > threshold)
+            return false;
     return true;
 }
 
-std::vector<RayContribution> RayTracer::trace(
-    const Vec3f& sourcePos,
-    const Vec3f& listenerPos,
-    const std::vector<Wall>& walls,
-    const Bvh& bvh,
-    int numRays,
-    float listenerRadius,
-    int maxBounces,
-    float minEnergy,
-    const Vec3f* headCenter,
-    float headRadius,
-    bool airAbsorption)
-{
+std::vector<RayContribution> RayTracer::trace(const Vec3f& sourcePos, const Vec3f& listenerPos,
+                                              const std::vector<Wall>& walls, const Bvh& bvh, int numRays,
+                                              float listenerRadius, int maxBounces, float minEnergy,
+                                              const Vec3f* headCenter, float headRadius, bool airAbsorption) {
     std::vector<RayContribution> contributions;
     bool useBvh = !bvh.empty();
     const float airAbsCoeff = airAbsorption ? 0.005f : 0.0f;
@@ -38,24 +30,24 @@ std::vector<RayContribution> RayTracer::trace(
     initEnergy.fill(1.0f);
 
 #ifdef _OPENMP
-    #pragma omp parallel
+#pragma omp parallel
     {
         std::vector<RayContribution> localContribs;
 
-        #pragma omp for schedule(dynamic, 64)
+#pragma omp for schedule(dynamic, 64)
         for (int r = 0; r < numRays; ++r) {
             Vec3f rayOrigin = sourcePos;
-            Vec3f rayDir    = randomDirectionOnSphere();
-            auto energy     = initEnergy;
+            Vec3f rayDir = randomDirectionOnSphere();
+            auto energy = initEnergy;
             float totalDist = 0.0f;
 
             for (int bounce = 0; bounce < maxBounces && !allBelowThreshold(energy, minEnergy); ++bounce) {
-                auto tListener = RayPicking::raySphereIntersect(
-                    rayOrigin, rayDir, listenerPos, listenerRadius);
+                auto tListener = RayPicking::raySphereIntersect(rayOrigin, rayDir, listenerPos, listenerRadius);
                 if (tListener) {
                     Vec3f hitPoint = rayOrigin + rayDir * *tListener;
-                    bool throughHead = (headRadius > 0.0f && headCenter != nullptr &&
-                        RayPicking::segmentPassesThroughSphere(rayOrigin, hitPoint, *headCenter, headRadius));
+                    bool throughHead =
+                        (headRadius > 0.0f && headCenter != nullptr &&
+                         RayPicking::segmentPassesThroughSphere(rayOrigin, hitPoint, *headCenter, headRadius));
                     if (!throughHead) {
                         float detDist = totalDist + *tListener;
                         float geomAtten = 1.0f / (4.0f * static_cast<float>(M_PI) * detDist * detDist + 1e-8f);
@@ -86,7 +78,8 @@ std::vector<RayContribution> RayTracer::trace(
                     wallT = minT;
                 }
 
-                if (wallIdx < 0) break;
+                if (wallIdx < 0)
+                    break;
 
                 totalDist += wallT;
                 Vec3f hitPoint = rayOrigin + rayDir * wallT;
@@ -103,23 +96,23 @@ std::vector<RayContribution> RayTracer::trace(
             }
         }
 
-        #pragma omp critical
+#pragma omp critical
         contributions.insert(contributions.end(), localContribs.begin(), localContribs.end());
     }
 #else
     for (int r = 0; r < numRays; ++r) {
         Vec3f rayOrigin = sourcePos;
-        Vec3f rayDir    = randomDirectionOnSphere();
-        auto energy     = initEnergy;
+        Vec3f rayDir = randomDirectionOnSphere();
+        auto energy = initEnergy;
         float totalDist = 0.0f;
 
         for (int bounce = 0; bounce < maxBounces && !allBelowThreshold(energy, minEnergy); ++bounce) {
-            auto tListener = RayPicking::raySphereIntersect(
-                rayOrigin, rayDir, listenerPos, listenerRadius);
+            auto tListener = RayPicking::raySphereIntersect(rayOrigin, rayDir, listenerPos, listenerRadius);
             if (tListener) {
                 Vec3f hitPoint = rayOrigin + rayDir * *tListener;
-                bool throughHead = (headRadius > 0.0f && headCenter != nullptr &&
-                    RayPicking::segmentPassesThroughSphere(rayOrigin, hitPoint, *headCenter, headRadius));
+                bool throughHead =
+                    (headRadius > 0.0f && headCenter != nullptr &&
+                     RayPicking::segmentPassesThroughSphere(rayOrigin, hitPoint, *headCenter, headRadius));
                 if (!throughHead) {
                     float detDist = totalDist + *tListener;
                     float geomAtten = 1.0f / (4.0f * static_cast<float>(M_PI) * detDist * detDist + 1e-8f);
@@ -150,7 +143,8 @@ std::vector<RayContribution> RayTracer::trace(
                 wallT = minT;
             }
 
-            if (wallIdx < 0) break;
+            if (wallIdx < 0)
+                break;
 
             totalDist += wallT;
             Vec3f hitPoint = rayOrigin + rayDir * wallT;
@@ -176,22 +170,20 @@ Vec3f RayTracer::randomDirectionOnSphere() const {
     static thread_local std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
     float theta = 2.0f * static_cast<float>(M_PI) * dist(rng);
-    float phi   = std::acos(1.0f - 2.0f * dist(rng));
+    float phi = std::acos(1.0f - 2.0f * dist(rng));
 
-    return Vec3f(
-        std::sin(phi) * std::cos(theta),
-        std::sin(phi) * std::sin(theta),
-        std::cos(phi)
-    );
+    return Vec3f(std::sin(phi) * std::cos(theta), std::sin(phi) * std::sin(theta), std::cos(phi));
 }
 
 Vec3f RayTracer::reflectDirection(const Vec3f& dir, const Vec3f& normal, float scattering) const {
     Vec3f specular = dir - 2.0f * dir.dot(normal) * normal;
 
-    if (scattering < 1e-6f) return specular.normalized();
+    if (scattering < 1e-6f)
+        return specular.normalized();
 
     Vec3f diffuse = randomDirectionOnSphere();
-    if (diffuse.dot(normal) < 0) diffuse = -diffuse;
+    if (diffuse.dot(normal) < 0)
+        diffuse = -diffuse;
 
     Vec3f blended = (1.0f - scattering) * specular + scattering * diffuse;
     return blended.normalized();

@@ -42,7 +42,8 @@ void SimulationQueue::cancelAll() {
     QMutexLocker lock(&mutex_);
     for (auto& [id, _] : pending_) {
         for (auto& j : allJobs_) {
-            if (j.id == id) j.status = JobStatus::Cancelled;
+            if (j.id == id)
+                j.status = JobStatus::Cancelled;
         }
     }
     pending_.clear();
@@ -55,15 +56,13 @@ void SimulationQueue::cancelAll() {
 
 void SimulationQueue::removeCompleted(int jobId) {
     QMutexLocker lock(&mutex_);
-    allJobs_.erase(
-        std::remove_if(allJobs_.begin(), allJobs_.end(),
-            [jobId](const JobInfo& j) {
-                return j.id == jobId &&
-                       (j.status == JobStatus::Completed ||
-                        j.status == JobStatus::Failed ||
-                        j.status == JobStatus::Cancelled);
-            }),
-        allJobs_.end());
+    allJobs_.erase(std::remove_if(allJobs_.begin(), allJobs_.end(),
+                                  [jobId](const JobInfo& j) {
+                                      return j.id == jobId &&
+                                             (j.status == JobStatus::Completed || j.status == JobStatus::Failed ||
+                                              j.status == JobStatus::Cancelled);
+                                  }),
+                   allJobs_.end());
     lock.unlock();
     emit queueChanged();
 }
@@ -85,16 +84,19 @@ std::vector<SimulationQueue::JobInfo> SimulationQueue::allJobs() const {
 
 std::optional<SimulationQueue::JobInfo> SimulationQueue::currentJob() const {
     QMutexLocker lock(&mutex_);
-    if (currentJobId_ < 0) return std::nullopt;
+    if (currentJobId_ < 0)
+        return std::nullopt;
     for (auto& j : allJobs_) {
-        if (j.id == currentJobId_) return j;
+        if (j.id == currentJobId_)
+            return j;
     }
     return std::nullopt;
 }
 
 void SimulationQueue::processNext() {
     QMutexLocker lock(&mutex_);
-    if (currentWorker_ || pending_.empty()) return;
+    if (currentWorker_ || pending_.empty())
+        return;
 
     auto [id, params] = pending_.front();
     pending_.pop_front();
@@ -118,7 +120,10 @@ void SimulationQueue::processNext() {
 
     QString desc;
     for (auto& j : allJobs_) {
-        if (j.id == id) { desc = j.description; break; }
+        if (j.id == id) {
+            desc = j.description;
+            break;
+        }
     }
 
     lock.unlock();

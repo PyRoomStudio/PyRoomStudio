@@ -1,26 +1,26 @@
 #pragma once
 
-#include <QDialog>
-#include <QListWidget>
-#include <QTableWidget>
+#include <QAudioOutput>
 #include <QComboBox>
+#include <QDialog>
+#include <QLabel>
+#include <QListWidget>
+#include <QMediaPlayer>
 #include <QPushButton>
 #include <QSlider>
-#include <QLabel>
-#include <QMediaPlayer>
-#include <QAudioOutput>
 #include <QStringList>
+#include <QTableWidget>
 
 namespace prs {
 
 class AudioComparisonDialog : public QDialog {
     Q_OBJECT
 
-public:
+  public:
     explicit AudioComparisonDialog(const QString& outputDir, QWidget* parent = nullptr);
     ~AudioComparisonDialog() override;
 
-private slots:
+  private slots:
     void onPlayFile(int row);
     void onStopPlayback();
     void onPlayA();
@@ -32,7 +32,7 @@ private slots:
     void onVolumeChanged(int value);
     void onPlayerStateChanged(QMediaPlayer::PlaybackState state);
 
-private:
+  private:
     void populateFileList(const QString& dir);
     void loadMetrics(const QString& dir);
     void playFile(const QString& path);

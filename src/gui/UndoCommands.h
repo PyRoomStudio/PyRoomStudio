@@ -1,46 +1,50 @@
 #pragma once
 
-#include "core/Types.h"
-#include "core/PlacedPoint.h"
 #include "core/Material.h"
+#include "core/PlacedPoint.h"
+#include "core/Types.h"
 
 #include <QUndoCommand>
-#include <vector>
-#include <optional>
+
 #include <functional>
+#include <optional>
+#include <vector>
 
 namespace prs {
 
 class Viewport3D;
 
 class AddPointCommand : public QUndoCommand {
-public:
+  public:
     AddPointCommand(Viewport3D* vp, const PlacedPoint& point);
     void undo() override;
     void redo() override;
-private:
+
+  private:
     Viewport3D* vp_;
     PlacedPoint point_;
     int index_ = -1;
 };
 
 class RemovePointCommand : public QUndoCommand {
-public:
+  public:
     RemovePointCommand(Viewport3D* vp, int index);
     void undo() override;
     void redo() override;
-private:
+
+  private:
     Viewport3D* vp_;
     PlacedPoint point_;
     int index_;
 };
 
 class ChangePointTypeCommand : public QUndoCommand {
-public:
+  public:
     ChangePointTypeCommand(Viewport3D* vp, int index, const std::string& newType);
     void undo() override;
     void redo() override;
-private:
+
+  private:
     Viewport3D* vp_;
     int index_;
     std::string oldType_;
@@ -48,11 +52,12 @@ private:
 };
 
 class ChangeSurfaceColorCommand : public QUndoCommand {
-public:
+  public:
     ChangeSurfaceColorCommand(Viewport3D* vp, int surfIdx, const Color3f& newColor);
     void undo() override;
     void redo() override;
-private:
+
+  private:
     Viewport3D* vp_;
     int surfIdx_;
     Color3f oldColor_;
@@ -60,22 +65,24 @@ private:
 };
 
 class ChangeScaleCommand : public QUndoCommand {
-public:
+  public:
     ChangeScaleCommand(Viewport3D* vp, float oldScale, float newScale);
     void undo() override;
     void redo() override;
-private:
+
+  private:
     Viewport3D* vp_;
     float oldScale_;
     float newScale_;
 };
 
 class MovePointCommand : public QUndoCommand {
-public:
+  public:
     MovePointCommand(Viewport3D* vp, int index, const PlacedPoint& oldState, const PlacedPoint& newState);
     void undo() override;
     void redo() override;
-private:
+
+  private:
     Viewport3D* vp_;
     int index_;
     PlacedPoint oldState_;
@@ -83,11 +90,12 @@ private:
 };
 
 class ClearAllPointsCommand : public QUndoCommand {
-public:
+  public:
     ClearAllPointsCommand(Viewport3D* vp);
     void undo() override;
     void redo() override;
-private:
+
+  private:
     Viewport3D* vp_;
     std::vector<PlacedPoint> savedPoints_;
 };

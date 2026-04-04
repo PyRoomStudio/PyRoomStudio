@@ -1,10 +1,10 @@
-#include "gui/MainWindow.h"
 #include "gui/IconUtils.h"
+#include "gui/MainWindow.h"
 
 #include <QApplication>
-#include <QSurfaceFormat>
-#include <QStyleFactory>
 #include <QPalette>
+#include <QStyleFactory>
+#include <QSurfaceFormat>
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);

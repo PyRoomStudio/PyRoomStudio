@@ -1,9 +1,10 @@
 #include "Bvh.h"
+
 #include "rendering/RayPicking.h"
 
 #include <algorithm>
-#include <numeric>
 #include <cmath>
+#include <numeric>
 
 namespace prs {
 
@@ -18,7 +19,8 @@ AABB Bvh::triangleBounds(const Triangle& tri) {
 void Bvh::build(const std::vector<Wall>& walls) {
     walls_ = &walls;
     int n = static_cast<int>(walls.size());
-    if (n == 0) return;
+    if (n == 0)
+        return;
 
     primIndices_.resize(n);
     primBounds_.resize(n);
@@ -73,8 +75,8 @@ void Bvh::buildRecursive(int nodeIdx, int start, int end) {
     float scale = static_cast<float>(SAH_BINS) / axisExtent;
     for (int i = start; i < end; ++i) {
         int idx = primIndices_[i];
-        int b = std::min(static_cast<int>((primCentroids_[idx][axis] - centroidBounds.min[axis]) * scale),
-                         SAH_BINS - 1);
+        int b =
+            std::min(static_cast<int>((primCentroids_[idx][axis] - centroidBounds.min[axis]) * scale), SAH_BINS - 1);
         bins[b].count++;
         bins[b].bounds.expand(primBounds_[idx]);
     }
@@ -108,10 +110,10 @@ void Bvh::buildRecursive(int nodeIdx, int start, int end) {
 
     float nodeArea = nodeBounds.halfArea();
     for (int i = 0; i < SAH_BINS - 1; ++i) {
-        if (leftCount[i] == 0 || rightCount[i] == 0) continue;
-        float cost = TRAVERSAL_COST +
-                     (leftCount[i] * leftArea[i] + rightCount[i] * rightArea[i]) *
-                     INTERSECT_COST / nodeArea;
+        if (leftCount[i] == 0 || rightCount[i] == 0)
+            continue;
+        float cost =
+            TRAVERSAL_COST + (leftCount[i] * leftArea[i] + rightCount[i] * rightArea[i]) * INTERSECT_COST / nodeArea;
         if (cost < bestCost) {
             bestCost = cost;
             bestSplit = i;
@@ -128,13 +130,12 @@ void Bvh::buildRecursive(int nodeIdx, int start, int end) {
     float splitPos = centroidBounds.min[axis] + (bestSplit + 1) * axisExtent / SAH_BINS;
 
     auto mid = std::partition(primIndices_.begin() + start, primIndices_.begin() + end,
-        [&](int idx) { return primCentroids_[idx][axis] < splitPos; });
+                              [&](int idx) { return primCentroids_[idx][axis] < splitPos; });
 
     int midIdx = static_cast<int>(mid - primIndices_.begin());
     if (midIdx == start || midIdx == end) {
         midIdx = start + count / 2;
-        std::nth_element(primIndices_.begin() + start, primIndices_.begin() + midIdx,
-                         primIndices_.begin() + end,
+        std::nth_element(primIndices_.begin() + start, primIndices_.begin() + midIdx, primIndices_.begin() + end,
                          [&](int a, int b) { return primCentroids_[a][axis] < primCentroids_[b][axis]; });
     }
 
@@ -150,22 +151,24 @@ void Bvh::buildRecursive(int nodeIdx, int start, int end) {
     buildRecursive(rightIdx, midIdx, end);
 }
 
-bool Bvh::intersectAABB(const Vec3f& origin, const Vec3f& invDir,
-                         const AABB& box, float tMin, float tMax) const {
+bool Bvh::intersectAABB(const Vec3f& origin, const Vec3f& invDir, const AABB& box, float tMin, float tMax) const {
     for (int i = 0; i < 3; ++i) {
         float t1 = (box.min[i] - origin[i]) * invDir[i];
         float t2 = (box.max[i] - origin[i]) * invDir[i];
-        if (t1 > t2) std::swap(t1, t2);
+        if (t1 > t2)
+            std::swap(t1, t2);
         tMin = std::max(tMin, t1);
         tMax = std::min(tMax, t2);
-        if (tMin > tMax) return false;
+        if (tMin > tMax)
+            return false;
     }
     return true;
 }
 
 BvhHit Bvh::closestHit(const Vec3f& origin, const Vec3f& dir, float tMin) const {
     BvhHit result;
-    if (nodes_.empty()) return result;
+    if (nodes_.empty())
+        return result;
 
     Vec3f invDir(1.0f / dir.x(), 1.0f / dir.y(), 1.0f / dir.z());
 
@@ -199,9 +202,9 @@ BvhHit Bvh::closestHit(const Vec3f& origin, const Vec3f& dir, float tMin) const 
     return result;
 }
 
-bool Bvh::anyHit(const Vec3f& origin, const Vec3f& dir,
-                  float tMin, float tMax) const {
-    if (nodes_.empty()) return false;
+bool Bvh::anyHit(const Vec3f& origin, const Vec3f& dir, float tMin, float tMax) const {
+    if (nodes_.empty())
+        return false;
 
     Vec3f invDir(1.0f / dir.x(), 1.0f / dir.y(), 1.0f / dir.z());
 

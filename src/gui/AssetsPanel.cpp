@@ -1,21 +1,21 @@
 #include "AssetsPanel.h"
-#include "widgets/SurfaceGallery.h"
-#include "core/Types.h"
 
-#include <QLabel>
+#include "core/Types.h"
+#include "widgets/SurfaceGallery.h"
+
+#include <QFontMetrics>
 #include <QFrame>
+#include <QLabel>
+#include <QListWidget>
 #include <QListWidgetItem>
 #include <QScrollArea>
 #include <QTabWidget>
-#include <QListWidget>
 #include <QVBoxLayout>
-#include <QFontMetrics>
 
 namespace prs {
 
 AssetsPanel::AssetsPanel(QWidget* parent)
-    : QWidget(parent)
-{
+    : QWidget(parent) {
     setupUI();
 }
 
@@ -49,14 +49,15 @@ void AssetsPanel::setupUI() {
     surfLay->addWidget(surfScroll);
 
     auto* sourcesTab = new QWidget;
-    auto* srcLay     = new QVBoxLayout(sourcesTab);
+    auto* srcLay = new QVBoxLayout(sourcesTab);
     srcLay->setContentsMargins(4, 4, 4, 4);
     sourcesList_ = new QListWidget;
     sourcesList_->setAlternatingRowColors(true);
     connect(sourcesList_, &QListWidget::itemClicked, this, [this](QListWidgetItem* item) {
         bool ok = false;
         int idx = item->data(Qt::UserRole).toInt(&ok);
-        if (ok) emit pointListClicked(idx);
+        if (ok)
+            emit pointListClicked(idx);
     });
     srcLay->addWidget(sourcesList_);
     auto* srcHint = new QLabel("Click to select a source");
@@ -65,14 +66,15 @@ void AssetsPanel::setupUI() {
     srcLay->addWidget(srcHint);
 
     auto* listenersTab = new QWidget;
-    auto* lstLay       = new QVBoxLayout(listenersTab);
+    auto* lstLay = new QVBoxLayout(listenersTab);
     lstLay->setContentsMargins(4, 4, 4, 4);
     listenersList_ = new QListWidget;
     listenersList_->setAlternatingRowColors(true);
     connect(listenersList_, &QListWidget::itemClicked, this, [this](QListWidgetItem* item) {
         bool ok = false;
         int idx = item->data(Qt::UserRole).toInt(&ok);
-        if (ok) emit pointListClicked(idx);
+        if (ok)
+            emit pointListClicked(idx);
     });
     lstLay->addWidget(listenersList_);
     auto* lstHint = new QLabel("Click to select a listener");
@@ -98,12 +100,13 @@ void AssetsPanel::addStlSurfaces(const QString& stlName, const QVector<SurfaceIn
 }
 
 void AssetsPanel::updateSurfaceColor(int surfaceIndex, const Color3i& color) {
-    if (gallery_) gallery_->updateColor(surfaceIndex, color);
+    if (gallery_)
+        gallery_->updateColor(surfaceIndex, color);
 }
 
-void AssetsPanel::updateSurfaceAppearance(int surfaceIndex, const Color3i& color,
-                                        const QPixmap& textureThumbnail) {
-    if (gallery_) gallery_->updateSurfaceAppearance(surfaceIndex, color, textureThumbnail);
+void AssetsPanel::updateSurfaceAppearance(int surfaceIndex, const Color3i& color, const QPixmap& textureThumbnail) {
+    if (gallery_)
+        gallery_->updateSurfaceAppearance(surfaceIndex, color, textureThumbnail);
 }
 
 void AssetsPanel::clearSurfaces() {
@@ -123,22 +126,20 @@ void AssetsPanel::updatePointLists(const std::vector<PlacedPoint>& points, int a
         const auto& pt = points[i];
         if (pt.pointType == POINT_TYPE_SOURCE) {
             ++srcN;
-            QString label = pt.name.empty()
-                ? QString("Source %1").arg(srcN)
-                : QString::fromStdString(pt.name);
+            QString label = pt.name.empty() ? QString("Source %1").arg(srcN) : QString::fromStdString(pt.name);
             auto* item = new QListWidgetItem(label);
             item->setData(Qt::UserRole, i);
             sourcesList_->addItem(item);
-            if (i == activePointIndex) sourcesList_->setCurrentItem(item);
+            if (i == activePointIndex)
+                sourcesList_->setCurrentItem(item);
         } else if (pt.pointType == POINT_TYPE_LISTENER) {
             ++lstN;
-            QString label = pt.name.empty()
-                ? QString("Listener %1").arg(lstN)
-                : QString::fromStdString(pt.name);
+            QString label = pt.name.empty() ? QString("Listener %1").arg(lstN) : QString::fromStdString(pt.name);
             auto* item = new QListWidgetItem(label);
             item->setData(Qt::UserRole, i);
             listenersList_->addItem(item);
-            if (i == activePointIndex) listenersList_->setCurrentItem(item);
+            if (i == activePointIndex)
+                listenersList_->setCurrentItem(item);
         }
     }
 }

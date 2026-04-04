@@ -1,13 +1,14 @@
 #pragma once
 
-#include "core/Types.h"
-#include "core/PlacedPoint.h"
 #include "core/Material.h"
+#include "core/PlacedPoint.h"
+#include "core/Types.h"
 
-#include <QString>
 #include <QJsonObject>
-#include <vector>
+#include <QString>
+
 #include <optional>
+#include <vector>
 
 namespace prs {
 
@@ -21,7 +22,7 @@ struct ProjectData {
 };
 
 class ProjectFile {
-public:
+  public:
     static bool save(const QString& filepath, const ProjectData& data);
     static std::optional<ProjectData> load(const QString& filepath);
 };

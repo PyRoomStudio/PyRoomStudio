@@ -1,16 +1,17 @@
-#include <QtTest/QtTest>
-#include "core/Types.h"
+#include "core/Listener.h"
 #include "core/Material.h"
 #include "core/MaterialLoader.h"
 #include "core/PlacedPoint.h"
 #include "core/SoundSource.h"
-#include "core/Listener.h"
+#include "core/Types.h"
+
+#include <QtTest/QtTest>
 
 using namespace prs;
 
 class TestCore : public QObject {
     Q_OBJECT
-private slots:
+  private slots:
     void testMaterialDefaults() {
         Material m;
         QCOMPARE(m.averageAbsorption(), 0.2f);

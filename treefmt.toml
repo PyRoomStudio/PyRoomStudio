@@ -1,0 +1,34 @@
+# treefmt configuration for Seiche
+
+[global]
+excludes = [
+  "**/.git/**",
+  "**/*.txt",
+  "CHANGELOG.md",
+  "LICENSE",
+  "**/*.wav",
+  "**/*.png",
+  "**/*.svg",
+  "**/*.jpg",
+  "**/*.stl",
+  "**/*.obj",
+  "**/*.room",
+  "**/*.rc",
+  "build/**",
+  "dist/**",
+]
+
+[formatter.clang-format]
+command = "clang-format"
+options = ["-i"]
+includes = ["*.cpp", "*.h"]
+
+[formatter.prettier]
+command = "prettier"
+options = ["--write"]
+includes = [
+  "*.md",
+  "*.yaml",
+  "*.yml",
+  "*.json",
+]

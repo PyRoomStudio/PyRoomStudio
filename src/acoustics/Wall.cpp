@@ -1,4 +1,5 @@
 #include "Wall.h"
+
 #include <cmath>
 
 namespace prs {

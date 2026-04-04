@@ -1,9 +1,10 @@
 #include "MeshData.h"
 
+#include <QDataStream>
 #include <QFile>
 #include <QFileInfo>
-#include <QDataStream>
 #include <QTextStream>
+
 #include <cstdint>
 #include <limits>
 #include <map>
@@ -20,12 +21,14 @@ bool MeshData::load(const QString& filepath) {
 
 bool MeshData::loadSTL(const QString& filepath) {
     QFile file(filepath);
-    if (!file.open(QIODevice::ReadOnly)) return false;
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
 
     QByteArray data = file.readAll();
     file.close();
 
-    if (data.size() < 84) return false;
+    if (data.size() < 84)
+        return false;
 
     const char* ptr = data.constData();
 
@@ -36,7 +39,8 @@ bool MeshData::loadSTL(const QString& filepath) {
     ptr += 4;
 
     size_t expectedSize = 84 + numTriangles * 50;
-    if (static_cast<size_t>(data.size()) < expectedSize) return false;
+    if (static_cast<size_t>(data.size()) < expectedSize)
+        return false;
 
     triangles_.clear();
     triangles_.reserve(numTriangles);
@@ -46,9 +50,9 @@ bool MeshData::loadSTL(const QString& filepath) {
 
         Triangle tri;
         tri.normal = Vec3f(fp[0], fp[1], fp[2]);
-        tri.v0     = Vec3f(fp[3], fp[4], fp[5]);
-        tri.v1     = Vec3f(fp[6], fp[7], fp[8]);
-        tri.v2     = Vec3f(fp[9], fp[10], fp[11]);
+        tri.v0 = Vec3f(fp[3], fp[4], fp[5]);
+        tri.v1 = Vec3f(fp[6], fp[7], fp[8]);
+        tri.v2 = Vec3f(fp[9], fp[10], fp[11]);
 
         triangles_.push_back(tri);
 
@@ -102,9 +106,8 @@ bool MeshData::loadOBJ(const QString& filepath) {
                 int i0 = faceIndices[0];
                 int i1 = faceIndices[i - 1];
                 int i2 = faceIndices[i];
-                if (i0 < 0 || i0 >= static_cast<int>(vertices.size()) ||
-                    i1 < 0 || i1 >= static_cast<int>(vertices.size()) ||
-                    i2 < 0 || i2 >= static_cast<int>(vertices.size()))
+                if (i0 < 0 || i0 >= static_cast<int>(vertices.size()) || i1 < 0 ||
+                    i1 >= static_cast<int>(vertices.size()) || i2 < 0 || i2 >= static_cast<int>(vertices.size()))
                     continue;
 
                 Triangle tri;
@@ -138,11 +141,9 @@ void MeshData::computeBounds() {
         return;
     }
 
-    min_ = Vec3f(std::numeric_limits<float>::max(),
-                 std::numeric_limits<float>::max(),
-                 std::numeric_limits<float>::max());
-    max_ = Vec3f(std::numeric_limits<float>::lowest(),
-                 std::numeric_limits<float>::lowest(),
+    min_ =
+        Vec3f(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+    max_ = Vec3f(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(),
                  std::numeric_limits<float>::lowest());
 
     for (auto& tri : triangles_) {
@@ -153,11 +154,12 @@ void MeshData::computeBounds() {
     }
 
     center_ = (min_ + max_) * 0.5f;
-    size_   = (max_ - min_).norm();
+    size_ = (max_ - min_).norm();
 }
 
 int MeshData::boundaryEdgeCount() const {
-    if (triangles_.empty()) return 0;
+    if (triangles_.empty())
+        return 0;
 
     std::map<Edge, int> edgeFaceCount;
     for (const auto& tri : triangles_) {
@@ -170,7 +172,8 @@ int MeshData::boundaryEdgeCount() const {
 
     int boundary = 0;
     for (const auto& [edge, count] : edgeFaceCount) {
-        if (count != 2) ++boundary;
+        if (count != 2)
+            ++boundary;
     }
     return boundary;
 }
@@ -192,7 +195,8 @@ std::vector<Vec3f> MeshData::flatVertices() const {
 
 std::vector<Vec3f> MeshData::scaledFlatVertices(float scaleFactor) const {
     auto verts = flatVertices();
-    for (auto& v : verts) v *= scaleFactor;
+    for (auto& v : verts)
+        v *= scaleFactor;
     return verts;
 }
 

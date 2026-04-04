@@ -1,8 +1,9 @@
 #include "DGAcoustics2D.h"
-#include <cmath>
+
 #include <algorithm>
-#include <numeric>
 #include <chrono>
+#include <cmath>
+#include <numeric>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -12,34 +13,22 @@ namespace prs {
 namespace dg {
 
 // LSRK4 (Low-Storage Runge-Kutta, 5 stages) coefficients
-static const double rk4a[5] = {
-    0.0,
-    -567301805773.0  / 1357537059087.0,
-    -2404267990393.0 / 2016746695238.0,
-    -3550918686646.0 / 2091501179385.0,
-    -1275806237668.0 / 842570457699.0
-};
+static const double rk4a[5] = {0.0, -567301805773.0 / 1357537059087.0, -2404267990393.0 / 2016746695238.0,
+                               -3550918686646.0 / 2091501179385.0, -1275806237668.0 / 842570457699.0};
 
-static const double rk4b[5] = {
-    1432997174477.0 / 9575080441755.0,
-    5161836677717.0 / 13612068292357.0,
-    1720146321549.0 / 2090206949498.0,
-    3134564353537.0 / 4481467310338.0,
-    2277821191437.0 / 14882151754819.0
-};
+static const double rk4b[5] = {1432997174477.0 / 9575080441755.0, 5161836677717.0 / 13612068292357.0,
+                               1720146321549.0 / 2090206949498.0, 3134564353537.0 / 4481467310338.0,
+                               2277821191437.0 / 14882151754819.0};
 
-static const double rk4c[5] = {
-    0.0,
-    1432997174477.0 / 9575080441755.0,
-    2526269341429.0 / 6820363962896.0,
-    2006345519317.0 / 3224571057899.0,
-    2802321613138.0 / 2924317926251.0
-};
+static const double rk4c[5] = {0.0, 1432997174477.0 / 9575080441755.0, 2526269341429.0 / 6820363962896.0,
+                               2006345519317.0 / 3224571057899.0, 2802321613138.0 / 2924317926251.0};
 
 DGAcoustics2D::DGAcoustics2D(const Basis2D& basis, const Mesh2D& mesh, const DGParams& params)
-    : basis_(basis), mesh_(mesh), params_(params),
-      rho_(AIR_DENSITY), c_(SOUND_SPEED)
-{
+    : basis_(basis)
+    , mesh_(mesh)
+    , params_(params)
+    , rho_(AIR_DENSITY)
+    , c_(SOUND_SPEED) {
     sourceSigma_ = 1.0 / (M_PI * params_.maxFrequency);
     sourceT0_ = 4.0 * sourceSigma_;
 }
@@ -137,11 +126,8 @@ void DGAcoustics2D::addSourceTerm(MatXd& rhsP, double time) {
     }
 }
 
-void DGAcoustics2D::computeRHS(
-    const MatXd& p, const MatXd& ux, const MatXd& uy,
-    MatXd& rhsP, MatXd& rhsUx, MatXd& rhsUy,
-    double time)
-{
+void DGAcoustics2D::computeRHS(const MatXd& p, const MatXd& ux, const MatXd& uy, MatXd& rhsP, MatXd& rhsUx,
+                               MatXd& rhsUy, double time) {
     int Np = basis_.Np;
     int Nfp = basis_.Nfp;
     int Nfaces = basis_.Nfaces;
@@ -153,17 +139,17 @@ void DGAcoustics2D::computeRHS(
 
     // Compute reference-space derivatives via matrix multiply (OUTSIDE OpenMP)
     // These are (Np x Np) * (Np x K) -> (Np x K), handled by Eigen BLAS
-    dpdr_.noalias()  = basis_.Dr * p;
-    dpds_.noalias()  = basis_.Ds * p;
+    dpdr_.noalias() = basis_.Dr * p;
+    dpds_.noalias() = basis_.Ds * p;
     duxdr_.noalias() = basis_.Dr * ux;
     duxds_.noalias() = basis_.Ds * ux;
     duydr_.noalias() = basis_.Dr * uy;
     duyds_.noalias() = basis_.Ds * uy;
 
-    // Volume terms: transform to physical space and compute RHS
-    #ifdef _OPENMP
-    #pragma omp parallel for schedule(static)
-    #endif
+// Volume terms: transform to physical space and compute RHS
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
     for (int k = 0; k < K; ++k) {
         for (int i = 0; i < Np; ++i) {
             double rxv = mesh_.rx(i, k), ryv = mesh_.ry(i, k);
@@ -175,7 +161,7 @@ void DGAcoustics2D::computeRHS(
             double duxdx = rxv * duxdr_(i, k) + sxv * duxds_(i, k);
             double duydy = ryv * duydr_(i, k) + syv * duyds_(i, k);
 
-            rhsP(i, k)  = -rho_ * c2 * (duxdx + duydy);
+            rhsP(i, k) = -rho_ * c2 * (duxdx + duydy);
             rhsUx(i, k) = -invRho * dpdx;
             rhsUy(i, k) = -invRho * dpdy;
         }
@@ -185,9 +171,9 @@ void DGAcoustics2D::computeRHS(
     double Z = rho_ * c_;
     double invZ = 1.0 / Z;
 
-    #ifdef _OPENMP
-    #pragma omp parallel for schedule(static)
-    #endif
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
     for (int k = 0; k < K; ++k) {
         for (int f = 0; f < Nfaces; ++f) {
             bool isBoundary = (mesh_.EToE(k, f) == k && mesh_.EToF(k, f) == f);
@@ -199,7 +185,7 @@ void DGAcoustics2D::computeRHS(
                 int idP = mesh_.vmapP(surfIdx);
 
                 int kM = idM / Np, nM = idM % Np;
-                double pM  = p(nM, kM);
+                double pM = p(nM, kM);
                 double uxM = ux(nM, kM);
                 double uyM = uy(nM, kM);
 
@@ -210,7 +196,8 @@ void DGAcoustics2D::computeRHS(
 
                 if (isBoundary) {
                     double Zwall = mesh_.boundaryImpedance(surfIdx);
-                    if (Zwall < 1e-10) Zwall = 1e10;
+                    if (Zwall < 1e-10)
+                        Zwall = 1e10;
 
                     double R = (Zwall - Z) / (Zwall + Z);
 
@@ -224,7 +211,7 @@ void DGAcoustics2D::computeRHS(
                     uyP = unP * fny + utyM;
                 } else {
                     int kP = idP / Np, nP = idP % Np;
-                    pP  = p(nP, kP);
+                    pP = p(nP, kP);
                     uxP = ux(nP, kP);
                     uyP = uy(nP, kP);
                 }
@@ -233,7 +220,7 @@ void DGAcoustics2D::computeRHS(
                 double dunM = (uxP - uxM) * fnx + (uyP - uyM) * fny;
 
                 fluxP_(fid, k) = 0.5 * (c_ * invZ * dp - c2 * dunM);
-                double fluxUn  = 0.5 * (-invRho * dp + c_ * Z * invRho * dunM);
+                double fluxUn = 0.5 * (-invRho * dp + c_ * Z * invRho * dunM);
 
                 fluxUx_(fid, k) = fluxUn * fnx;
                 fluxUy_(fid, k) = fluxUn * fny;
@@ -242,23 +229,19 @@ void DGAcoustics2D::computeRHS(
     }
 
     // Scale flux by Fscale and apply LIFT (outside OpenMP — Eigen BLAS)
-    scaledFluxP_.noalias()  = fluxP_.cwiseProduct(mesh_.Fscale);
+    scaledFluxP_.noalias() = fluxP_.cwiseProduct(mesh_.Fscale);
     scaledFluxUx_.noalias() = fluxUx_.cwiseProduct(mesh_.Fscale);
     scaledFluxUy_.noalias() = fluxUy_.cwiseProduct(mesh_.Fscale);
 
-    rhsP.noalias()  += basis_.LIFT * scaledFluxP_;
+    rhsP.noalias() += basis_.LIFT * scaledFluxP_;
     rhsUx.noalias() += basis_.LIFT * scaledFluxUx_;
     rhsUy.noalias() += basis_.LIFT * scaledFluxUy_;
 
     addSourceTerm(rhsP, time);
 }
 
-AcousticsResult2D DGAcoustics2D::solve(
-    const Vec2d& sourcePos,
-    const Vec2d& listenerPos,
-    ProgressCallback progress,
-    CancelCheck cancel)
-{
+AcousticsResult2D DGAcoustics2D::solve(const Vec2d& sourcePos, const Vec2d& listenerPos, ProgressCallback progress,
+                                       CancelCheck cancel) {
     using Clock = std::chrono::steady_clock;
     AcousticsResult2D result;
     int Np = basis_.Np;
@@ -306,8 +289,7 @@ AcousticsResult2D DGAcoustics2D::solve(
     if (simDuration <= 0.0) {
         double minX = mesh_.VX.minCoeff(), maxX = mesh_.VX.maxCoeff();
         double minY = mesh_.VY.minCoeff(), maxY = mesh_.VY.maxCoeff();
-        double roomDiag = std::sqrt((maxX - minX) * (maxX - minX)
-                                   + (maxY - minY) * (maxY - minY));
+        double roomDiag = std::sqrt((maxX - minX) * (maxX - minX) + (maxY - minY) * (maxY - minY));
         simDuration = 3.0 * roomDiag / c_;
         simDuration = std::max(simDuration, 0.1);
         simDuration = std::min(simDuration, 2.0);
@@ -320,19 +302,18 @@ AcousticsResult2D DGAcoustics2D::solve(
 
     if (progress) {
         double memMB = static_cast<double>(Np) * K * sizeof(double) * 9 / (1024.0 * 1024.0);
-        progress(0, "DG 2D: " + std::to_string(K) + " elems, "
-                   + std::to_string(nSteps) + " steps, dt="
-                   + std::to_string(dt * 1e6).substr(0, 5) + "us, "
-                   + std::to_string(static_cast<int>(memMB)) + "MB field data");
+        progress(0, "DG 2D: " + std::to_string(K) + " elems, " + std::to_string(nSteps) +
+                        " steps, dt=" + std::to_string(dt * 1e6).substr(0, 5) + "us, " +
+                        std::to_string(static_cast<int>(memMB)) + "MB field data");
     }
 
     // Initialize fields
-    MatXd p  = MatXd::Zero(Np, K);
+    MatXd p = MatXd::Zero(Np, K);
     MatXd ux = MatXd::Zero(Np, K);
     MatXd uy = MatXd::Zero(Np, K);
 
     // RK residual storage
-    MatXd resP  = MatXd::Zero(Np, K);
+    MatXd resP = MatXd::Zero(Np, K);
     MatXd resUx = MatXd::Zero(Np, K);
     MatXd resUy = MatXd::Zero(Np, K);
 
@@ -347,7 +328,8 @@ AcousticsResult2D DGAcoustics2D::solve(
     int warmupSteps = std::min(10, nSteps);
 
     for (int step = 0; step < nSteps; ++step) {
-        if (cancel && cancel()) break;
+        if (cancel && cancel())
+            break;
 
         double time = step * dt;
 
@@ -357,11 +339,11 @@ AcousticsResult2D DGAcoustics2D::solve(
 
             computeRHS(p, ux, uy, rhsP, rhsUx, rhsUy, stageTime);
 
-            resP  = rk4a[stage] * resP  + dt * rhsP;
+            resP = rk4a[stage] * resP + dt * rhsP;
             resUx = rk4a[stage] * resUx + dt * rhsUx;
             resUy = rk4a[stage] * resUy + dt * rhsUy;
 
-            p  += rk4b[stage] * resP;
+            p += rk4b[stage] * resP;
             ux += rk4b[stage] * resUx;
             uy += rk4b[stage] * resUy;
         }
@@ -381,8 +363,7 @@ AcousticsResult2D DGAcoustics2D::solve(
 
         if (progress && step >= warmupSteps) {
             // Report every ~500ms worth of steps (but at least every 1% progress)
-            int reportEvery = std::max(1, std::min(nSteps / 200,
-                                static_cast<int>(0.5 / std::max(stepTimeSec, 1e-9))));
+            int reportEvery = std::max(1, std::min(nSteps / 200, static_cast<int>(0.5 / std::max(stepTimeSec, 1e-9))));
             if (step % reportEvery == 0) {
                 int pct = static_cast<int>(100.0 * step / nSteps);
                 auto now = Clock::now();
@@ -391,10 +372,9 @@ AcousticsResult2D DGAcoustics2D::solve(
                 int etaMin = static_cast<int>(remaining / 60.0);
                 int etaSec = static_cast<int>(remaining) % 60;
 
-                std::string msg = "DG 2D: step " + std::to_string(step)
-                    + "/" + std::to_string(nSteps)
-                    + " [" + std::to_string(static_cast<int>(elapsed)) + "s elapsed"
-                    + ", ETA " + std::to_string(etaMin) + "m" + std::to_string(etaSec) + "s]";
+                std::string msg = "DG 2D: step " + std::to_string(step) + "/" + std::to_string(nSteps) + " [" +
+                                  std::to_string(static_cast<int>(elapsed)) + "s elapsed" + ", ETA " +
+                                  std::to_string(etaMin) + "m" + std::to_string(etaSec) + "s]";
                 progress(pct, msg);
             }
         } else if (progress && step < warmupSteps && step % std::max(1, warmupSteps / 5) == 0) {
@@ -404,8 +384,8 @@ AcousticsResult2D DGAcoustics2D::solve(
 
     if (progress) {
         auto total = std::chrono::duration<double>(Clock::now() - wallStart).count();
-        progress(100, "DG 2D: done in " + std::to_string(static_cast<int>(total)) + "s ("
-                      + std::to_string(nSteps) + " steps)");
+        progress(100, "DG 2D: done in " + std::to_string(static_cast<int>(total)) + "s (" + std::to_string(nSteps) +
+                          " steps)");
     }
 
     return result;

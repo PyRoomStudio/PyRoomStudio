@@ -2,28 +2,28 @@
 
 #include "acoustics/SimulationQueue.h"
 
-#include <QWidget>
-#include <QVBoxLayout>
+#include <QLabel>
 #include <QListWidget>
 #include <QProgressBar>
 #include <QPushButton>
-#include <QLabel>
+#include <QVBoxLayout>
+#include <QWidget>
 
 namespace prs {
 
 class SimulationQueuePanel : public QWidget {
     Q_OBJECT
 
-public:
+  public:
     explicit SimulationQueuePanel(SimulationQueue* queue, QWidget* parent = nullptr);
 
-signals:
+  signals:
     void openResults(const QString& outputDir);
 
-private slots:
+  private slots:
     void refreshList();
 
-private:
+  private:
     SimulationQueue* queue_;
     QListWidget* jobList_ = nullptr;
     QProgressBar* progressBar_ = nullptr;

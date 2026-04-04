@@ -1,13 +1,12 @@
-#include <cmath>
+#include "SurfaceGrouper.h"
+
 #include <queue>
 
-#include "SurfaceGrouper.h"
+#include <cmath>
 
 namespace prs {
 
-SurfaceGrouper::EdgeSet SurfaceGrouper::computeFeatureEdges(
-    const MeshData& mesh, float angleThresholdDeg)
-{
+SurfaceGrouper::EdgeSet SurfaceGrouper::computeFeatureEdges(const MeshData& mesh, float angleThresholdDeg) {
     const auto& tris = mesh.triangles();
     std::map<Edge, std::vector<int>> edgeToTris;
 
@@ -39,9 +38,8 @@ SurfaceGrouper::EdgeSet SurfaceGrouper::computeFeatureEdges(
     return featureEdges;
 }
 
-std::vector<std::set<int>> SurfaceGrouper::groupTrianglesIntoSurfaces(
-    const MeshData& mesh, const EdgeSet& featureEdges)
-{
+std::vector<std::set<int>> SurfaceGrouper::groupTrianglesIntoSurfaces(const MeshData& mesh,
+                                                                      const EdgeSet& featureEdges) {
     const auto& tris = mesh.triangles();
     int n = static_cast<int>(tris.size());
 
@@ -58,7 +56,8 @@ std::vector<std::set<int>> SurfaceGrouper::groupTrianglesIntoSurfaces(
     std::vector<std::set<int>> surfaces;
 
     for (int i = 0; i < n; ++i) {
-        if (visited[i]) continue;
+        if (visited[i])
+            continue;
 
         std::set<int> surface;
         std::queue<int> queue;
@@ -67,16 +66,19 @@ std::vector<std::set<int>> SurfaceGrouper::groupTrianglesIntoSurfaces(
         while (!queue.empty()) {
             int t = queue.front();
             queue.pop();
-            if (visited[t]) continue;
+            if (visited[t])
+                continue;
             visited[t] = true;
             surface.insert(t);
 
             const Vec3f* verts[3] = {&tris[t].v0, &tris[t].v1, &tris[t].v2};
             for (int j = 0; j < 3; ++j) {
                 Edge e = makeEdge(*verts[j], *verts[(j + 1) % 3]);
-                if (featureEdges.count(e)) continue;
+                if (featureEdges.count(e))
+                    continue;
                 for (int neighbor : edgeToTris[e]) {
-                    if (!visited[neighbor]) queue.push(neighbor);
+                    if (!visited[neighbor])
+                        queue.push(neighbor);
                 }
             }
         }

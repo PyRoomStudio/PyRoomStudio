@@ -1,21 +1,21 @@
 #include "AudioComparisonDialog.h"
 
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGroupBox>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QGroupBox>
+#include <QHBoxLayout>
 #include <QHeaderView>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
+#include <QVBoxLayout>
 
 namespace prs {
 
 AudioComparisonDialog::AudioComparisonDialog(const QString& outputDir, QWidget* parent)
-    : QDialog(parent), outputDir_(outputDir)
-{
+    : QDialog(parent)
+    , outputDir_(outputDir) {
     setWindowTitle("Compare Simulation Audio");
     setMinimumSize(600, 600);
     resize(700, 700);
@@ -35,9 +35,8 @@ AudioComparisonDialog::AudioComparisonDialog(const QString& outputDir, QWidget* 
     filesLayout->addWidget(fileList_);
     mainLayout->addWidget(filesGroup);
 
-    connect(fileList_, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item) {
-        onPlayFile(fileList_->row(item));
-    });
+    connect(fileList_, &QListWidget::itemDoubleClicked,
+            [this](QListWidgetItem* item) { onPlayFile(fileList_->row(item)); });
 
     // Now playing + seek
     auto* playbackGroup = new QGroupBox("Playback");
@@ -164,11 +163,8 @@ void AudioComparisonDialog::loadMetrics(const QString& dir) {
         return;
 
     metricsTable_->setColumnCount(8);
-    metricsTable_->setHorizontalHeaderLabels({
-        "Source", "Listener",
-        "T20 (s)", "T30 (s)", "EDT (s)",
-        "Direct (dB)", "Reflected (dB)", "Total (dB)"
-    });
+    metricsTable_->setHorizontalHeaderLabels(
+        {"Source", "Listener", "T20 (s)", "T30 (s)", "EDT (s)", "Direct (dB)", "Reflected (dB)", "Total (dB)"});
     metricsTable_->setRowCount(pairs.size());
 
     for (int row = 0; row < pairs.size(); ++row) {
@@ -181,7 +177,8 @@ void AudioComparisonDialog::loadMetrics(const QString& dir) {
         QJsonObject spl = pair["sound_pressure_level"].toObject();
 
         auto fmtVal = [](const QJsonObject& obj, const QString& key) -> QString {
-            if (!obj.contains(key)) return "—";
+            if (!obj.contains(key))
+                return "—";
             return QString::number(obj[key].toDouble(), 'f', 3);
         };
 

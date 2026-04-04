@@ -29,4 +29,3 @@ bool GpuCapabilities::isGpuConvolutionSupported() {
 }
 
 } // namespace prs
-

@@ -1,14 +1,14 @@
 #include "SimulationQueuePanel.h"
 
-#include <QHBoxLayout>
 #include <QDesktopServices>
+#include <QHBoxLayout>
 #include <QUrl>
 
 namespace prs {
 
 SimulationQueuePanel::SimulationQueuePanel(SimulationQueue* queue, QWidget* parent)
-    : QWidget(parent), queue_(queue)
-{
+    : QWidget(parent)
+    , queue_(queue) {
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(4, 4, 4, 4);
     layout->setSpacing(4);
@@ -67,23 +67,23 @@ void SimulationQueuePanel::refreshList() {
     for (auto& j : jobs) {
         QString statusStr;
         switch (j.status) {
-        case SimulationQueue::JobStatus::Queued:
-            statusStr = "[Queued]";
-            anyQueued = true;
-            break;
-        case SimulationQueue::JobStatus::Running:
-            statusStr = QString("[Running %1%]").arg(j.progressPercent);
-            anyRunning = true;
-            break;
-        case SimulationQueue::JobStatus::Completed:
-            statusStr = "[Done]";
-            break;
-        case SimulationQueue::JobStatus::Failed:
-            statusStr = "[Failed]";
-            break;
-        case SimulationQueue::JobStatus::Cancelled:
-            statusStr = "[Cancelled]";
-            break;
+            case SimulationQueue::JobStatus::Queued:
+                statusStr = "[Queued]";
+                anyQueued = true;
+                break;
+            case SimulationQueue::JobStatus::Running:
+                statusStr = QString("[Running %1%]").arg(j.progressPercent);
+                anyRunning = true;
+                break;
+            case SimulationQueue::JobStatus::Completed:
+                statusStr = "[Done]";
+                break;
+            case SimulationQueue::JobStatus::Failed:
+                statusStr = "[Failed]";
+                break;
+            case SimulationQueue::JobStatus::Cancelled:
+                statusStr = "[Cancelled]";
+                break;
         }
 
         auto* item = new QListWidgetItem(QString("%1 %2").arg(statusStr, j.description));
@@ -105,8 +105,7 @@ void SimulationQueuePanel::refreshList() {
         }
     } else {
         progressBar_->setValue(0);
-        statusLabel_->setText(jobs.empty() ? "No simulations running"
-                                           : "Queue idle");
+        statusLabel_->setText(jobs.empty() ? "No simulations running" : "Queue idle");
     }
 }
 

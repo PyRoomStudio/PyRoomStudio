@@ -1,42 +1,44 @@
 #include "MainWindow.h"
-#include "UndoCommands.h"
-#include "LibraryPanel.h"
-#include "PropertyPanel.h"
+
+#include "acoustics/AcousticSimulator.h"
+#include "acoustics/SimulationQueue.h"
+#include "acoustics/SimulationWorker.h"
 #include "AssetsPanel.h"
 #include "BottomToolbar.h"
-#include "IconUtils.h"
-#include "acoustics/AcousticSimulator.h"
-#include "acoustics/SimulationWorker.h"
-#include "acoustics/SimulationQueue.h"
-#include "SimulationQueuePanel.h"
-#include "SimulationQueueWindow.h"
 #include "core/ProjectFile.h"
 #include "core/Types.h"
-#include "utils/ResourcePath.h"
-#include "dialogs/SettingsDialogs.h"
 #include "dialogs/AudioComparisonDialog.h"
 #include "dialogs/RenderOptionsDialog.h"
+#include "dialogs/SettingsDialogs.h"
+#include "IconUtils.h"
+#include "LibraryPanel.h"
+#include "PropertyPanel.h"
+#include "SimulationQueuePanel.h"
+#include "SimulationQueueWindow.h"
+#include "UndoCommands.h"
+#include "utils/ResourcePath.h"
 
-#include <QMenuBar>
-#include <QToolBar>
-#include <QSplitter>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFileDialog>
-#include <QFileInfo>
-#include <QMessageBox>
-#include <QStatusBar>
 #include <QApplication>
 #include <QCloseEvent>
-#include <QSettings>
-#include <QThread>
-#include <QProgressDialog>
 #include <QDesktopServices>
-#include <QUrl>
-#include <QScrollArea>
-#include <QTimer>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QHBoxLayout>
 #include <QImage>
+#include <QMenuBar>
+#include <QMessageBox>
 #include <QPixmap>
+#include <QProgressDialog>
+#include <QScrollArea>
+#include <QSettings>
+#include <QSplitter>
+#include <QStatusBar>
+#include <QThread>
+#include <QTimer>
+#include <QToolBar>
+#include <QUrl>
+#include <QVBoxLayout>
+
 #include <algorithm>
 #include <cmath>
 
@@ -67,8 +69,7 @@ QPixmap loadSurfaceTextureThumbnail(prs::Viewport3D* vp, int surfIdx) {
 namespace prs {
 
 MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent)
-{
+    : QMainWindow(parent) {
     setWindowTitle("Seiche");
     resize(1200, 800);
 
@@ -86,8 +87,8 @@ MainWindow::MainWindow(QWidget* parent)
         }
     });
 
-    simQueue_         = new SimulationQueue(this);
-    simQueueWindow_   = new SimulationQueueWindow(simQueue_, this);
+    simQueue_ = new SimulationQueue(this);
+    simQueueWindow_ = new SimulationQueueWindow(simQueue_, this);
 
     setupMenus();
     setupToolbars();
@@ -102,10 +103,11 @@ MainWindow::MainWindow(QWidget* parent)
 
 void MainWindow::setupMenus() {
     auto* fileMenu = menuBar()->addMenu("&File");
-    actNewProject_    = fileMenu->addAction("&New Project", QKeySequence::New, this, &MainWindow::onNewProject);
-    actOpenProject_   = fileMenu->addAction("&Open Project...", QKeySequence::Open, this, &MainWindow::onOpenProject);
-    actSaveProject_   = fileMenu->addAction("&Save Project", QKeySequence::Save, this, &MainWindow::onSaveProject);
-    actSaveAsProject_ = fileMenu->addAction("Save Project &As...", QKeySequence("Ctrl+Shift+S"), this, &MainWindow::onSaveProjectAs);
+    actNewProject_ = fileMenu->addAction("&New Project", QKeySequence::New, this, &MainWindow::onNewProject);
+    actOpenProject_ = fileMenu->addAction("&Open Project...", QKeySequence::Open, this, &MainWindow::onOpenProject);
+    actSaveProject_ = fileMenu->addAction("&Save Project", QKeySequence::Save, this, &MainWindow::onSaveProject);
+    actSaveAsProject_ =
+        fileMenu->addAction("Save Project &As...", QKeySequence("Ctrl+Shift+S"), this, &MainWindow::onSaveProjectAs);
     fileMenu->addSeparator();
     recentProjectsMenu_ = fileMenu->addMenu("Recent Projects");
     recentProjectsMenu_->addAction("(empty)")->setEnabled(false);
@@ -156,7 +158,7 @@ void MainWindow::setupMenus() {
     });
 
     auto* viewMenu = menuBar()->addMenu("&View");
-    actSimQueue_   = viewMenu->addAction("Simulation &Queue", this, &MainWindow::onShowSimQueue);
+    actSimQueue_ = viewMenu->addAction("Simulation &Queue", this, &MainWindow::onShowSimQueue);
 
     settingsMenu_ = menuBar()->addMenu("&Settings");
     actPreferences_ = settingsMenu_->addAction("&Preferences...", this, [this]() {
@@ -166,9 +168,7 @@ void MainWindow::setupMenus() {
     });
     actDisplaySettings_ = settingsMenu_->addAction("&Display Settings...", this, [this]() {
         DisplaySettingsDialog dlg(this);
-        connect(&dlg, &DisplaySettingsDialog::settingsChanged, this, [this]() {
-            viewport_->applyDisplaySettings();
-        });
+        connect(&dlg, &DisplaySettingsDialog::settingsChanged, this, [this]() { viewport_->applyDisplaySettings(); });
         dlg.exec();
     });
     actAudioSettings_ = settingsMenu_->addAction("&Audio Settings...", this, [this]() {
@@ -195,9 +195,7 @@ void MainWindow::setupToolbars() {
     actToolMove_ = topToolbar_->addAction(iconFromSvgResource(":/toolbar/move.svg"), "Move");
     actToolMove_->setCheckable(true);
     actToolMove_->setToolTip("Drag placed points to new positions");
-    connect(actToolMove_, &QAction::toggled, [this](bool checked) {
-        viewport_->setMoveMode(checked);
-    });
+    connect(actToolMove_, &QAction::toggled, [this](bool checked) { viewport_->setMoveMode(checked); });
 
     actToolCopy_ = topToolbar_->addAction(iconFromSvgResource(":/toolbar/copy.svg"), "Copy");
     connect(actToolCopy_, &QAction::triggered, [this]() {
@@ -227,14 +225,12 @@ void MainWindow::setupToolbars() {
 
     actToolMeasure_ = topToolbar_->addAction(iconFromSvgResource(":/toolbar/measure.svg"), "Measure");
     actToolMeasure_->setCheckable(true);
-    connect(actToolMeasure_, &QAction::toggled, [this](bool checked) {
-        viewport_->setMeasureMode(checked);
-    });
+    connect(actToolMeasure_, &QAction::toggled, [this](bool checked) { viewport_->setMeasureMode(checked); });
 }
 
 void MainWindow::setupCentralWidget() {
     auto* centralWidget = new QWidget;
-    auto* mainLayout    = new QVBoxLayout(centralWidget);
+    auto* mainLayout = new QVBoxLayout(centralWidget);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
@@ -251,7 +247,7 @@ void MainWindow::setupCentralWidget() {
 
     // Right: stacked property + assets
     propertyPanel_ = new PropertyPanel;
-    assetsPanel_   = new AssetsPanel;
+    assetsPanel_ = new AssetsPanel;
 
     auto* propertyScroll = new QScrollArea;
     propertyScroll->setWidgetResizable(true);
@@ -298,47 +294,45 @@ void MainWindow::setupCentralWidget() {
 
 void MainWindow::connectSignals() {
     // Viewport signals
-    connect(viewport_, &Viewport3D::modelLoaded,           this, &MainWindow::onModelLoaded);
+    connect(viewport_, &Viewport3D::modelLoaded, this, &MainWindow::onModelLoaded);
     connect(viewport_, &Viewport3D::meshOpenWarning, this, [this](int boundaryEdges) {
         QMessageBox::warning(this, "Open Mesh Detected",
-            QString("The loaded mesh has %1 non-manifold/boundary edge(s) and is not watertight.\n\n"
-                    "Acoustic simulation results may be inaccurate for open meshes.")
-            .arg(boundaryEdges));
+                             QString("The loaded mesh has %1 non-manifold/boundary edge(s) and is not watertight.\n\n"
+                                     "Acoustic simulation results may be inaccurate for open meshes.")
+                                 .arg(boundaryEdges));
     });
-    connect(viewport_, &Viewport3D::pointPlaced,           this, &MainWindow::onPointSelected);
-    connect(viewport_, &Viewport3D::pointSelected,         this, &MainWindow::onPointSelected);
-    connect(viewport_, &Viewport3D::pointDeselected,       this, &MainWindow::onPointDeselected);
-    connect(viewport_, &Viewport3D::surfaceSelected,       this, &MainWindow::onSurfaceSelected);
-    connect(viewport_, &Viewport3D::surfaceDeselected,     this, &MainWindow::onSurfaceDeselected);
-    connect(viewport_, &Viewport3D::placementModeChanged,  this, &MainWindow::onPlacementModeChanged);
-    connect(viewport_, &Viewport3D::scaleChanged,          this, &MainWindow::onScaleChanged);
+    connect(viewport_, &Viewport3D::pointPlaced, this, &MainWindow::onPointSelected);
+    connect(viewport_, &Viewport3D::pointSelected, this, &MainWindow::onPointSelected);
+    connect(viewport_, &Viewport3D::pointDeselected, this, &MainWindow::onPointDeselected);
+    connect(viewport_, &Viewport3D::surfaceSelected, this, &MainWindow::onSurfaceSelected);
+    connect(viewport_, &Viewport3D::surfaceDeselected, this, &MainWindow::onSurfaceDeselected);
+    connect(viewport_, &Viewport3D::placementModeChanged, this, &MainWindow::onPlacementModeChanged);
+    connect(viewport_, &Viewport3D::scaleChanged, this, &MainWindow::onScaleChanged);
 
-    connect(viewport_, &Viewport3D::measurementResult, [this](float dist) {
-        statusBar()->showMessage(QString("Distance: %1 m").arg(dist, 0, 'f', 3));
-    });
+    connect(viewport_, &Viewport3D::measurementResult,
+            [this](float dist) { statusBar()->showMessage(QString("Distance: %1 m").arg(dist, 0, 'f', 3)); });
 
     connect(viewport_, &Viewport3D::moveFinished,
-        [this](int index, const PlacedPoint& oldState, const PlacedPoint& newState) {
-            undoStack_->push(new MovePointCommand(viewport_, index, oldState, newState));
-        });
+            [this](int index, const PlacedPoint& oldState, const PlacedPoint& newState) {
+                undoStack_->push(new MovePointCommand(viewport_, index, oldState, newState));
+            });
 
     // Assets panel -> viewport (surface selection from gallery click)
-    connect(assetsPanel_, &AssetsPanel::surfaceClicked, [this](int surfIdx, const QString&) {
-        viewport_->selectSurface(surfIdx);
-    });
+    connect(assetsPanel_, &AssetsPanel::surfaceClicked,
+            [this](int surfIdx, const QString&) { viewport_->selectSurface(surfIdx); });
 
     // Bottom toolbar
-    connect(bottomToolbar_, &BottomToolbar::importRoomClicked,   this, &MainWindow::onImportRoom);
-    connect(bottomToolbar_, &BottomToolbar::addSourceClicked,   this, &MainWindow::onAddSourcePlacement);
+    connect(bottomToolbar_, &BottomToolbar::importRoomClicked, this, &MainWindow::onImportRoom);
+    connect(bottomToolbar_, &BottomToolbar::addSourceClicked, this, &MainWindow::onAddSourcePlacement);
     connect(bottomToolbar_, &BottomToolbar::addListenerClicked, this, &MainWindow::onAddListenerPlacement);
-    connect(bottomToolbar_, &BottomToolbar::renderClicked,      this, &MainWindow::onRender);
+    connect(bottomToolbar_, &BottomToolbar::renderClicked, this, &MainWindow::onRender);
 
     // Simulation queue
     connect(simQueue_, &SimulationQueue::jobFinished, this, [this](int, const QString& outputDir) {
         updateTitle();
         auto answer = QMessageBox::question(this, "Simulation Complete",
-            "Output saved to:\n" + outputDir + "\n\nCompare audio files?",
-            QMessageBox::Yes | QMessageBox::No);
+                                            "Output saved to:\n" + outputDir + "\n\nCompare audio files?",
+                                            QMessageBox::Yes | QMessageBox::No);
         if (answer == QMessageBox::Yes) {
             auto* dlg = new AudioComparisonDialog(outputDir, this);
             dlg->setAttribute(Qt::WA_DeleteOnClose);
@@ -361,12 +355,9 @@ void MainWindow::connectSignals() {
     });
 
     // Property panel -> viewport
-    connect(propertyPanel_, &PropertyPanel::scaleChanged, [this](float v) {
-        viewport_->setScaleFactor(v);
-    });
-    connect(propertyPanel_, &PropertyPanel::pointDistanceChanged, [this](float v) {
-        viewport_->updateActivePointDistance(v);
-    });
+    connect(propertyPanel_, &PropertyPanel::scaleChanged, [this](float v) { viewport_->setScaleFactor(v); });
+    connect(propertyPanel_, &PropertyPanel::pointDistanceChanged,
+            [this](float v) { viewport_->updateActivePointDistance(v); });
     connect(propertyPanel_, &PropertyPanel::setPointSource, [this]() {
         viewport_->setActivePointType(POINT_TYPE_SOURCE);
         propertyPanel_->setOrientationControlsVisible(false);
@@ -387,20 +378,16 @@ void MainWindow::connectSignals() {
             viewport_->update();
         }
     });
-    connect(propertyPanel_, &PropertyPanel::deletePoint, [this]() {
-        viewport_->removeActivePoint();
-    });
-    connect(propertyPanel_, &PropertyPanel::deselectPoint, [this]() {
-        viewport_->deselectPoint();
-    });
+    connect(propertyPanel_, &PropertyPanel::deletePoint, [this]() { viewport_->removeActivePoint(); });
+    connect(propertyPanel_, &PropertyPanel::deselectPoint, [this]() { viewport_->deselectPoint(); });
     connect(propertyPanel_, &PropertyPanel::toggleTexture, [this]() {
         int si = viewport_->selectedSurfaceIndex();
-        if (si >= 0) viewport_->toggleSurfaceTexture(si);
+        if (si >= 0)
+            viewport_->toggleSurfaceTexture(si);
     });
     connect(propertyPanel_, &PropertyPanel::loadTexture, [this]() {
-        QString path = QFileDialog::getOpenFileName(this,
-            "Load Texture Image", QString(),
-            "Images (*.png *.jpg *.jpeg *.bmp);;All files (*.*)");
+        QString path = QFileDialog::getOpenFileName(this, "Load Texture Image", QString(),
+                                                    "Images (*.png *.jpg *.jpeg *.bmp);;All files (*.*)");
         if (!path.isEmpty()) {
             if (viewport_->loadTexture(path))
                 statusBar()->showMessage("Texture loaded: " + QFileInfo(path).fileName());
@@ -408,9 +395,7 @@ void MainWindow::connectSignals() {
                 QMessageBox::warning(this, "Error", "Failed to load texture image.");
         }
     });
-    connect(propertyPanel_, &PropertyPanel::deselectSurface, [this]() {
-        viewport_->deselectSurface();
-    });
+    connect(propertyPanel_, &PropertyPanel::deselectSurface, [this]() { viewport_->deselectSurface(); });
     connect(propertyPanel_, &PropertyPanel::pointNameChanged, [this](const QString& name) {
         int idx = viewport_->activePointIndex();
         if (idx >= 0 && idx < static_cast<int>(viewport_->placedPoints().size()))
@@ -423,20 +408,19 @@ void MainWindow::connectSignals() {
     });
     connect(propertyPanel_, &PropertyPanel::selectPointAudioFile, [this]() {
         int idx = viewport_->activePointIndex();
-        if (idx < 0) return;
-        QString path = QFileDialog::getOpenFileName(this,
-            "Select Audio File", defaultProjectDir(),
-            "Audio files (*.wav *.mp3 *.flac *.ogg);;All files (*.*)");
-        if (path.isEmpty()) return;
+        if (idx < 0)
+            return;
+        QString path = QFileDialog::getOpenFileName(this, "Select Audio File", defaultProjectDir(),
+                                                    "Audio files (*.wav *.mp3 *.flac *.ogg);;All files (*.*)");
+        if (path.isEmpty())
+            return;
         viewport_->placedPoints()[idx].audioFile = path.toStdString();
         propertyPanel_->setPointAudioFile(QFileInfo(path).fileName());
     });
 
     // Surface material change -> PropertyPanel update
     connect(viewport_, &Viewport3D::surfaceMaterialChanged,
-        [this](int, const QString& materialName) {
-            propertyPanel_->setMaterialName(materialName);
-        });
+            [this](int, const QString& materialName) { propertyPanel_->setMaterialName(materialName); });
     connect(viewport_, &Viewport3D::surfaceAppearanceChanged, this, &MainWindow::syncAssetsSurface);
 
     // Library panel -> sound file selection
@@ -454,18 +438,15 @@ void MainWindow::connectSignals() {
     });
 
     // Library panel -> viewport (material selection)
-    connect(libraryPanel_, &LibraryPanel::materialSelected,
-        [this](const Material& mat) {
-            int si = viewport_->selectedSurfaceIndex();
-            if (si >= 0) {
-                viewport_->assignMaterial(si, mat);
-            }
-        });
+    connect(libraryPanel_, &LibraryPanel::materialSelected, [this](const Material& mat) {
+        int si = viewport_->selectedSurfaceIndex();
+        if (si >= 0) {
+            viewport_->assignMaterial(si, mat);
+        }
+    });
 
     connect(viewport_, &Viewport3D::placedPointsChanged, this, &MainWindow::refreshAssetsPointLists);
-    connect(assetsPanel_, &AssetsPanel::pointListClicked, this, [this](int idx) {
-        viewport_->selectPoint(idx);
-    });
+    connect(assetsPanel_, &AssetsPanel::pointListClicked, this, [this](int idx) { viewport_->selectPoint(idx); });
     connect(viewport_, &Viewport3D::pointSelected, this, [this](int) { refreshAssetsPointLists(); });
     connect(viewport_, &Viewport3D::pointDeselected, this, [this]() { refreshAssetsPointLists(); });
 
@@ -477,17 +458,19 @@ void MainWindow::connectSignals() {
 
 void MainWindow::onNewProject() {
     if (projectDirty_) {
-        auto res = QMessageBox::question(this, "Unsaved Changes",
-            "Save current project before creating a new one?",
-            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        if (res == QMessageBox::Cancel) return;
-        if (res == QMessageBox::Save) onSaveProject();
+        auto res = QMessageBox::question(this, "Unsaved Changes", "Save current project before creating a new one?",
+                                         QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        if (res == QMessageBox::Cancel)
+            return;
+        if (res == QMessageBox::Save)
+            onSaveProject();
     }
 
-    QString path = QFileDialog::getOpenFileName(this,
-        "Select Room Model for New Project", defaultProjectDir(),
-        "3D Models (*.stl *.obj);;STL files (*.stl);;OBJ files (*.obj);;All files (*.*)");
-    if (path.isEmpty()) return;
+    QString path =
+        QFileDialog::getOpenFileName(this, "Select Room Model for New Project", defaultProjectDir(),
+                                     "3D Models (*.stl *.obj);;STL files (*.stl);;OBJ files (*.obj);;All files (*.*)");
+    if (path.isEmpty())
+        return;
 
     sceneManager_.clearAll();
     soundSourceFile_.clear();
@@ -507,10 +490,10 @@ void MainWindow::onNewProject() {
 }
 
 void MainWindow::onOpenProject() {
-    QString path = QFileDialog::getOpenFileName(this,
-        "Open Project", defaultProjectDir(),
-        "Room Projects (*.room);;3D Models (*.stl *.obj);;All files (*.*)");
-    if (path.isEmpty()) return;
+    QString path = QFileDialog::getOpenFileName(this, "Open Project", defaultProjectDir(),
+                                                "Room Projects (*.room);;3D Models (*.stl *.obj);;All files (*.*)");
+    if (path.isEmpty())
+        return;
 
     if (path.endsWith(".stl", Qt::CaseInsensitive) || path.endsWith(".obj", Qt::CaseInsensitive)) {
         if (viewport_->loadModel(path))
@@ -562,9 +545,9 @@ void MainWindow::onSaveProject() {
 }
 
 void MainWindow::onSaveProjectAs() {
-    QString path = QFileDialog::getSaveFileName(this,
-        "Save Project As", defaultProjectDir(), "Room Projects (*.room)");
-    if (path.isEmpty()) return;
+    QString path = QFileDialog::getSaveFileName(this, "Save Project As", defaultProjectDir(), "Room Projects (*.room)");
+    if (path.isEmpty())
+        return;
     if (!path.endsWith(".room", Qt::CaseInsensitive))
         path += ".room";
     saveProjectToFile(path);
@@ -653,20 +636,24 @@ void MainWindow::onExit() {
 
 void MainWindow::closeEvent(QCloseEvent* event) {
     if (projectDirty_) {
-        auto res = QMessageBox::question(this, "Unsaved Changes",
-            "Save project before closing?",
-            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        if (res == QMessageBox::Cancel) { event->ignore(); return; }
-        if (res == QMessageBox::Save) onSaveProject();
+        auto res = QMessageBox::question(this, "Unsaved Changes", "Save project before closing?",
+                                         QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        if (res == QMessageBox::Cancel) {
+            event->ignore();
+            return;
+        }
+        if (res == QMessageBox::Save)
+            onSaveProject();
     }
     event->accept();
 }
 
 void MainWindow::onImportRoom() {
-    QString path = QFileDialog::getOpenFileName(this,
-        "Import Room Model", defaultProjectDir(),
-        "3D Models (*.stl *.obj);;STL files (*.stl);;OBJ files (*.obj);;All files (*.*)");
-    if (path.isEmpty()) return;
+    QString path =
+        QFileDialog::getOpenFileName(this, "Import Room Model", defaultProjectDir(),
+                                     "3D Models (*.stl *.obj);;STL files (*.stl);;OBJ files (*.obj);;All files (*.*)");
+    if (path.isEmpty())
+        return;
 
     if (viewport_->loadModel(path)) {
         statusBar()->showMessage("Loaded: " + path);
@@ -676,11 +663,11 @@ void MainWindow::onImportRoom() {
 }
 
 void MainWindow::onImportSound() {
-    QString path = QFileDialog::getOpenFileName(this,
-        "Select Sound Source",
-        defaultProjectDir(),
-        "Audio files (*.wav *.mp3 *.flac *.ogg);;WAV files (*.wav);;All files (*.*)");
-    if (path.isEmpty()) return;
+    QString path =
+        QFileDialog::getOpenFileName(this, "Select Sound Source", defaultProjectDir(),
+                                     "Audio files (*.wav *.mp3 *.flac *.ogg);;WAV files (*.wav);;All files (*.*)");
+    if (path.isEmpty())
+        return;
     soundSourceFile_ = path;
     updateTitle();
     statusBar()->showMessage("Sound loaded: " + path);
@@ -746,9 +733,9 @@ void MainWindow::onRender() {
     }
     if (!missingAudio.isEmpty()) {
         QMessageBox::warning(this, "Error",
-            QString("The following source(s) have no audio file assigned:\n  %1\n\n"
-                    "Assign audio files to each source, or use Import Sound to set a default.")
-            .arg(missingAudio.join(", ")));
+                             QString("The following source(s) have no audio file assigned:\n  %1\n\n"
+                                     "Assign audio files to each source, or use Import Sound to set a default.")
+                                 .arg(missingAudio.join(", ")));
         return;
     }
 
@@ -790,11 +777,10 @@ void MainWindow::onRender() {
     params.dgPolyOrder = renderDlg.dgPolynomialOrder();
     params.dgMaxFrequency = renderDlg.dgMaxFrequency();
 
-    QString methodName = (params.method == SimMethod::DG_2D) ? "DG-2D"
-                       : (params.method == SimMethod::DG_3D) ? "DG-3D"
-                       : "Ray";
-    QString desc = QString("%1: %2 src, %3 lst")
-        .arg(methodName).arg(sources.size()).arg(selectedListeners.size());
+    QString methodName = (params.method == SimMethod::DG_2D)   ? "DG-2D"
+                         : (params.method == SimMethod::DG_3D) ? "DG-3D"
+                                                               : "Ray";
+    QString desc = QString("%1: %2 src, %3 lst").arg(methodName).arg(sources.size()).arg(selectedListeners.size());
     simQueue_->enqueue(params, desc);
     statusBar()->showMessage("Simulation queued: " + desc);
 }
@@ -804,9 +790,7 @@ void MainWindow::onModelLoaded(const QString& filepath) {
     propertyPanel_->setScaleValue(viewport_->scaleFactor());
     Vec3f dims = viewport_->getRealWorldDimensions();
     propertyPanel_->setDimensionText(
-        QString("%1 x %2 x %3 m").arg(dims.x(), 0, 'f', 1)
-                                   .arg(dims.y(), 0, 'f', 1)
-                                   .arg(dims.z(), 0, 'f', 1));
+        QString("%1 x %2 x %3 m").arg(dims.x(), 0, 'f', 1).arg(dims.y(), 0, 'f', 1).arg(dims.z(), 0, 'f', 1));
     updateTitle();
 }
 
@@ -854,9 +838,7 @@ void MainWindow::onScaleChanged(float factor) {
     propertyPanel_->setScaleValue(factor);
     Vec3f dims = viewport_->getRealWorldDimensions();
     propertyPanel_->setDimensionText(
-        QString("%1 x %2 x %3 m").arg(dims.x(), 0, 'f', 1)
-                                   .arg(dims.y(), 0, 'f', 1)
-                                   .arg(dims.z(), 0, 'f', 1));
+        QString("%1 x %2 x %3 m").arg(dims.x(), 0, 'f', 1).arg(dims.y(), 0, 'f', 1).arg(dims.z(), 0, 'f', 1));
 }
 
 void MainWindow::updateTitle() {
@@ -865,7 +847,8 @@ void MainWindow::updateTitle() {
         QFileInfo fi(currentProjectFile_);
         title += " - " + fi.fileName();
     }
-    if (projectDirty_) title += " *";
+    if (projectDirty_)
+        title += " *";
     if (!soundSourceFile_.isEmpty()) {
         QFileInfo fi(soundSourceFile_);
         title += " [" + fi.fileName() + "]";

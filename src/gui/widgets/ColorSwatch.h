@@ -2,19 +2,18 @@
 
 #include "core/Types.h"
 
-#include <QWidget>
-#include <QString>
-#include <QPoint>
 #include <QPixmap>
+#include <QPoint>
+#include <QString>
+#include <QWidget>
 
 namespace prs {
 
 class ColorSwatch : public QWidget {
     Q_OBJECT
 
-public:
-    ColorSwatch(const QString& label, const Color3i& color,
-                QWidget* parent = nullptr);
+  public:
+    ColorSwatch(const QString& label, const Color3i& color, QWidget* parent = nullptr);
 
     void setColor(const Color3i& color);
     void setSurfaceAppearance(const Color3i& color, const QPixmap& texturePreview);
@@ -23,17 +22,17 @@ public:
     void setDragData(const QByteArray& data);
     QSize sizeHint() const override { return {70, 70}; }
 
-signals:
+  signals:
     void clicked();
 
-protected:
+  protected:
     void paintEvent(QPaintEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void enterEvent(QEnterEvent* event) override;
     void leaveEvent(QEvent* event) override;
 
-private:
+  private:
     QString label_;
     Color3i color_;
     QPixmap previewPixmap_;

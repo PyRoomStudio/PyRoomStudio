@@ -1,0 +1,55 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+
+# Indentation
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+IndentCaseLabels: true
+IndentPPDirectives: None
+
+# Line length
+ColumnLimit: 120
+
+# Braces — keep opening brace on the same line (K&R / Attach style)
+BreakBeforeBraces: Attach
+
+# Spacing
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesInAngles: Never
+SpacesInContainerLiterals: false
+SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators: true
+
+# Includes
+SortIncludes: CaseInsensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:           '^"'
+    Priority:        1
+  - Regex:           '^<Q'
+    Priority:        2
+  - Regex:           '^<'
+    Priority:        3
+
+# Pointers and references — left-aligned (int* p, not int *p)
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+# Short constructs
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# Breaking
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: 4
+AlwaysBreakTemplateDeclarations: Yes
+
+# Trailing commas / comments
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 1

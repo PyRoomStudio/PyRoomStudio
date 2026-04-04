@@ -1,29 +1,28 @@
 #include "AcousticSimulator.h"
-#include "Wall.h"
+
+#include "audio/AudioFile.h"
+#include "audio/SignalProcessing.h"
 #include "Bvh.h"
 #include "ImageSourceMethod.h"
 #include "RayTracer.h"
-#include "RoomImpulseResponse.h"
 #include "rendering/MeshSimplifier.h"
-#include "audio/AudioFile.h"
-#include "audio/SignalProcessing.h"
+#include "RoomImpulseResponse.h"
+#include "Wall.h"
 
-#include <QDir>
 #include <QDateTime>
 #include <QDebug>
+#include <QDir>
 #include <QElapsedTimer>
 
 namespace prs {
 
 namespace {
 
-constexpr int   SIMPLIFICATION_THRESHOLD = 500;
+constexpr int SIMPLIFICATION_THRESHOLD = 500;
 constexpr float SIMPLIFICATION_TARGET_RATIO = 0.3f;
 
-std::vector<AcousticSurface> buildAcousticSurfaces(
-    const std::vector<Viewport3D::WallInfo>& wallInfos,
-    const std::vector<Vec3f>& modelVertices)
-{
+std::vector<AcousticSurface> buildAcousticSurfaces(const std::vector<Viewport3D::WallInfo>& wallInfos,
+                                                   const std::vector<Vec3f>& modelVertices) {
     std::vector<AcousticSurface> surfaces;
     for (const auto& wi : wallInfos) {
         Vec3f normalSum = Vec3f::Zero();
@@ -34,7 +33,8 @@ std::vector<AcousticSurface> buildAcousticSurfaces(
 
         for (int triIdx : wi.triangleIndices) {
             int base = triIdx * 3;
-            if (base + 2 >= static_cast<int>(modelVertices.size())) continue;
+            if (base + 2 >= static_cast<int>(modelVertices.size()))
+                continue;
 
             Vec3f v0 = modelVertices[base];
             Vec3f v1 = modelVertices[base + 1];
@@ -43,16 +43,19 @@ std::vector<AcousticSurface> buildAcousticSurfaces(
             Vec3f e2 = v2 - v0;
             Vec3f n = e1.cross(e2);
             float area = 0.5f * n.norm();
-            if (area < 1e-8f) continue;
+            if (area < 1e-8f)
+                continue;
 
             normalSum += n.normalized() * area;
             centroidSum += (v0 + v1 + v2) / 3.0f * area;
             totalArea += area;
-            if (validCount == 0) firstPoint = v0;
+            if (validCount == 0)
+                firstPoint = v0;
             validCount++;
         }
 
-        if (totalArea < 1e-8f) continue;
+        if (totalArea < 1e-8f)
+            continue;
 
         AcousticSurface s;
         s.normal = normalSum.normalized();
@@ -71,16 +74,10 @@ std::vector<AcousticSurface> buildAcousticSurfaces(
 AcousticSimulator::AcousticSimulator(int sampleRate)
     : sampleRate_(sampleRate) {}
 
-QString AcousticSimulator::simulateScene(
-    const SceneManager& scene,
-    const std::vector<Viewport3D::WallInfo>& wallsFromRender,
-    const Vec3f& roomCenter,
-    const std::vector<Vec3f>& modelVertices,
-    int maxOrder,
-    int nRays,
-    float scattering,
-    bool airAbsorption)
-{
+QString AcousticSimulator::simulateScene(const SceneManager& scene,
+                                         const std::vector<Viewport3D::WallInfo>& wallsFromRender,
+                                         const Vec3f& roomCenter, const std::vector<Vec3f>& modelVertices, int maxOrder,
+                                         int nRays, float scattering, bool airAbsorption) {
     Q_UNUSED(roomCenter);
 
     if (!scene.hasMinimumObjects()) {
@@ -92,8 +89,7 @@ QString AcousticSimulator::simulateScene(
     totalTimer.start();
 
     qInfo() << "=== ACOUSTIC SIMULATION START ===";
-    qInfo() << "Sources:" << scene.soundSourceCount()
-            << "Listeners:" << scene.listenerCount();
+    qInfo() << "Sources:" << scene.soundSourceCount() << "Listeners:" << scene.listenerCount();
 
     QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss");
     QString outputDir = QDir("sounds/simulations").filePath("simulation_" + timestamp);
@@ -109,12 +105,13 @@ QString AcousticSimulator::simulateScene(
     for (auto& wi : wallsFromRender) {
         for (int triIdx : wi.triangleIndices) {
             int baseVert = triIdx * 3;
-            if (baseVert + 2 >= static_cast<int>(modelVertices.size())) continue;
+            if (baseVert + 2 >= static_cast<int>(modelVertices.size()))
+                continue;
 
             Wall wall;
-            wall.triangle.v0     = modelVertices[baseVert];
-            wall.triangle.v1     = modelVertices[baseVert + 1];
-            wall.triangle.v2     = modelVertices[baseVert + 2];
+            wall.triangle.v0 = modelVertices[baseVert];
+            wall.triangle.v1 = modelVertices[baseVert + 1];
+            wall.triangle.v2 = modelVertices[baseVert + 2];
             Vec3f e1 = wall.triangle.v1 - wall.triangle.v0;
             Vec3f e2 = wall.triangle.v2 - wall.triangle.v0;
             wall.triangle.normal = e1.cross(e2).normalized();
@@ -152,7 +149,8 @@ QString AcousticSimulator::simulateScene(
 
     for (int si = 0; si < scene.soundSourceCount(); ++si) {
         auto* source = scene.getSoundSource(si);
-        if (!source) continue;
+        if (!source)
+            continue;
 
         qInfo() << "Processing source" << (si + 1) << "/" << scene.soundSourceCount()
                 << QString::fromStdString(source->name);
@@ -169,7 +167,8 @@ QString AcousticSimulator::simulateScene(
 
         for (int li = 0; li < scene.listenerCount(); ++li) {
             auto* listener = scene.getListener(li);
-            if (!listener) continue;
+            if (!listener)
+                continue;
 
             Vec3f listenerPos = listener->position;
 
@@ -180,8 +179,10 @@ QString AcousticSimulator::simulateScene(
 
             phaseTimer.restart();
             RayTracer rt;
-            auto rayContributions = rt.trace(sourcePos, listenerPos, walls, bvh, nRays, 0.5f, 100, 1e-6f, nullptr, 0.0f, airAbsorption);
-            qInfo() << "  Ray tracing:" << phaseTimer.elapsed() << "ms (" << rayContributions.size() << "contributions)";
+            auto rayContributions =
+                rt.trace(sourcePos, listenerPos, walls, bvh, nRays, 0.5f, 100, 1e-6f, nullptr, 0.0f, airAbsorption);
+            qInfo() << "  Ray tracing:" << phaseTimer.elapsed() << "ms (" << rayContributions.size()
+                    << "contributions)";
 
             phaseTimer.restart();
             RoomImpulseResponse rir;
@@ -192,9 +193,9 @@ QString AcousticSimulator::simulateScene(
             qInfo() << "  RIR + convolution:" << phaseTimer.elapsed() << "ms";
 
             QString listenerName = QString::fromStdString(listener->name).replace(' ', '_');
-            QString sourceName   = QString::fromStdString(source->name).replace(' ', '_');
-            QString filename     = QString("%1_from_%2.wav").arg(listenerName, sourceName);
-            QString outputPath   = QDir(outputDir).filePath(filename);
+            QString sourceName = QString::fromStdString(source->name).replace(' ', '_');
+            QString filename = QString("%1_from_%2.wav").arg(listenerName, sourceName);
+            QString outputPath = QDir(outputDir).filePath(filename);
 
             AudioFile outFile;
             outFile.samples() = std::move(output);

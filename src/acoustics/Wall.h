@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/Types.h"
 #include "core/Material.h"
+#include "core/Types.h"
 
 #include <array>
 
@@ -13,13 +13,12 @@ struct Wall {
     float scattering = 0.1f;
 
     Vec3f normal() const { return triangle.normal.normalized(); }
-    Vec3f centroid() const {
-        return (triangle.v0 + triangle.v1 + triangle.v2) / 3.0f;
-    }
+    Vec3f centroid() const { return (triangle.v0 + triangle.v1 + triangle.v2) / 3.0f; }
 
     float averageAbsorption() const {
         float sum = 0.0f;
-        for (float a : absorption) sum += a;
+        for (float a : absorption)
+            sum += a;
         return sum / NUM_FREQ_BANDS;
     }
 
@@ -38,7 +37,8 @@ struct AcousticSurface {
 
     float averageAbsorption() const {
         float sum = 0.0f;
-        for (float a : absorption) sum += a;
+        for (float a : absorption)
+            sum += a;
         return sum / NUM_FREQ_BANDS;
     }
 

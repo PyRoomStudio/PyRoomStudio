@@ -1,11 +1,11 @@
 #pragma once
 
-#include "DGTypes.h"
 #include "DGBasis2D.h"
 #include "DGMesh2D.h"
+#include "DGTypes.h"
 
-#include <vector>
 #include <chrono>
+#include <vector>
 
 namespace prs {
 namespace dg {
@@ -18,23 +18,18 @@ struct AcousticsResult2D {
 };
 
 class DGAcoustics2D {
-public:
+  public:
     DGAcoustics2D(const Basis2D& basis, const Mesh2D& mesh, const DGParams& params);
 
-    AcousticsResult2D solve(
-        const Vec2d& sourcePos,
-        const Vec2d& listenerPos,
-        ProgressCallback progress = nullptr,
-        CancelCheck cancel = nullptr);
+    AcousticsResult2D solve(const Vec2d& sourcePos, const Vec2d& listenerPos, ProgressCallback progress = nullptr,
+                            CancelCheck cancel = nullptr);
 
     int findElement(const Vec2d& pos) const;
     double computeTimeStep() const;
 
-private:
-    void computeRHS(
-        const MatXd& p, const MatXd& ux, const MatXd& uy,
-        MatXd& rhsP, MatXd& rhsUx, MatXd& rhsUy,
-        double time);
+  private:
+    void computeRHS(const MatXd& p, const MatXd& ux, const MatXd& uy, MatXd& rhsP, MatXd& rhsUx, MatXd& rhsUy,
+                    double time);
 
     void addSourceTerm(MatXd& rhsP, double time);
 

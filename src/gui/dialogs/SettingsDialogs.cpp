@@ -1,21 +1,20 @@
 #include "SettingsDialogs.h"
 
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFormLayout>
-#include <QGroupBox>
-#include <QPushButton>
 #include <QDialogButtonBox>
 #include <QFileDialog>
+#include <QFormLayout>
+#include <QGroupBox>
+#include <QHBoxLayout>
 #include <QHeaderView>
+#include <QPushButton>
+#include <QVBoxLayout>
 
 namespace prs {
 
 // ==================== PreferencesDialog ====================
 
 PreferencesDialog::PreferencesDialog(QWidget* parent)
-    : QDialog(parent)
-{
+    : QDialog(parent) {
     setWindowTitle("Preferences");
     setMinimumWidth(400);
     auto* layout = new QVBoxLayout(this);
@@ -29,7 +28,8 @@ PreferencesDialog::PreferencesDialog(QWidget* parent)
     auto* browseBtn = new QPushButton("Browse...");
     connect(browseBtn, &QPushButton::clicked, [this]() {
         QString dir = QFileDialog::getExistingDirectory(this, "Default Project Directory");
-        if (!dir.isEmpty()) projectDirEdit_->setText(dir);
+        if (!dir.isEmpty())
+            projectDirEdit_->setText(dir);
     });
     dirRow->addWidget(projectDirEdit_);
     dirRow->addWidget(browseBtn);
@@ -60,8 +60,7 @@ void PreferencesDialog::accept() {
 // ==================== DisplaySettingsDialog ====================
 
 DisplaySettingsDialog::DisplaySettingsDialog(QWidget* parent)
-    : QDialog(parent)
-{
+    : QDialog(parent) {
     setWindowTitle("Display Settings");
     setMinimumWidth(350);
     auto* layout = new QVBoxLayout(this);
@@ -86,9 +85,8 @@ DisplaySettingsDialog::DisplaySettingsDialog(QWidget* parent)
     transparencyAlpha_->setRange(5, 100);
     transparencyAlpha_->setValue(static_cast<int>(s.value("display/transparencyAlpha", 0.55).toDouble() * 100));
     alphaLabel_ = new QLabel(QString::number(transparencyAlpha_->value() / 100.0, 'f', 2));
-    connect(transparencyAlpha_, &QSlider::valueChanged, [this](int v) {
-        alphaLabel_->setText(QString::number(v / 100.0, 'f', 2));
-    });
+    connect(transparencyAlpha_, &QSlider::valueChanged,
+            [this](int v) { alphaLabel_->setText(QString::number(v / 100.0, 'f', 2)); });
     alphaRow->addWidget(transparencyAlpha_);
     alphaRow->addWidget(alphaLabel_);
     form->addRow("Transparency alpha:", alphaRow);
@@ -124,8 +122,7 @@ void DisplaySettingsDialog::accept() {
 // ==================== AudioSettingsDialog ====================
 
 AudioSettingsDialog::AudioSettingsDialog(QWidget* parent)
-    : QDialog(parent)
-{
+    : QDialog(parent) {
     setWindowTitle("Audio Settings");
     setMinimumWidth(300);
     auto* layout = new QVBoxLayout(this);
@@ -140,7 +137,8 @@ AudioSettingsDialog::AudioSettingsDialog(QWidget* parent)
     sampleRate_->addItem("96000 Hz", 96000);
     int savedRate = s.value("audio/sampleRate", 44100).toInt();
     int idx = sampleRate_->findData(savedRate);
-    if (idx >= 0) sampleRate_->setCurrentIndex(idx);
+    if (idx >= 0)
+        sampleRate_->setCurrentIndex(idx);
     form->addRow("Sample Rate:", sampleRate_);
 
     auto* formatLabel = new QLabel("WAV (16-bit PCM)");
@@ -164,8 +162,7 @@ void AudioSettingsDialog::accept() {
 // ==================== SimulationSettingsDialog ====================
 
 SimulationSettingsDialog::SimulationSettingsDialog(QWidget* parent)
-    : QDialog(parent)
-{
+    : QDialog(parent) {
     setWindowTitle("Simulation Settings");
     setMinimumWidth(400);
     auto* layout = new QVBoxLayout(this);
@@ -209,11 +206,21 @@ SimulationSettingsDialog::SimulationSettingsDialog(QWidget* parent)
     layout->addWidget(buttons);
 }
 
-int SimulationSettingsDialog::maxOrder() const { return maxOrder_->value(); }
-int SimulationSettingsDialog::numRays() const { return numRays_->value(); }
-float SimulationSettingsDialog::energyAbsorption() const { return static_cast<float>(absorption_->value()); }
-float SimulationSettingsDialog::scattering() const { return static_cast<float>(scattering_->value()); }
-bool SimulationSettingsDialog::airAbsorption() const { return airAbsorption_->isChecked(); }
+int SimulationSettingsDialog::maxOrder() const {
+    return maxOrder_->value();
+}
+int SimulationSettingsDialog::numRays() const {
+    return numRays_->value();
+}
+float SimulationSettingsDialog::energyAbsorption() const {
+    return static_cast<float>(absorption_->value());
+}
+float SimulationSettingsDialog::scattering() const {
+    return static_cast<float>(scattering_->value());
+}
+bool SimulationSettingsDialog::airAbsorption() const {
+    return airAbsorption_->isChecked();
+}
 
 void SimulationSettingsDialog::accept() {
     QSettings s("PyRoomStudio", "PyRoomStudio");
@@ -228,8 +235,7 @@ void SimulationSettingsDialog::accept() {
 // ==================== KeyboardShortcutsDialog ====================
 
 KeyboardShortcutsDialog::KeyboardShortcutsDialog(QWidget* parent)
-    : QDialog(parent)
-{
+    : QDialog(parent) {
     setWindowTitle("Keyboard Shortcuts");
     setMinimumSize(400, 350);
     auto* layout = new QVBoxLayout(this);
@@ -242,23 +248,26 @@ KeyboardShortcutsDialog::KeyboardShortcutsDialog(QWidget* parent)
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     table_->setSelectionMode(QAbstractItemView::NoSelection);
 
-    struct SC { const char* action; const char* shortcut; };
+    struct SC {
+        const char* action;
+        const char* shortcut;
+    };
     SC shortcuts[] = {
-        {"New Project",          "Ctrl+N"},
-        {"Open Project",         "Ctrl+O"},
-        {"Save Project",         "Ctrl+S"},
-        {"Save As",              "Ctrl+Shift+S"},
-        {"Undo",                 "Ctrl+Z"},
-        {"Redo",                 "Ctrl+Y"},
-        {"Cut Point",            "Ctrl+X"},
-        {"Copy Point",           "Ctrl+C"},
-        {"Paste Point",          "Ctrl+V"},
-        {"Delete Point",         "Delete"},
+        {"New Project", "Ctrl+N"},
+        {"Open Project", "Ctrl+O"},
+        {"Save Project", "Ctrl+S"},
+        {"Save As", "Ctrl+Shift+S"},
+        {"Undo", "Ctrl+Z"},
+        {"Redo", "Ctrl+Y"},
+        {"Cut Point", "Ctrl+X"},
+        {"Copy Point", "Ctrl+C"},
+        {"Paste Point", "Ctrl+V"},
+        {"Delete Point", "Delete"},
         {"Placement (off / Source / Listener / off)", "P"},
-        {"Toggle Transparency",  "T"},
+        {"Toggle Transparency", "T"},
         {"Reset Surface Colors", "R"},
-        {"Clear All Points",     "C"},
-        {"Exit",                 "Ctrl+Q"},
+        {"Clear All Points", "C"},
+        {"Exit", "Ctrl+Q"},
     };
 
     int numShortcuts = sizeof(shortcuts) / sizeof(shortcuts[0]);

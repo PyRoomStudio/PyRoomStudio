@@ -3,10 +3,9 @@
 namespace prs {
 
 class GpuCapabilities {
-public:
+  public:
     static bool isGpuRayTracingSupported();
     static bool isGpuConvolutionSupported();
 };
 
 } // namespace prs
-

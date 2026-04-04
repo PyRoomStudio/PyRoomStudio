@@ -1,10 +1,13 @@
 #include "UndoCommands.h"
+
 #include "rendering/Viewport3D.h"
 
 namespace prs {
 
 AddPointCommand::AddPointCommand(Viewport3D* vp, const PlacedPoint& point)
-    : QUndoCommand("Add Point"), vp_(vp), point_(point) {}
+    : QUndoCommand("Add Point")
+    , vp_(vp)
+    , point_(point) {}
 
 void AddPointCommand::undo() {
     auto& pts = vp_->placedPoints();
@@ -24,7 +27,9 @@ void AddPointCommand::redo() {
 }
 
 RemovePointCommand::RemovePointCommand(Viewport3D* vp, int index)
-    : QUndoCommand("Remove Point"), vp_(vp), index_(index) {
+    : QUndoCommand("Remove Point")
+    , vp_(vp)
+    , index_(index) {
     if (index >= 0 && index < static_cast<int>(vp->placedPoints().size()))
         point_ = vp->placedPoints()[index];
 }
@@ -47,7 +52,10 @@ void RemovePointCommand::redo() {
 }
 
 ChangePointTypeCommand::ChangePointTypeCommand(Viewport3D* vp, int index, const std::string& newType)
-    : QUndoCommand("Change Point Type"), vp_(vp), index_(index), newType_(newType) {
+    : QUndoCommand("Change Point Type")
+    , vp_(vp)
+    , index_(index)
+    , newType_(newType) {
     if (index >= 0 && index < static_cast<int>(vp->placedPoints().size()))
         oldType_ = vp->placedPoints()[index].pointType;
 }
@@ -69,7 +77,10 @@ void ChangePointTypeCommand::redo() {
 }
 
 ChangeSurfaceColorCommand::ChangeSurfaceColorCommand(Viewport3D* vp, int surfIdx, const Color3f& newColor)
-    : QUndoCommand("Change Surface Color"), vp_(vp), surfIdx_(surfIdx), newColor_(newColor) {
+    : QUndoCommand("Change Surface Color")
+    , vp_(vp)
+    , surfIdx_(surfIdx)
+    , newColor_(newColor) {
     if (surfIdx >= 0 && surfIdx < static_cast<int>(vp->surfaceColors().size()))
         oldColor_ = vp->surfaceColors()[surfIdx];
 }
@@ -83,7 +94,10 @@ void ChangeSurfaceColorCommand::redo() {
 }
 
 ChangeScaleCommand::ChangeScaleCommand(Viewport3D* vp, float oldScale, float newScale)
-    : QUndoCommand("Change Scale"), vp_(vp), oldScale_(oldScale), newScale_(newScale) {}
+    : QUndoCommand("Change Scale")
+    , vp_(vp)
+    , oldScale_(oldScale)
+    , newScale_(newScale) {}
 
 void ChangeScaleCommand::undo() {
     vp_->setScaleFactor(oldScale_);
@@ -94,7 +108,11 @@ void ChangeScaleCommand::redo() {
 }
 
 MovePointCommand::MovePointCommand(Viewport3D* vp, int index, const PlacedPoint& oldState, const PlacedPoint& newState)
-    : QUndoCommand("Move Point"), vp_(vp), index_(index), oldState_(oldState), newState_(newState) {}
+    : QUndoCommand("Move Point")
+    , vp_(vp)
+    , index_(index)
+    , oldState_(oldState)
+    , newState_(newState) {}
 
 void MovePointCommand::undo() {
     auto& pts = vp_->placedPoints();
@@ -115,7 +133,8 @@ void MovePointCommand::redo() {
 }
 
 ClearAllPointsCommand::ClearAllPointsCommand(Viewport3D* vp)
-    : QUndoCommand("Clear All Points"), vp_(vp) {
+    : QUndoCommand("Clear All Points")
+    , vp_(vp) {
     savedPoints_ = vp->placedPoints();
 }
 

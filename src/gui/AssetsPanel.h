@@ -2,11 +2,12 @@
 
 #include "core/PlacedPoint.h"
 
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QString>
-#include <QVector>
 #include <QPixmap>
+#include <QString>
+#include <QVBoxLayout>
+#include <QVector>
+#include <QWidget>
+
 #include <vector>
 
 class QTabWidget;
@@ -19,7 +20,7 @@ class SurfaceGallery;
 class AssetsPanel : public QWidget {
     Q_OBJECT
 
-public:
+  public:
     explicit AssetsPanel(QWidget* parent = nullptr);
 
     struct SurfaceInfo {
@@ -36,19 +37,19 @@ public:
     void clearSurfaces();
     void updatePointLists(const std::vector<PlacedPoint>& points, int activePointIndex);
 
-signals:
+  signals:
     void surfaceClicked(int surfaceIndex, const QString& name);
     void pointListClicked(int pointIndex);
 
-private:
+  private:
     void setupUI();
 
-    QVBoxLayout*    contentLayout_ = nullptr;
-    SurfaceGallery* gallery_       = nullptr;
-    QTabWidget*     tabWidget_     = nullptr;
-    QWidget*        surfacesTab_   = nullptr;
-    QListWidget*    sourcesList_   = nullptr;
-    QListWidget*    listenersList_ = nullptr;
+    QVBoxLayout* contentLayout_ = nullptr;
+    SurfaceGallery* gallery_ = nullptr;
+    QTabWidget* tabWidget_ = nullptr;
+    QWidget* surfacesTab_ = nullptr;
+    QListWidget* sourcesList_ = nullptr;
+    QListWidget* listenersList_ = nullptr;
 };
 
 } // namespace prs

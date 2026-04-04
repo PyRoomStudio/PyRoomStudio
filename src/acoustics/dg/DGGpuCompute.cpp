@@ -1,27 +1,30 @@
 #include "DGGpuCompute.h"
 
+#include <QDebug>
+#include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QOpenGLVersionFunctionsFactory>
-#include <QOffscreenSurface>
 #include <QSurfaceFormat>
-#include <QDebug>
 
-#include <vector>
 #include <cstring>
 #include <sstream>
+#include <vector>
 
 namespace prs {
 namespace dg {
 
 static int nextPow2(int v) {
     int p = 1;
-    while (p < v) p <<= 1;
+    while (p < v)
+        p <<= 1;
     return std::max(p, 32); // minimum warp size
 }
 
 DGGpuCompute::DGGpuCompute() = default;
 
-DGGpuCompute::~DGGpuCompute() { cleanup(); }
+DGGpuCompute::~DGGpuCompute() {
+    cleanup();
+}
 
 bool DGGpuCompute::initContext() {
     QSurfaceFormat fmt;
@@ -64,8 +67,7 @@ bool DGGpuCompute::initContext() {
         return false;
     }
 
-    qInfo() << "DG GPU compute: OpenGL" << context_->format().majorVersion()
-            << "." << context_->format().minorVersion()
+    qInfo() << "DG GPU compute: OpenGL" << context_->format().majorVersion() << "." << context_->format().minorVersion()
             << "| max SSBOs:" << maxSSBO;
 
     available_ = true;
@@ -73,27 +75,51 @@ bool DGGpuCompute::initContext() {
 }
 
 void DGGpuCompute::cleanup() {
-    if (!gl_) return;
+    if (!gl_)
+        return;
 
-    auto deleteProgram = [&](GLuint& p) { if (p) { gl_->glDeleteProgram(p); p = 0; } };
-    auto deleteBuf = [&](GLuint& b) { if (b) { gl_->glDeleteBuffers(1, &b); b = 0; } };
+    auto deleteProgram = [&](GLuint& p) {
+        if (p) {
+            gl_->glDeleteProgram(p);
+            p = 0;
+        }
+    };
+    auto deleteBuf = [&](GLuint& b) {
+        if (b) {
+            gl_->glDeleteBuffers(1, &b);
+            b = 0;
+        }
+    };
 
     deleteProgram(rkProgram_);
     deleteProgram(readbackProgram_);
 
     deleteProgram(s2d_.rhsProgram);
-    deleteBuf(s2d_.fieldBuf); deleteBuf(s2d_.rhsBuf); deleteBuf(s2d_.resBuf);
-    deleteBuf(s2d_.opBuf); deleteBuf(s2d_.geoBuf); deleteBuf(s2d_.surfBuf);
-    deleteBuf(s2d_.connBuf); deleteBuf(s2d_.srcBuf);
-    deleteBuf(s2d_.physicsBuf); deleteBuf(s2d_.rkParamsBuf);
+    deleteBuf(s2d_.fieldBuf);
+    deleteBuf(s2d_.rhsBuf);
+    deleteBuf(s2d_.resBuf);
+    deleteBuf(s2d_.opBuf);
+    deleteBuf(s2d_.geoBuf);
+    deleteBuf(s2d_.surfBuf);
+    deleteBuf(s2d_.connBuf);
+    deleteBuf(s2d_.srcBuf);
+    deleteBuf(s2d_.physicsBuf);
+    deleteBuf(s2d_.rkParamsBuf);
 
     deleteProgram(s3d_.rhsProgram);
-    deleteBuf(s3d_.fieldBuf); deleteBuf(s3d_.rhsBuf); deleteBuf(s3d_.resBuf);
-    deleteBuf(s3d_.opBuf); deleteBuf(s3d_.geoBuf); deleteBuf(s3d_.surfBuf);
-    deleteBuf(s3d_.connBuf); deleteBuf(s3d_.srcBuf);
-    deleteBuf(s3d_.physicsBuf); deleteBuf(s3d_.rkParamsBuf);
+    deleteBuf(s3d_.fieldBuf);
+    deleteBuf(s3d_.rhsBuf);
+    deleteBuf(s3d_.resBuf);
+    deleteBuf(s3d_.opBuf);
+    deleteBuf(s3d_.geoBuf);
+    deleteBuf(s3d_.surfBuf);
+    deleteBuf(s3d_.connBuf);
+    deleteBuf(s3d_.srcBuf);
+    deleteBuf(s3d_.physicsBuf);
+    deleteBuf(s3d_.rkParamsBuf);
 
-    if (context_) context_->doneCurrent();
+    if (context_)
+        context_->doneCurrent();
     available_ = false;
 }
 
@@ -150,7 +176,8 @@ void DGGpuCompute::uploadBuffer(GLuint buf, GLsizeiptr size, const void* data) {
 std::string DGGpuCompute::generateRHSShader2D(int Np, int totalFaceNodes, int localSize) {
     std::ostringstream ss;
     ss << R"(#version 430
-layout(local_size_x = )" << localSize << R"() in;
+layout(local_size_x = )"
+       << localSize << R"() in;
 
 // SSBO 0: fields (p, ux, uy) packed [3 * Np * K]
 layout(std430, binding = 0) readonly buffer Fields { float fields[]; };
@@ -174,21 +201,30 @@ layout(std430, binding = 6) readonly buffer Conn { int conn[]; };
 // SSBO 6: source (sourceWeights[Np], sourceElem, sourcePulse)
 layout(std430, binding = 7) readonly buffer Src { float srcData[]; };
 
-const int cNp = )" << Np << R"(;
+const int cNp = )"
+       << Np << R"(;
 const int cNfaces = 3;
-const int cNfp = )" << (totalFaceNodes / 3) << R"(;
-const int cTFN = )" << totalFaceNodes << R"(;
+const int cNfp = )"
+       << (totalFaceNodes / 3) << R"(;
+const int cTFN = )"
+       << totalFaceNodes << R"(;
 
 uniform int uK;
 uniform float uRho;
 uniform float uC;
 
-shared float s_p[)" << localSize << R"(];
-shared float s_ux[)" << localSize << R"(];
-shared float s_uy[)" << localSize << R"(];
-shared float s_flux_p[)" << localSize << R"(];
-shared float s_flux_ux[)" << localSize << R"(];
-shared float s_flux_uy[)" << localSize << R"(];
+shared float s_p[)"
+       << localSize << R"(];
+shared float s_ux[)"
+       << localSize << R"(];
+shared float s_uy[)"
+       << localSize << R"(];
+shared float s_flux_p[)"
+       << localSize << R"(];
+shared float s_flux_ux[)"
+       << localSize << R"(];
+shared float s_flux_uy[)"
+       << localSize << R"(];
 
 void main() {
     int k = int(gl_WorkGroupID.x);
@@ -390,7 +426,8 @@ void main() {
 // ==================== 2D INITIALIZATION ====================
 
 bool DGGpuCompute::init2D(const Basis2D& basis, const Mesh2D& mesh) {
-    if (!available_) return false;
+    if (!available_)
+        return false;
 
     s2d_.Np = basis.Np;
     s2d_.K = mesh.K;
@@ -425,8 +462,8 @@ bool DGGpuCompute::init2D(const Basis2D& basis, const Mesh2D& mesh) {
 
     // Fields: 3 * Np * K floats (p, ux, uy)
     s2d_.fieldBuf = createBuffer(GL_DYNAMIC_DRAW, 3 * Np * K * sizeof(float));
-    s2d_.rhsBuf   = createBuffer(GL_DYNAMIC_DRAW, 3 * Np * K * sizeof(float));
-    s2d_.resBuf   = createBuffer(GL_DYNAMIC_DRAW, 3 * Np * K * sizeof(float));
+    s2d_.rhsBuf = createBuffer(GL_DYNAMIC_DRAW, 3 * Np * K * sizeof(float));
+    s2d_.resBuf = createBuffer(GL_DYNAMIC_DRAW, 3 * Np * K * sizeof(float));
 
     // Operators: Dr(Np*Np) + Ds(Np*Np) + LIFT(Np*TFN)
     {
@@ -514,8 +551,7 @@ bool DGGpuCompute::init2D(const Basis2D& basis, const Mesh2D& mesh) {
     //                         listenerWeights(Np), result(1) = 2*Np+3 floats
     s2d_.srcBuf = createBuffer(GL_DYNAMIC_DRAW, (2 * Np + 3) * sizeof(float));
 
-    qInfo() << "DG GPU 2D: initialized" << K << "elements, Np=" << Np
-            << ", local_size=" << s2d_.localSize
+    qInfo() << "DG GPU 2D: initialized" << K << "elements, Np=" << Np << ", local_size=" << s2d_.localSize
             << ", field memory:" << (3 * Np * K * sizeof(float) / 1024) << "KB";
 
     return true;
@@ -550,8 +586,7 @@ void DGGpuCompute::setListener2D(int elem, const VecXd& weights) {
     for (int i = 0; i < Np; ++i)
         wt[i] = static_cast<float>(weights(i));
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, s2d_.srcBuf);
-    gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 2) * sizeof(float),
-                         Np * sizeof(float), wt.data());
+    gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 2) * sizeof(float), Np * sizeof(float), wt.data());
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -561,18 +596,15 @@ void DGGpuCompute::computeRHS2D(float sourcePulse) {
 
     // Update source pulse in srcBuf
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, s2d_.srcBuf);
-    gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 1) * sizeof(float),
-                         sizeof(float), &sourcePulse);
+    gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 1) * sizeof(float), sizeof(float), &sourcePulse);
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     gl_->glUseProgram(s2d_.rhsProgram);
 
     // Set uniforms
     gl_->glUniform1i(gl_->glGetUniformLocation(s2d_.rhsProgram, "uK"), K);
-    gl_->glUniform1f(gl_->glGetUniformLocation(s2d_.rhsProgram, "uRho"),
-                     static_cast<float>(AIR_DENSITY));
-    gl_->glUniform1f(gl_->glGetUniformLocation(s2d_.rhsProgram, "uC"),
-                     static_cast<float>(SOUND_SPEED));
+    gl_->glUniform1f(gl_->glGetUniformLocation(s2d_.rhsProgram, "uRho"), static_cast<float>(AIR_DENSITY));
+    gl_->glUniform1f(gl_->glGetUniformLocation(s2d_.rhsProgram, "uC"), static_cast<float>(SOUND_SPEED));
 
     // Bind SSBOs
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, s2d_.fieldBuf);
@@ -611,8 +643,7 @@ float DGGpuCompute::readListenerPressure2D() {
 
     gl_->glUseProgram(readbackProgram_);
 
-    gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uListenerElem"),
-                     s2d_.listenerElem);
+    gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uListenerElem"), s2d_.listenerElem);
     gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uNp"), Np);
     gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uK"), s2d_.K);
 
@@ -625,9 +656,7 @@ float DGGpuCompute::readListenerPressure2D() {
     // Read result from srcBuf at offset (2*Np+2)
     float result = 0.0f;
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, s2d_.srcBuf);
-    gl_->glGetBufferSubData(GL_SHADER_STORAGE_BUFFER,
-                            (2 * Np + 2) * sizeof(float),
-                            sizeof(float), &result);
+    gl_->glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, (2 * Np + 2) * sizeof(float), sizeof(float), &result);
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     return result;
@@ -639,7 +668,8 @@ std::string DGGpuCompute::generateRHSShader3D(int Np, int totalFaceNodes, int lo
     int Nfp = totalFaceNodes / 4;
     std::ostringstream ss;
     ss << R"(#version 430
-layout(local_size_x = )" << localSize << R"() in;
+layout(local_size_x = )"
+       << localSize << R"() in;
 
 // SSBO 0: fields (p, ux, uy, uz) [4 * Np * K]
 layout(std430, binding = 0) readonly buffer Fields { float fields[]; };
@@ -656,23 +686,34 @@ layout(std430, binding = 6) readonly buffer Conn { int conn[]; };
 // SSBO 7: source data
 layout(std430, binding = 7) readonly buffer Src { float srcData[]; };
 
-const int cNp = )" << Np << R"(;
+const int cNp = )"
+       << Np << R"(;
 const int cNfaces = 4;
-const int cNfp = )" << Nfp << R"(;
-const int cTFN = )" << totalFaceNodes << R"(;
+const int cNfp = )"
+       << Nfp << R"(;
+const int cTFN = )"
+       << totalFaceNodes << R"(;
 
 uniform int uK;
 uniform float uRho;
 uniform float uC;
 
-shared float s_p[)" << localSize << R"(];
-shared float s_ux[)" << localSize << R"(];
-shared float s_uy[)" << localSize << R"(];
-shared float s_uz[)" << localSize << R"(];
-shared float s_flux_p[)" << localSize << R"(];
-shared float s_flux_ux[)" << localSize << R"(];
-shared float s_flux_uy[)" << localSize << R"(];
-shared float s_flux_uz[)" << localSize << R"(];
+shared float s_p[)"
+       << localSize << R"(];
+shared float s_ux[)"
+       << localSize << R"(];
+shared float s_uy[)"
+       << localSize << R"(];
+shared float s_uz[)"
+       << localSize << R"(];
+shared float s_flux_p[)"
+       << localSize << R"(];
+shared float s_flux_ux[)"
+       << localSize << R"(];
+shared float s_flux_uy[)"
+       << localSize << R"(];
+shared float s_flux_uz[)"
+       << localSize << R"(];
 
 void main() {
     int k = int(gl_WorkGroupID.x);
@@ -835,7 +876,8 @@ void main() {
 }
 
 bool DGGpuCompute::init3D(const Basis3D& basis, const Mesh3D& mesh) {
-    if (!available_) return false;
+    if (!available_)
+        return false;
 
     s3d_.Np = basis.Np;
     s3d_.K = mesh.K;
@@ -849,8 +891,10 @@ bool DGGpuCompute::init3D(const Basis3D& basis, const Mesh3D& mesh) {
         qWarning() << "DG GPU 3D: RHS shader failed:" << QString::fromStdString(lastError_);
         return false;
     }
-    if (!rkProgram_ && !compileProgram(rkProgram_, generateRKShader())) return false;
-    if (!readbackProgram_ && !compileProgram(readbackProgram_, generateReadbackShader())) return false;
+    if (!rkProgram_ && !compileProgram(rkProgram_, generateRKShader()))
+        return false;
+    if (!readbackProgram_ && !compileProgram(readbackProgram_, generateReadbackShader()))
+        return false;
 
     int Np = s3d_.Np;
     int K = s3d_.K;
@@ -859,8 +903,8 @@ bool DGGpuCompute::init3D(const Basis3D& basis, const Mesh3D& mesh) {
 
     // Fields: 4 fields for 3D (p, ux, uy, uz)
     s3d_.fieldBuf = createBuffer(GL_DYNAMIC_DRAW, 4 * Np * K * sizeof(float));
-    s3d_.rhsBuf   = createBuffer(GL_DYNAMIC_DRAW, 4 * Np * K * sizeof(float));
-    s3d_.resBuf   = createBuffer(GL_DYNAMIC_DRAW, 4 * Np * K * sizeof(float));
+    s3d_.rhsBuf = createBuffer(GL_DYNAMIC_DRAW, 4 * Np * K * sizeof(float));
+    s3d_.resBuf = createBuffer(GL_DYNAMIC_DRAW, 4 * Np * K * sizeof(float));
 
     // Operators: Dr + Ds + Dt + LIFT
     {
@@ -892,9 +936,15 @@ bool DGGpuCompute::init3D(const Basis3D& basis, const Mesh3D& mesh) {
                 for (int i = 0; i < Np; ++i)
                     geoData[off++] = static_cast<float>(m(i, kk));
         };
-        pack(mesh.rx); pack(mesh.ry); pack(mesh.rz);
-        pack(mesh.sx); pack(mesh.sy); pack(mesh.sz);
-        pack(mesh.tx); pack(mesh.ty); pack(mesh.tz);
+        pack(mesh.rx);
+        pack(mesh.ry);
+        pack(mesh.rz);
+        pack(mesh.sx);
+        pack(mesh.sy);
+        pack(mesh.sz);
+        pack(mesh.tx);
+        pack(mesh.ty);
+        pack(mesh.tz);
         s3d_.geoBuf = createBuffer(GL_STATIC_DRAW, geoSize * sizeof(float), geoData.data());
     }
 
@@ -903,11 +953,21 @@ bool DGGpuCompute::init3D(const Basis3D& basis, const Mesh3D& mesh) {
         int surfSize = 5 * TFN * K;
         std::vector<float> surfData(surfSize);
         int off = 0;
-        for (int kk = 0; kk < K; ++kk) for (int f = 0; f < TFN; ++f) surfData[off++] = static_cast<float>(mesh.nx(f, kk));
-        for (int kk = 0; kk < K; ++kk) for (int f = 0; f < TFN; ++f) surfData[off++] = static_cast<float>(mesh.ny(f, kk));
-        for (int kk = 0; kk < K; ++kk) for (int f = 0; f < TFN; ++f) surfData[off++] = static_cast<float>(mesh.nz(f, kk));
-        for (int kk = 0; kk < K; ++kk) for (int f = 0; f < TFN; ++f) surfData[off++] = static_cast<float>(mesh.Fscale(f, kk));
-        for (int kk = 0; kk < K; ++kk) for (int f = 0; f < TFN; ++f) surfData[off++] = static_cast<float>(mesh.boundaryImpedance(kk * TFN + f));
+        for (int kk = 0; kk < K; ++kk)
+            for (int f = 0; f < TFN; ++f)
+                surfData[off++] = static_cast<float>(mesh.nx(f, kk));
+        for (int kk = 0; kk < K; ++kk)
+            for (int f = 0; f < TFN; ++f)
+                surfData[off++] = static_cast<float>(mesh.ny(f, kk));
+        for (int kk = 0; kk < K; ++kk)
+            for (int f = 0; f < TFN; ++f)
+                surfData[off++] = static_cast<float>(mesh.nz(f, kk));
+        for (int kk = 0; kk < K; ++kk)
+            for (int f = 0; f < TFN; ++f)
+                surfData[off++] = static_cast<float>(mesh.Fscale(f, kk));
+        for (int kk = 0; kk < K; ++kk)
+            for (int f = 0; f < TFN; ++f)
+                surfData[off++] = static_cast<float>(mesh.boundaryImpedance(kk * TFN + f));
         s3d_.surfBuf = createBuffer(GL_STATIC_DRAW, surfSize * sizeof(float), surfData.data());
     }
 
@@ -916,17 +976,22 @@ bool DGGpuCompute::init3D(const Basis3D& basis, const Mesh3D& mesh) {
         int connSize = 2 * TFN * K + 2 * K * Nfaces;
         std::vector<int> connData(connSize);
         int off = 0;
-        for (int i = 0; i < TFN * K; ++i) connData[off++] = mesh.vmapM(i);
-        for (int i = 0; i < TFN * K; ++i) connData[off++] = mesh.vmapP(i);
-        for (int kk = 0; kk < K; ++kk) for (int f = 0; f < Nfaces; ++f) connData[off++] = mesh.EToE(kk, f);
-        for (int kk = 0; kk < K; ++kk) for (int f = 0; f < Nfaces; ++f) connData[off++] = mesh.EToF(kk, f);
+        for (int i = 0; i < TFN * K; ++i)
+            connData[off++] = mesh.vmapM(i);
+        for (int i = 0; i < TFN * K; ++i)
+            connData[off++] = mesh.vmapP(i);
+        for (int kk = 0; kk < K; ++kk)
+            for (int f = 0; f < Nfaces; ++f)
+                connData[off++] = mesh.EToE(kk, f);
+        for (int kk = 0; kk < K; ++kk)
+            for (int f = 0; f < Nfaces; ++f)
+                connData[off++] = mesh.EToF(kk, f);
         s3d_.connBuf = createBuffer(GL_STATIC_DRAW, connSize * sizeof(int), connData.data());
     }
 
     s3d_.srcBuf = createBuffer(GL_DYNAMIC_DRAW, (2 * Np + 3) * sizeof(float));
 
-    qInfo() << "DG GPU 3D: initialized" << K << "elements, Np=" << Np
-            << ", local_size=" << s3d_.localSize;
+    qInfo() << "DG GPU 3D: initialized" << K << "elements, Np=" << Np << ", local_size=" << s3d_.localSize;
     return true;
 }
 
@@ -952,10 +1017,10 @@ void DGGpuCompute::setListener3D(int elem, const VecXd& weights) {
     s3d_.listenerElem = elem;
     int Np = s3d_.Np;
     std::vector<float> wt(Np);
-    for (int i = 0; i < Np; ++i) wt[i] = static_cast<float>(weights(i));
+    for (int i = 0; i < Np; ++i)
+        wt[i] = static_cast<float>(weights(i));
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, s3d_.srcBuf);
-    gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 2) * sizeof(float),
-                         Np * sizeof(float), wt.data());
+    gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 2) * sizeof(float), Np * sizeof(float), wt.data());
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -964,8 +1029,7 @@ void DGGpuCompute::computeRHS3D(float sourcePulse) {
     int K = s3d_.K;
 
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, s3d_.srcBuf);
-    gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 1) * sizeof(float),
-                         sizeof(float), &sourcePulse);
+    gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 1) * sizeof(float), sizeof(float), &sourcePulse);
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     gl_->glUseProgram(s3d_.rhsProgram);
@@ -1019,9 +1083,7 @@ float DGGpuCompute::readListenerPressure3D() {
 
     float result = 0.0f;
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, s3d_.srcBuf);
-    gl_->glGetBufferSubData(GL_SHADER_STORAGE_BUFFER,
-                            (2 * Np + 2) * sizeof(float),
-                            sizeof(float), &result);
+    gl_->glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, (2 * Np + 2) * sizeof(float), sizeof(float), &result);
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     return result;
 }

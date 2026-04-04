@@ -1,12 +1,13 @@
-#include <QtTest/QtTest>
 #include "rendering/Camera.h"
 #include "rendering/RayPicking.h"
+
+#include <QtTest/QtTest>
 
 using namespace prs;
 
 class TestRendering : public QObject {
     Q_OBJECT
-private slots:
+  private slots:
     void testCameraDefaults() {
         Camera cam;
         QVERIFY(cam.distance() >= 0);

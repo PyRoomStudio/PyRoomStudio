@@ -10,15 +10,15 @@ class SimulationQueuePanel;
 class SimulationQueueWindow : public QMainWindow {
     Q_OBJECT
 
-public:
+  public:
     explicit SimulationQueueWindow(SimulationQueue* queue, QWidget* parent = nullptr);
 
     SimulationQueuePanel* panel() const { return panel_; }
 
-protected:
+  protected:
     void closeEvent(QCloseEvent* event) override;
 
-private:
+  private:
     SimulationQueuePanel* panel_ = nullptr;
 };
 

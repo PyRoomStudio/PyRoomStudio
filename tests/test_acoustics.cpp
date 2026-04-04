@@ -1,12 +1,13 @@
-#include <QtTest/QtTest>
-#include <QTemporaryFile>
-#include <QDir>
-#include "acoustics/Wall.h"
+#include "acoustics/AcousticMetrics.h"
 #include "acoustics/Bvh.h"
 #include "acoustics/ImageSourceMethod.h"
 #include "acoustics/RayTracer.h"
 #include "acoustics/RoomImpulseResponse.h"
-#include "acoustics/AcousticMetrics.h"
+#include "acoustics/Wall.h"
+
+#include <QDir>
+#include <QTemporaryFile>
+#include <QtTest/QtTest>
 
 using namespace prs;
 
@@ -25,25 +26,25 @@ static std::vector<Wall> createSimpleBox(float size = 5.0f) {
     };
 
     float s = size;
-    addWall(Vec3f(0,0,0), Vec3f(s,0,0), Vec3f(s,s,0));
-    addWall(Vec3f(0,0,0), Vec3f(s,s,0), Vec3f(0,s,0));
-    addWall(Vec3f(0,0,s), Vec3f(s,s,s), Vec3f(s,0,s));
-    addWall(Vec3f(0,0,s), Vec3f(0,s,s), Vec3f(s,s,s));
-    addWall(Vec3f(0,0,0), Vec3f(s,0,s), Vec3f(s,0,0));
-    addWall(Vec3f(0,0,0), Vec3f(0,0,s), Vec3f(s,0,s));
-    addWall(Vec3f(0,s,0), Vec3f(s,s,0), Vec3f(s,s,s));
-    addWall(Vec3f(0,s,0), Vec3f(s,s,s), Vec3f(0,s,s));
-    addWall(Vec3f(0,0,0), Vec3f(0,s,0), Vec3f(0,s,s));
-    addWall(Vec3f(0,0,0), Vec3f(0,s,s), Vec3f(0,0,s));
-    addWall(Vec3f(s,0,0), Vec3f(s,0,s), Vec3f(s,s,s));
-    addWall(Vec3f(s,0,0), Vec3f(s,s,s), Vec3f(s,s,0));
+    addWall(Vec3f(0, 0, 0), Vec3f(s, 0, 0), Vec3f(s, s, 0));
+    addWall(Vec3f(0, 0, 0), Vec3f(s, s, 0), Vec3f(0, s, 0));
+    addWall(Vec3f(0, 0, s), Vec3f(s, s, s), Vec3f(s, 0, s));
+    addWall(Vec3f(0, 0, s), Vec3f(0, s, s), Vec3f(s, s, s));
+    addWall(Vec3f(0, 0, 0), Vec3f(s, 0, s), Vec3f(s, 0, 0));
+    addWall(Vec3f(0, 0, 0), Vec3f(0, 0, s), Vec3f(s, 0, s));
+    addWall(Vec3f(0, s, 0), Vec3f(s, s, 0), Vec3f(s, s, s));
+    addWall(Vec3f(0, s, 0), Vec3f(s, s, s), Vec3f(0, s, s));
+    addWall(Vec3f(0, 0, 0), Vec3f(0, s, 0), Vec3f(0, s, s));
+    addWall(Vec3f(0, 0, 0), Vec3f(0, s, s), Vec3f(0, 0, s));
+    addWall(Vec3f(s, 0, 0), Vec3f(s, 0, s), Vec3f(s, s, s));
+    addWall(Vec3f(s, 0, 0), Vec3f(s, s, s), Vec3f(s, s, 0));
 
     return walls;
 }
 
 class TestAcoustics : public QObject {
     Q_OBJECT
-private slots:
+  private slots:
     void testWallArea() {
         Wall w;
         w.triangle.v0 = Vec3f(0, 0, 0);

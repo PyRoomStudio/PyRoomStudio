@@ -1,10 +1,10 @@
 #include "ProjectFile.h"
 
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QFileInfo>
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
 
 namespace prs {
 
@@ -29,8 +29,7 @@ static QJsonArray color3fToJson(const Color3f& c) {
 }
 
 static Color3f jsonToColor3f(const QJsonArray& a) {
-    return {static_cast<float>(a[0].toDouble()),
-            static_cast<float>(a[1].toDouble()),
+    return {static_cast<float>(a[0].toDouble()), static_cast<float>(a[1].toDouble()),
             static_cast<float>(a[2].toDouble())};
 }
 
@@ -107,8 +106,8 @@ std::optional<ProjectData> ProjectFile::load(const QString& filepath) {
     QJsonObject root = doc.object();
     ProjectData data;
 
-    data.stlFilePath     = root["stlFilePath"].toString();
-    data.scaleFactor     = static_cast<float>(root["scaleFactor"].toDouble(1.0));
+    data.stlFilePath = root["stlFilePath"].toString();
+    data.scaleFactor = static_cast<float>(root["scaleFactor"].toDouble(1.0));
     data.soundSourceFile = root["soundSourceFile"].toString();
 
     for (auto val : root["surfaceColors"].toArray())
@@ -145,13 +144,13 @@ std::optional<ProjectData> ProjectFile::load(const QString& filepath) {
         QJsonObject po = val.toObject();
         PlacedPoint pt;
         pt.surfacePoint = jsonToVec3(po["surfacePoint"].toObject());
-        pt.normal       = jsonToVec3(po["normal"].toObject());
-        pt.distance     = static_cast<float>(po["distance"].toDouble());
-        pt.color        = jsonToColor3f(po["color"].toArray());
-        pt.pointType    = po["pointType"].toString().toStdString();
-        pt.name         = po["name"].toString().toStdString();
-        pt.volume       = static_cast<float>(po["volume"].toDouble(1.0));
-        pt.audioFile    = po["audioFile"].toString().toStdString();
+        pt.normal = jsonToVec3(po["normal"].toObject());
+        pt.distance = static_cast<float>(po["distance"].toDouble());
+        pt.color = jsonToColor3f(po["color"].toArray());
+        pt.pointType = po["pointType"].toString().toStdString();
+        pt.name = po["name"].toString().toStdString();
+        pt.volume = static_cast<float>(po["volume"].toDouble(1.0));
+        pt.audioFile = po["audioFile"].toString().toStdString();
         pt.orientationYaw = static_cast<float>(po["orientationYaw"].toDouble(0.0));
         data.placedPoints.push_back(pt);
     }

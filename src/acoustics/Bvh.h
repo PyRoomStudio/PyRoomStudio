@@ -3,17 +3,14 @@
 #include "core/Types.h"
 #include "Wall.h"
 
-#include <vector>
 #include <limits>
+#include <vector>
 
 namespace prs {
 
 struct AABB {
-    Vec3f min{std::numeric_limits<float>::max(),
-              std::numeric_limits<float>::max(),
-              std::numeric_limits<float>::max()};
-    Vec3f max{std::numeric_limits<float>::lowest(),
-              std::numeric_limits<float>::lowest(),
+    Vec3f min{std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+    Vec3f max{std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(),
               std::numeric_limits<float>::lowest()};
 
     void expand(const Vec3f& p) {
@@ -39,18 +36,20 @@ struct AABB {
 
     int longestAxis() const {
         Vec3f d = extent();
-        if (d.x() >= d.y() && d.x() >= d.z()) return 0;
-        if (d.y() >= d.z()) return 1;
+        if (d.x() >= d.y() && d.x() >= d.z())
+            return 0;
+        if (d.y() >= d.z())
+            return 1;
         return 2;
     }
 };
 
 struct BvhNode {
     AABB bounds;
-    int leftChild  = -1;
+    int leftChild = -1;
     int rightChild = -1;
-    int firstPrim  = -1;
-    int primCount  =  0;
+    int firstPrim = -1;
+    int primCount = 0;
 
     bool isLeaf() const { return primCount > 0; }
 };
@@ -61,18 +60,16 @@ struct BvhHit {
 };
 
 class Bvh {
-public:
+  public:
     void build(const std::vector<Wall>& walls);
 
-    BvhHit closestHit(const Vec3f& origin, const Vec3f& dir,
-                       float tMin = 1e-4f) const;
+    BvhHit closestHit(const Vec3f& origin, const Vec3f& dir, float tMin = 1e-4f) const;
 
-    bool anyHit(const Vec3f& origin, const Vec3f& dir,
-                float tMin, float tMax) const;
+    bool anyHit(const Vec3f& origin, const Vec3f& dir, float tMin, float tMax) const;
 
     bool empty() const { return nodes_.empty(); }
 
-private:
+  private:
     static constexpr int MAX_LEAF_SIZE = 4;
     static constexpr int SAH_BINS = 12;
     static constexpr float TRAVERSAL_COST = 1.0f;
@@ -80,8 +77,7 @@ private:
 
     void buildRecursive(int nodeIdx, int start, int end);
     static AABB triangleBounds(const Triangle& tri);
-    bool intersectAABB(const Vec3f& origin, const Vec3f& invDir,
-                       const AABB& box, float tMin, float tMax) const;
+    bool intersectAABB(const Vec3f& origin, const Vec3f& invDir, const AABB& box, float tMin, float tMax) const;
 
     std::vector<BvhNode> nodes_;
     std::vector<int> primIndices_;

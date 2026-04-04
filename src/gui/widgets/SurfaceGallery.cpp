@@ -1,15 +1,13 @@
 #include "SurfaceGallery.h"
+
 #include "ColorSwatch.h"
 
 #include <QGridLayout>
 
 namespace prs {
 
-SurfaceGallery::SurfaceGallery(const QString& title,
-                                const QVector<AssetsPanel::SurfaceInfo>& surfaces,
-                                QWidget* parent)
-    : QGroupBox(title, parent)
-{
+SurfaceGallery::SurfaceGallery(const QString& title, const QVector<AssetsPanel::SurfaceInfo>& surfaces, QWidget* parent)
+    : QGroupBox(title, parent) {
     setCheckable(true);
     setChecked(true);
 
@@ -23,9 +21,8 @@ SurfaceGallery::SurfaceGallery(const QString& title,
         auto* swatch = new ColorSwatch(si.name, si.color, this);
         swatch->setSurfaceAppearance(si.color, si.textureThumbnail);
 
-        connect(swatch, &ColorSwatch::clicked, [this, idx = si.index, name = si.name]() {
-            emit surfaceClicked(idx, name);
-        });
+        connect(swatch, &ColorSwatch::clicked,
+                [this, idx = si.index, name = si.name]() { emit surfaceClicked(idx, name); });
 
         entries_.push_back({si.index, swatch});
         grid->addWidget(swatch, i / cols, i % cols);
@@ -41,8 +38,7 @@ void SurfaceGallery::updateColor(int surfaceIndex, const Color3i& color) {
     }
 }
 
-void SurfaceGallery::updateSurfaceAppearance(int surfaceIndex, const Color3i& color,
-                                             const QPixmap& textureThumbnail) {
+void SurfaceGallery::updateSurfaceAppearance(int surfaceIndex, const Color3i& color, const QPixmap& textureThumbnail) {
     for (auto& entry : entries_) {
         if (entry.surfaceIndex == surfaceIndex) {
             entry.swatch->setSurfaceAppearance(color, textureThumbnail);

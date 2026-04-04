@@ -2,9 +2,10 @@
 
 #include "SimulationWorker.h"
 
+#include <QMutex>
 #include <QObject>
 #include <QThread>
-#include <QMutex>
+
 #include <deque>
 #include <optional>
 
@@ -13,7 +14,7 @@ namespace prs {
 class SimulationQueue : public QObject {
     Q_OBJECT
 
-public:
+  public:
     enum class JobStatus { Queued, Running, Completed, Failed, Cancelled };
 
     struct JobInfo {
@@ -39,20 +40,20 @@ public:
     std::vector<JobInfo> allJobs() const;
     std::optional<JobInfo> currentJob() const;
 
-signals:
+  signals:
     void jobStarted(int jobId, const QString& description);
     void jobProgress(int jobId, int percent, const QString& message);
     void jobFinished(int jobId, const QString& outputDir);
     void jobError(int jobId, const QString& message);
     void queueChanged();
 
-private slots:
+  private slots:
     void processNext();
     void onWorkerProgress(int percent, const QString& message);
     void onWorkerFinished(const QString& outputDir);
     void onWorkerError(const QString& message);
 
-private:
+  private:
     mutable QMutex mutex_;
     int nextJobId_ = 1;
     std::deque<std::pair<int, SimulationWorker::Params>> pending_;

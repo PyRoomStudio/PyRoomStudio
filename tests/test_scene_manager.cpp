@@ -1,12 +1,13 @@
-#include <QtTest/QtTest>
-#include <QTemporaryFile>
 #include "scene/SceneManager.h"
+
+#include <QTemporaryFile>
+#include <QtTest/QtTest>
 
 using namespace prs;
 
 class TestSceneManager : public QObject {
     Q_OBJECT
-private slots:
+  private slots:
     void testAddRemoveSources() {
         SceneManager sm;
         sm.addSoundSource(Vec3f(1, 2, 3), "test.wav", 0.8f, "Src1");

@@ -1,15 +1,16 @@
 #pragma once
 
-#include "core/Types.h"
 #include "core/Material.h"
+#include "core/Types.h"
 
-#include <QWidget>
-#include <QTabWidget>
-#include <QVBoxLayout>
+#include <QLabel>
 #include <QListWidget>
 #include <QPushButton>
-#include <QLabel>
 #include <QString>
+#include <QTabWidget>
+#include <QVBoxLayout>
+#include <QWidget>
+
 #include <vector>
 
 namespace prs {
@@ -19,14 +20,14 @@ class MaterialGallery;
 class LibraryPanel : public QWidget {
     Q_OBJECT
 
-public:
+  public:
     explicit LibraryPanel(QWidget* parent = nullptr);
 
-signals:
+  signals:
     void materialSelected(const Material& material);
     void soundFileSelected(const QString& filepath);
 
-private:
+  private:
     void setupUI();
     void createSoundTab(QWidget* tab);
     void createMaterialTab(QWidget* tab);

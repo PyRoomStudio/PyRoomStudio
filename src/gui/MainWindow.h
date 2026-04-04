@@ -1,18 +1,19 @@
 #pragma once
 
-#include "rendering/Viewport3D.h"
-#include "scene/SceneManager.h"
 #include "acoustics/SimulationQueue.h"
 #include "core/PlacedPoint.h"
+#include "rendering/Viewport3D.h"
+#include "scene/SceneManager.h"
 
-#include <QMainWindow>
 #include <QAction>
+#include <QMainWindow>
 #include <QMenu>
-#include <QToolBar>
 #include <QSplitter>
-#include <QUndoStack>
-#include <QTimer>
 #include <QString>
+#include <QTimer>
+#include <QToolBar>
+#include <QUndoStack>
+
 #include <memory>
 #include <optional>
 
@@ -27,7 +28,7 @@ class SimulationQueueWindow;
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
-public:
+  public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override = default;
 
@@ -37,7 +38,7 @@ public:
     AssetsPanel* assetsPanel() const { return assetsPanel_; }
     BottomToolbar* bottomToolbar() const { return bottomToolbar_; }
 
-private slots:
+  private slots:
     // File menu
     void onNewProject();
     void onOpenProject();
@@ -62,10 +63,10 @@ private slots:
     void onPlacementModeChanged(bool enabled);
     void onScaleChanged(float factor);
 
-protected:
+  protected:
     void closeEvent(QCloseEvent* event) override;
 
-private:
+  private:
     void setupMenus();
     void setupToolbars();
     void setupCentralWidget();
@@ -82,54 +83,54 @@ private:
     void refreshAssetsPointLists();
     void updatePlacementToolbar();
 
-    Viewport3D*    viewport_     = nullptr;
-    LibraryPanel*  libraryPanel_ = nullptr;
+    Viewport3D* viewport_ = nullptr;
+    LibraryPanel* libraryPanel_ = nullptr;
     PropertyPanel* propertyPanel_ = nullptr;
-    AssetsPanel*   assetsPanel_  = nullptr;
+    AssetsPanel* assetsPanel_ = nullptr;
     BottomToolbar* bottomToolbar_ = nullptr;
 
     QToolBar* topToolbar_ = nullptr;
 
     // File menu actions
-    QAction* actNewProject_  = nullptr;
+    QAction* actNewProject_ = nullptr;
     QAction* actOpenProject_ = nullptr;
     QAction* actSaveProject_ = nullptr;
     QAction* actSaveAsProject_ = nullptr;
-    QAction* actExit_        = nullptr;
-    QMenu*   recentProjectsMenu_ = nullptr;
+    QAction* actExit_ = nullptr;
+    QMenu* recentProjectsMenu_ = nullptr;
 
     // Edit menu actions
-    QAction* actUndo_      = nullptr;
-    QAction* actRedo_      = nullptr;
-    QAction* actCut_       = nullptr;
-    QAction* actCopy_      = nullptr;
-    QAction* actPaste_     = nullptr;
-    QAction* actDelete_    = nullptr;
+    QAction* actUndo_ = nullptr;
+    QAction* actRedo_ = nullptr;
+    QAction* actCut_ = nullptr;
+    QAction* actCopy_ = nullptr;
+    QAction* actPaste_ = nullptr;
+    QAction* actDelete_ = nullptr;
     QAction* actSelectAll_ = nullptr;
 
     // View menu
     QAction* actSimQueue_ = nullptr;
 
     // Settings menu
-    QMenu*   settingsMenu_          = nullptr;
-    QAction* actPreferences_        = nullptr;
-    QAction* actDisplaySettings_    = nullptr;
-    QAction* actAudioSettings_      = nullptr;
-    QAction* actSimSettings_        = nullptr;
-    QAction* actKeyboardShortcuts_  = nullptr;
+    QMenu* settingsMenu_ = nullptr;
+    QAction* actPreferences_ = nullptr;
+    QAction* actDisplaySettings_ = nullptr;
+    QAction* actAudioSettings_ = nullptr;
+    QAction* actSimSettings_ = nullptr;
+    QAction* actKeyboardShortcuts_ = nullptr;
 
     // Toolbar actions
-    QAction* actToolMove_    = nullptr;
-    QAction* actToolCopy_    = nullptr;
-    QAction* actToolCut_     = nullptr;
-    QAction* actToolPaste_   = nullptr;
-    QAction* actToolDelete_  = nullptr;
+    QAction* actToolMove_ = nullptr;
+    QAction* actToolCopy_ = nullptr;
+    QAction* actToolCut_ = nullptr;
+    QAction* actToolPaste_ = nullptr;
+    QAction* actToolDelete_ = nullptr;
     QAction* actToolMeasure_ = nullptr;
 
     // State
     QString soundSourceFile_;
     QString currentProjectFile_;
-    bool    projectDirty_ = false;
+    bool projectDirty_ = false;
     SceneManager sceneManager_;
     QUndoStack* undoStack_ = nullptr;
     std::optional<PlacedPoint> clipboardPoint_;

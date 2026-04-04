@@ -1,11 +1,12 @@
 #pragma once
 
 #include "core/Types.h"
-#include "scene/SceneManager.h"
 #include "rendering/Viewport3D.h"
+#include "scene/SceneManager.h"
 
 #include <QObject>
 #include <QString>
+
 #include <atomic>
 #include <vector>
 
@@ -16,7 +17,7 @@ enum class SimMethod { RayTracing, DG_2D, DG_3D };
 class SimulationWorker : public QObject {
     Q_OBJECT
 
-public:
+  public:
     struct Params {
         SceneManager scene;
         std::vector<Viewport3D::WallInfo> walls;
@@ -39,15 +40,15 @@ public:
     void cancel();
     bool isCancelled() const;
 
-public slots:
+  public slots:
     void process();
 
-signals:
+  signals:
     void progressChanged(int percent, const QString& message);
     void finished(const QString& outputDir);
     void error(const QString& message);
 
-private:
+  private:
     Params params_;
     std::atomic<bool> cancelled_{false};
 };

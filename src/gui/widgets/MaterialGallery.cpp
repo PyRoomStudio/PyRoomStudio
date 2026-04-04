@@ -1,10 +1,11 @@
 #include "MaterialGallery.h"
+
 #include "ColorSwatch.h"
 
 #include <QGridLayout>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
 
 namespace prs {
 
@@ -30,11 +31,8 @@ static QByteArray serializeMaterial(const Material& mat) {
     return QJsonDocument(obj).toJson(QJsonDocument::Compact);
 }
 
-MaterialGallery::MaterialGallery(const QString& title,
-                                  const std::vector<Material>& materials,
-                                  QWidget* parent)
-    : QWidget(parent)
-{
+MaterialGallery::MaterialGallery(const QString& title, const std::vector<Material>& materials, QWidget* parent)
+    : QWidget(parent) {
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
@@ -42,11 +40,9 @@ MaterialGallery::MaterialGallery(const QString& title,
     header_ = new QPushButton(this);
     header_->setText(QString::fromUtf8("\u25B6  ") + title + QString(" (%1)").arg(materials.size()));
     header_->setFlat(true);
-    header_->setStyleSheet(
-        "QPushButton { text-align: left; font-weight: bold; padding: 5px 8px; "
-        "background: #d8d8d8; border: none; border-bottom: 1px solid #bbb; }"
-        "QPushButton:hover { background: #c8c8c8; }"
-    );
+    header_->setStyleSheet("QPushButton { text-align: left; font-weight: bold; padding: 5px 8px; "
+                           "background: #d8d8d8; border: none; border-bottom: 1px solid #bbb; }"
+                           "QPushButton:hover { background: #c8c8c8; }");
     header_->setCursor(Qt::PointingHandCursor);
     mainLayout->addWidget(header_);
 
@@ -58,14 +54,11 @@ MaterialGallery::MaterialGallery(const QString& title,
     int cols = 2;
     for (int i = 0; i < static_cast<int>(materials.size()); ++i) {
         auto& mat = materials[i];
-        auto* swatch = new ColorSwatch(
-            QString::fromStdString(mat.name), mat.color, contentWidget_);
+        auto* swatch = new ColorSwatch(QString::fromStdString(mat.name), mat.color, contentWidget_);
 
         swatch->setDragData(serializeMaterial(mat));
 
-        connect(swatch, &ColorSwatch::clicked, [this, mat]() {
-            emit materialClicked(mat);
-        });
+        connect(swatch, &ColorSwatch::clicked, [this, mat]() { emit materialClicked(mat); });
 
         swatches_.push_back(swatch);
         grid->addWidget(swatch, i / cols, i % cols);
@@ -75,9 +68,7 @@ MaterialGallery::MaterialGallery(const QString& title,
 
     setCollapsed(true);
 
-    connect(header_, &QPushButton::clicked, [this]() {
-        setCollapsed(!collapsed_);
-    });
+    connect(header_, &QPushButton::clicked, [this]() { setCollapsed(!collapsed_); });
 }
 
 void MaterialGallery::setCollapsed(bool collapsed) {

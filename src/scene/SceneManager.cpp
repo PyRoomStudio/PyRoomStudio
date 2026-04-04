@@ -1,32 +1,28 @@
 #include "SceneManager.h"
 
+#include <QDateTime>
+#include <QFile>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
-#include <QFile>
-#include <QDateTime>
 
 namespace prs {
 
-SoundSource& SceneManager::addSoundSource(const Vec3f& position,
-                                           const std::string& audioFile,
-                                           float volume,
-                                           const std::string& name) {
+SoundSource& SceneManager::addSoundSource(const Vec3f& position, const std::string& audioFile, float volume,
+                                          const std::string& name) {
     SoundSource src;
-    src.position  = position;
+    src.position = position;
     src.audioFile = audioFile;
-    src.volume    = volume;
-    src.name      = name.empty() ? "Source " + std::to_string(nextSourceId_++) : name;
+    src.volume = volume;
+    src.name = name.empty() ? "Source " + std::to_string(nextSourceId_++) : name;
     soundSources_.push_back(std::move(src));
     return soundSources_.back();
 }
 
-Listener& SceneManager::addListener(const Vec3f& position,
-                                     const std::string& name,
-                                     std::optional<Vec3f> orientation) {
+Listener& SceneManager::addListener(const Vec3f& position, const std::string& name, std::optional<Vec3f> orientation) {
     Listener lst;
-    lst.position    = position;
-    lst.name        = name.empty() ? "Listener " + std::to_string(nextListenerId_++) : name;
+    lst.position = position;
+    lst.name = name.empty() ? "Listener " + std::to_string(nextListenerId_++) : name;
     lst.orientation = orientation;
     listeners_.push_back(std::move(lst));
     return listeners_.back();
@@ -36,8 +32,10 @@ bool SceneManager::removeSoundSource(int index) {
     if (index < 0 || index >= static_cast<int>(soundSources_.size()))
         return false;
     soundSources_.erase(soundSources_.begin() + index);
-    if (selectedSourceIndex_ == index) selectedSourceIndex_ = -1;
-    else if (selectedSourceIndex_ > index) --selectedSourceIndex_;
+    if (selectedSourceIndex_ == index)
+        selectedSourceIndex_ = -1;
+    else if (selectedSourceIndex_ > index)
+        --selectedSourceIndex_;
     return true;
 }
 
@@ -45,35 +43,41 @@ bool SceneManager::removeListener(int index) {
     if (index < 0 || index >= static_cast<int>(listeners_.size()))
         return false;
     listeners_.erase(listeners_.begin() + index);
-    if (selectedListenerIndex_ == index) selectedListenerIndex_ = -1;
-    else if (selectedListenerIndex_ > index) --selectedListenerIndex_;
+    if (selectedListenerIndex_ == index)
+        selectedListenerIndex_ = -1;
+    else if (selectedListenerIndex_ > index)
+        --selectedListenerIndex_;
     return true;
 }
 
 void SceneManager::clearAll() {
     soundSources_.clear();
     listeners_.clear();
-    selectedSourceIndex_   = -1;
+    selectedSourceIndex_ = -1;
     selectedListenerIndex_ = -1;
 }
 
 SoundSource* SceneManager::getSoundSource(int index) {
-    if (index < 0 || index >= static_cast<int>(soundSources_.size())) return nullptr;
+    if (index < 0 || index >= static_cast<int>(soundSources_.size()))
+        return nullptr;
     return &soundSources_[index];
 }
 
 const SoundSource* SceneManager::getSoundSource(int index) const {
-    if (index < 0 || index >= static_cast<int>(soundSources_.size())) return nullptr;
+    if (index < 0 || index >= static_cast<int>(soundSources_.size()))
+        return nullptr;
     return &soundSources_[index];
 }
 
 Listener* SceneManager::getListener(int index) {
-    if (index < 0 || index >= static_cast<int>(listeners_.size())) return nullptr;
+    if (index < 0 || index >= static_cast<int>(listeners_.size()))
+        return nullptr;
     return &listeners_[index];
 }
 
 const Listener* SceneManager::getListener(int index) const {
-    if (index < 0 || index >= static_cast<int>(listeners_.size())) return nullptr;
+    if (index < 0 || index >= static_cast<int>(listeners_.size()))
+        return nullptr;
     return &listeners_[index];
 }
 
@@ -83,14 +87,16 @@ bool SceneManager::hasMinimumObjects() const {
 
 std::pair<std::vector<Vec3f>, std::vector<Vec3f>> SceneManager::getAllPositions() const {
     std::vector<Vec3f> srcPos, lstPos;
-    for (auto& s : soundSources_) srcPos.push_back(s.position);
-    for (auto& l : listeners_)    lstPos.push_back(l.position);
+    for (auto& s : soundSources_)
+        srcPos.push_back(s.position);
+    for (auto& l : listeners_)
+        lstPos.push_back(l.position);
     return {srcPos, lstPos};
 }
 
 void SceneManager::selectSource(int index) {
     if (index >= 0 && index < static_cast<int>(soundSources_.size())) {
-        selectedSourceIndex_   = index;
+        selectedSourceIndex_ = index;
         selectedListenerIndex_ = -1;
     }
 }
@@ -98,12 +104,12 @@ void SceneManager::selectSource(int index) {
 void SceneManager::selectListener(int index) {
     if (index >= 0 && index < static_cast<int>(listeners_.size())) {
         selectedListenerIndex_ = index;
-        selectedSourceIndex_   = -1;
+        selectedSourceIndex_ = -1;
     }
 }
 
 void SceneManager::clearSelection() {
-    selectedSourceIndex_   = -1;
+    selectedSourceIndex_ = -1;
     selectedListenerIndex_ = -1;
 }
 
@@ -116,8 +122,10 @@ std::optional<std::pair<std::string, int>> SceneManager::getSelectedObject() con
 }
 
 bool SceneManager::deleteSelected() {
-    if (selectedSourceIndex_ >= 0) return removeSoundSource(selectedSourceIndex_);
-    if (selectedListenerIndex_ >= 0) return removeListener(selectedListenerIndex_);
+    if (selectedSourceIndex_ >= 0)
+        return removeSoundSource(selectedSourceIndex_);
+    if (selectedListenerIndex_ >= 0)
+        return removeListener(selectedListenerIndex_);
     return false;
 }
 
@@ -131,16 +139,16 @@ static Vec3f jsonToVec3(const QJsonArray& a) {
 
 void SceneManager::saveToFile(const QString& filepath) const {
     QJsonObject root;
-    root["version"]   = "1.0";
-    root["timestamp"]  = QDateTime::currentDateTime().toString(Qt::ISODate);
+    root["version"] = "1.0";
+    root["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
 
     QJsonArray srcArr;
     for (auto& s : soundSources_) {
         QJsonObject obj;
-        obj["position"]     = vec3ToJson(s.position);
-        obj["audio_file"]   = QString::fromStdString(s.audioFile);
-        obj["volume"]       = s.volume;
-        obj["name"]         = QString::fromStdString(s.name);
+        obj["position"] = vec3ToJson(s.position);
+        obj["audio_file"] = QString::fromStdString(s.audioFile);
+        obj["volume"] = s.volume;
+        obj["name"] = QString::fromStdString(s.name);
         obj["marker_color"] = QJsonArray{s.markerColor[0], s.markerColor[1], s.markerColor[2]};
         srcArr.append(obj);
     }
@@ -149,8 +157,8 @@ void SceneManager::saveToFile(const QString& filepath) const {
     QJsonArray lstArr;
     for (auto& l : listeners_) {
         QJsonObject obj;
-        obj["position"]     = vec3ToJson(l.position);
-        obj["name"]         = QString::fromStdString(l.name);
+        obj["position"] = vec3ToJson(l.position);
+        obj["name"] = QString::fromStdString(l.name);
         if (l.orientation)
             obj["orientation"] = vec3ToJson(*l.orientation);
         obj["marker_color"] = QJsonArray{l.markerColor[0], l.markerColor[1], l.markerColor[2]};
@@ -166,9 +174,10 @@ void SceneManager::saveToFile(const QString& filepath) const {
 
 void SceneManager::loadFromFile(const QString& filepath) {
     QFile file(filepath);
-    if (!file.open(QIODevice::ReadOnly)) return;
+    if (!file.open(QIODevice::ReadOnly))
+        return;
 
-    auto doc  = QJsonDocument::fromJson(file.readAll());
+    auto doc = QJsonDocument::fromJson(file.readAll());
     auto root = doc.object();
 
     clearAll();
@@ -176,11 +185,11 @@ void SceneManager::loadFromFile(const QString& filepath) {
     for (auto val : root["sound_sources"].toArray()) {
         auto obj = val.toObject();
         SoundSource s;
-        s.position  = jsonToVec3(obj["position"].toArray());
+        s.position = jsonToVec3(obj["position"].toArray());
         s.audioFile = obj["audio_file"].toString().toStdString();
-        s.volume    = static_cast<float>(obj["volume"].toDouble(1.0));
-        s.name      = obj["name"].toString().toStdString();
-        auto mc     = obj["marker_color"].toArray();
+        s.volume = static_cast<float>(obj["volume"].toDouble(1.0));
+        s.name = obj["name"].toString().toStdString();
+        auto mc = obj["marker_color"].toArray();
         if (mc.size() == 3)
             s.markerColor = {mc[0].toInt(), mc[1].toInt(), mc[2].toInt()};
         soundSources_.push_back(std::move(s));
@@ -190,7 +199,7 @@ void SceneManager::loadFromFile(const QString& filepath) {
         auto obj = val.toObject();
         Listener l;
         l.position = jsonToVec3(obj["position"].toArray());
-        l.name     = obj["name"].toString().toStdString();
+        l.name = obj["name"].toString().toStdString();
         if (obj.contains("orientation") && !obj["orientation"].isNull())
             l.orientation = jsonToVec3(obj["orientation"].toArray());
         auto mc = obj["marker_color"].toArray();
@@ -201,9 +210,7 @@ void SceneManager::loadFromFile(const QString& filepath) {
 }
 
 QString SceneManager::getSummary() const {
-    return QString("Scene: %1 sound source(s), %2 listener(s)")
-        .arg(soundSources_.size())
-        .arg(listeners_.size());
+    return QString("Scene: %1 sound source(s), %2 listener(s)").arg(soundSources_.size()).arg(listeners_.size());
 }
 
 } // namespace prs

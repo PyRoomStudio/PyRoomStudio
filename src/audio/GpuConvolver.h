@@ -12,14 +12,13 @@ namespace prs {
  * SignalProcessing::fftConvolve implementation.
  */
 class GpuConvolver : public IConvolver {
-public:
+  public:
     GpuConvolver();
     ~GpuConvolver() override;
 
-    std::vector<float> fftConvolve(const std::vector<float>& signal,
-                                   const std::vector<float>& impulse) override;
+    std::vector<float> fftConvolve(const std::vector<float>& signal, const std::vector<float>& impulse) override;
 
-private:
+  private:
     struct GpuComplex {
         float real;
         float imag;
@@ -31,4 +30,3 @@ private:
 };
 
 } // namespace prs
-

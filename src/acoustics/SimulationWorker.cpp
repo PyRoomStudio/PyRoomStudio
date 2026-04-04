@@ -1,24 +1,25 @@
 #include "SimulationWorker.h"
-#include "Wall.h"
-#include "Bvh.h"
-#include "ImageSourceMethod.h"
-#include "RayTracer.h"
-#include "RoomImpulseResponse.h"
+
 #include "AcousticMetrics.h"
-#include "dg/DGSolver.h"
-#include "rendering/RayPicking.h"
-#include "rendering/MeshSimplifier.h"
 #include "audio/AudioFile.h"
 #include "audio/SignalProcessing.h"
+#include "Bvh.h"
+#include "dg/DGSolver.h"
+#include "ImageSourceMethod.h"
+#include "RayTracer.h"
+#include "rendering/MeshSimplifier.h"
+#include "rendering/RayPicking.h"
+#include "RoomImpulseResponse.h"
+#include "Wall.h"
 
-#include <QDir>
 #include <QDateTime>
 #include <QDebug>
+#include <QDir>
 #include <QElapsedTimer>
+#include <QFile>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
-#include <QFile>
 
 #include <map>
 
@@ -26,13 +27,14 @@ namespace prs {
 
 namespace {
 
-constexpr float HEAD_RADIUS  = 0.0875f;
-constexpr float EAR_OFFSET   = 0.075f;
-constexpr int   SIMPLIFICATION_THRESHOLD = 500;
+constexpr float HEAD_RADIUS = 0.0875f;
+constexpr float EAR_OFFSET = 0.075f;
+constexpr int SIMPLIFICATION_THRESHOLD = 500;
 constexpr float SIMPLIFICATION_TARGET_RATIO = 0.3f;
 
 void earPositions(const Listener* listener, Vec3f& headCenter, Vec3f& leftEar, Vec3f& rightEar) {
-    if (!listener) return;
+    if (!listener)
+        return;
     headCenter = listener->position;
     Vec3f forward(1.0f, 0.0f, 0.0f);
     if (listener->orientation.has_value()) {
@@ -46,12 +48,12 @@ void earPositions(const Listener* listener, Vec3f& headCenter, Vec3f& leftEar, V
         right = Vec3f(0.0f, 1.0f, 0.0f);
     else
         right.normalize();
-    leftEar  = headCenter - EAR_OFFSET * right;
+    leftEar = headCenter - EAR_OFFSET * right;
     rightEar = headCenter + EAR_OFFSET * right;
 }
 
-std::vector<ImageSource> filterByHeadOcclusion(const std::vector<ImageSource>& sources,
-                                                 const Vec3f& earPos, const Vec3f& headCenter) {
+std::vector<ImageSource> filterByHeadOcclusion(const std::vector<ImageSource>& sources, const Vec3f& earPos,
+                                               const Vec3f& headCenter) {
     std::vector<ImageSource> out;
     for (const auto& is : sources) {
         if (!RayPicking::segmentPassesThroughSphere(is.position, earPos, headCenter, HEAD_RADIUS))
@@ -60,10 +62,8 @@ std::vector<ImageSource> filterByHeadOcclusion(const std::vector<ImageSource>& s
     return out;
 }
 
-std::vector<AcousticSurface> buildAcousticSurfaces(
-    const std::vector<Viewport3D::WallInfo>& wallInfos,
-    const std::vector<Vec3f>& modelVertices)
-{
+std::vector<AcousticSurface> buildAcousticSurfaces(const std::vector<Viewport3D::WallInfo>& wallInfos,
+                                                   const std::vector<Vec3f>& modelVertices) {
     std::vector<AcousticSurface> surfaces;
     for (const auto& wi : wallInfos) {
         Vec3f normalSum = Vec3f::Zero();
@@ -74,7 +74,8 @@ std::vector<AcousticSurface> buildAcousticSurfaces(
 
         for (int triIdx : wi.triangleIndices) {
             int base = triIdx * 3;
-            if (base + 2 >= static_cast<int>(modelVertices.size())) continue;
+            if (base + 2 >= static_cast<int>(modelVertices.size()))
+                continue;
 
             Vec3f v0 = modelVertices[base];
             Vec3f v1 = modelVertices[base + 1];
@@ -83,16 +84,19 @@ std::vector<AcousticSurface> buildAcousticSurfaces(
             Vec3f e2 = v2 - v0;
             Vec3f n = e1.cross(e2);
             float area = 0.5f * n.norm();
-            if (area < 1e-8f) continue;
+            if (area < 1e-8f)
+                continue;
 
             normalSum += n.normalized() * area;
             centroidSum += (v0 + v1 + v2) / 3.0f * area;
             totalArea += area;
-            if (validCount == 0) firstPoint = v0;
+            if (validCount == 0)
+                firstPoint = v0;
             validCount++;
         }
 
-        if (totalArea < 1e-8f) continue;
+        if (totalArea < 1e-8f)
+            continue;
 
         AcousticSurface s;
         s.normal = normalSum.normalized();
@@ -109,10 +113,15 @@ std::vector<AcousticSurface> buildAcousticSurfaces(
 } // namespace
 
 SimulationWorker::SimulationWorker(const Params& params, QObject* parent)
-    : QObject(parent), params_(params) {}
+    : QObject(parent)
+    , params_(params) {}
 
-void SimulationWorker::cancel() { cancelled_.store(true); }
-bool SimulationWorker::isCancelled() const { return cancelled_.load(); }
+void SimulationWorker::cancel() {
+    cancelled_.store(true);
+}
+bool SimulationWorker::isCancelled() const {
+    return cancelled_.load();
+}
 
 void SimulationWorker::process() {
     QElapsedTimer totalTimer;
@@ -136,7 +145,8 @@ void SimulationWorker::process() {
     for (auto& wi : params_.walls) {
         for (int triIdx : wi.triangleIndices) {
             int baseVert = triIdx * 3;
-            if (baseVert + 2 >= static_cast<int>(params_.modelVertices.size())) continue;
+            if (baseVert + 2 >= static_cast<int>(params_.modelVertices.size()))
+                continue;
 
             Wall wall;
             wall.triangle.v0 = params_.modelVertices[baseVert];
@@ -163,13 +173,15 @@ void SimulationWorker::process() {
         phaseTimer.restart();
         int target = static_cast<int>(walls.size() * SIMPLIFICATION_TARGET_RATIO);
         target = std::max(target, SIMPLIFICATION_THRESHOLD);
-        emit progressChanged(2, QString("Simplifying mesh (%1 -> %2 triangles)...")
-            .arg(walls.size()).arg(target));
+        emit progressChanged(2, QString("Simplifying mesh (%1 -> %2 triangles)...").arg(walls.size()).arg(target));
         walls = MeshSimplifier::simplify(walls, wallSurfaceIds, target);
         qInfo() << "Simplified to" << walls.size() << "triangles in" << phaseTimer.elapsed() << "ms";
     }
 
-    if (isCancelled()) { emit error("Cancelled"); return; }
+    if (isCancelled()) {
+        emit error("Cancelled");
+        return;
+    }
 
     // Build BVH
     phaseTimer.restart();
@@ -183,7 +195,10 @@ void SimulationWorker::process() {
     auto acousticSurfaces = buildAcousticSurfaces(params_.walls, params_.modelVertices);
     qInfo() << "Built" << acousticSurfaces.size() << "acoustic surfaces for ISM in" << phaseTimer.elapsed() << "ms";
 
-    if (isCancelled()) { emit error("Cancelled"); return; }
+    if (isCancelled()) {
+        emit error("Cancelled");
+        return;
+    }
 
     QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss");
     QString outputDir = QDir("sounds/simulations").filePath("simulation_" + timestamp);
@@ -201,8 +216,7 @@ void SimulationWorker::process() {
     // ========== DG solver path ==========
     if (params_.method == SimMethod::DG_2D || params_.method == SimMethod::DG_3D) {
         dg::DGParams dgParams;
-        dgParams.method = (params_.method == SimMethod::DG_2D)
-                        ? dg::DGMethod::DG_2D : dg::DGMethod::DG_3D;
+        dgParams.method = (params_.method == SimMethod::DG_2D) ? dg::DGMethod::DG_2D : dg::DGMethod::DG_3D;
         dgParams.polynomialOrder = params_.dgPolyOrder;
         dgParams.maxFrequency = params_.dgMaxFrequency;
 
@@ -211,13 +225,20 @@ void SimulationWorker::process() {
         int pairsDoneDG = 0;
         int mixedFsDG = params_.sampleRate;
 
-        struct MixedStereoDG { std::vector<float> left; std::vector<float> right; };
+        struct MixedStereoDG {
+            std::vector<float> left;
+            std::vector<float> right;
+        };
         std::map<int, MixedStereoDG> mixedPerListenerDG;
 
         for (int si = 0; si < scene.soundSourceCount(); ++si) {
             auto* source = scene.getSoundSource(si);
-            if (!source) continue;
-            if (isCancelled()) { emit error("Cancelled"); return; }
+            if (!source)
+                continue;
+            if (isCancelled()) {
+                emit error("Cancelled");
+                return;
+            }
 
             AudioFile audioFile;
             if (!audioFile.load(QString::fromStdString(source->audioFile))) {
@@ -229,27 +250,32 @@ void SimulationWorker::process() {
             int fs = audioFile.sampleRate();
             mixedFsDG = fs;
             const std::vector<float>& inputSamples = audioFile.samples();
-            if (inputSamples.empty()) { pairsDoneDG += numListeners; continue; }
+            if (inputSamples.empty()) {
+                pairsDoneDG += numListeners;
+                continue;
+            }
 
             for (int li : listenerIndices) {
-                if (isCancelled()) { emit error("Cancelled"); return; }
+                if (isCancelled()) {
+                    emit error("Cancelled");
+                    return;
+                }
                 auto* listener = scene.getListener(li);
-                if (!listener) continue;
+                if (!listener)
+                    continue;
 
                 int pct = 10 + (pairsDoneDG * 80) / std::max(totalPairsDG, 1);
-                emit progressChanged(pct, QString("DG: %1 -> %2")
-                    .arg(QString::fromStdString(source->name),
-                         QString::fromStdString(listener->name)));
+                emit progressChanged(
+                    pct, QString("DG: %1 -> %2")
+                             .arg(QString::fromStdString(source->name), QString::fromStdString(listener->name)));
 
                 auto dgProgress = [this, pct](int subPct, const QString& msg) {
                     emit progressChanged(pct + subPct * 80 / (100 * std::max(1, 1)), msg);
                 };
                 auto dgCancel = [this]() -> bool { return isCancelled(); };
 
-                auto dgResult = dgSolver.solve(
-                    source->position, listener->position,
-                    params_.walls, params_.modelVertices, bvh,
-                    dgParams, dgProgress, dgCancel);
+                auto dgResult = dgSolver.solve(source->position, listener->position, params_.walls,
+                                               params_.modelVertices, bvh, dgParams, dgProgress, dgCancel);
 
                 if (dgResult.impulseResponse.empty()) {
                     ++pairsDoneDG;
@@ -273,8 +299,8 @@ void SimulationWorker::process() {
         }
 
         qInfo() << "=== DG SIMULATION COMPLETE in" << totalTimer.elapsed() << "ms ===";
-        emit progressChanged(100, QString("DG simulation complete! (%1s)")
-            .arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
+        emit progressChanged(100,
+                             QString("DG simulation complete! (%1s)").arg(totalTimer.elapsed() / 1000.0, 0, 'f', 1));
         emit finished(outputDir);
         return;
     }
@@ -285,18 +311,25 @@ void SimulationWorker::process() {
     int pairsDone = 0;
     int mixedFs = 44100;
 
-    struct MixedStereo { std::vector<float> left; std::vector<float> right; };
+    struct MixedStereo {
+        std::vector<float> left;
+        std::vector<float> right;
+    };
     std::map<int, MixedStereo> mixedPerListener;
     QJsonArray metricsArray;
 
     for (int si = 0; si < scene.soundSourceCount(); ++si) {
         auto* source = scene.getSoundSource(si);
-        if (!source) continue;
+        if (!source)
+            continue;
 
-        if (isCancelled()) { emit error("Cancelled"); return; }
+        if (isCancelled()) {
+            emit error("Cancelled");
+            return;
+        }
 
         emit progressChanged(10 + pairsDone * 80 / std::max(totalPairs, 1),
-            QString("Loading audio: %1").arg(QString::fromStdString(source->name)));
+                             QString("Loading audio: %1").arg(QString::fromStdString(source->name)));
 
         AudioFile audioFile;
         if (!audioFile.load(QString::fromStdString(source->audioFile))) {
@@ -316,15 +349,19 @@ void SimulationWorker::process() {
         }
 
         for (int li : listenerIndices) {
-            if (isCancelled()) { emit error("Cancelled"); return; }
+            if (isCancelled()) {
+                emit error("Cancelled");
+                return;
+            }
 
             auto* listener = scene.getListener(li);
-            if (!listener) continue;
+            if (!listener)
+                continue;
 
             int pct = 10 + (pairsDone * 80) / std::max(totalPairs, 1);
-            emit progressChanged(pct, QString("Processing %1 -> %2 (stereo)")
-                .arg(QString::fromStdString(source->name),
-                     QString::fromStdString(listener->name)));
+            emit progressChanged(
+                pct, QString("Processing %1 -> %2 (stereo)")
+                         .arg(QString::fromStdString(source->name), QString::fromStdString(listener->name)));
 
             Vec3f headCenter, leftEar, rightEar;
             earPositions(listener, headCenter, leftEar, rightEar);
@@ -332,40 +369,47 @@ void SimulationWorker::process() {
             // ISM using surface-level walls + BVH visibility
             phaseTimer.restart();
             ImageSourceMethod ism;
-            auto isLeft  = ism.compute(sourcePos, leftEar,  acousticSurfaces, bvh, params_.maxOrder);
+            auto isLeft = ism.compute(sourcePos, leftEar, acousticSurfaces, bvh, params_.maxOrder);
             auto isRight = ism.compute(sourcePos, rightEar, acousticSurfaces, bvh, params_.maxOrder);
-            isLeft  = filterByHeadOcclusion(isLeft,  leftEar,  headCenter);
+            isLeft = filterByHeadOcclusion(isLeft, leftEar, headCenter);
             isRight = filterByHeadOcclusion(isRight, rightEar, headCenter);
             qInfo() << "  ISM:" << phaseTimer.elapsed() << "ms"
                     << "(left:" << isLeft.size() << "right:" << isRight.size() << "sources)";
 
-            if (isCancelled()) { emit error("Cancelled"); return; }
+            if (isCancelled()) {
+                emit error("Cancelled");
+                return;
+            }
 
             // Ray tracing with BVH
             phaseTimer.restart();
             RayTracer rt;
-            auto rayLeft  = rt.trace(sourcePos, leftEar,  walls, bvh, params_.nRays, 0.5f, 100, 1e-6f, &headCenter, HEAD_RADIUS, params_.airAbsorption);
-            auto rayRight = rt.trace(sourcePos, rightEar, walls, bvh, params_.nRays, 0.5f, 100, 1e-6f, &headCenter, HEAD_RADIUS, params_.airAbsorption);
+            auto rayLeft = rt.trace(sourcePos, leftEar, walls, bvh, params_.nRays, 0.5f, 100, 1e-6f, &headCenter,
+                                    HEAD_RADIUS, params_.airAbsorption);
+            auto rayRight = rt.trace(sourcePos, rightEar, walls, bvh, params_.nRays, 0.5f, 100, 1e-6f, &headCenter,
+                                     HEAD_RADIUS, params_.airAbsorption);
             qInfo() << "  Ray tracing:" << phaseTimer.elapsed() << "ms"
                     << "(left:" << rayLeft.size() << "right:" << rayRight.size() << "contributions)";
 
-            if (isCancelled()) { emit error("Cancelled"); return; }
+            if (isCancelled()) {
+                emit error("Cancelled");
+                return;
+            }
 
             phaseTimer.restart();
             RoomImpulseResponse rir;
-            auto multibandLeft  = rir.computeMultiband(isLeft,  rayLeft,  fs);
+            auto multibandLeft = rir.computeMultiband(isLeft, rayLeft, fs);
             auto multibandRight = rir.computeMultiband(isRight, rayRight, fs);
 
-            auto impulseLeft  = SignalProcessing::combineMultibandRIR(multibandLeft,  fs);
+            auto impulseLeft = SignalProcessing::combineMultibandRIR(multibandLeft, fs);
             auto impulseRight = SignalProcessing::combineMultibandRIR(multibandRight, fs);
 
-            auto outLeft  = SignalProcessing::fftConvolve(inputSamples, impulseLeft);
+            auto outLeft = SignalProcessing::fftConvolve(inputSamples, impulseLeft);
             auto outRight = SignalProcessing::fftConvolve(inputSamples, impulseRight);
             qInfo() << "  RIR + convolution:" << phaseTimer.elapsed() << "ms";
 
             auto rtResult = AcousticMetrics::computeRT(impulseLeft, fs);
-            auto splResult = AcousticMetrics::computeSPL(
-                source->volume, isLeft, rayLeft, params_.nRays);
+            auto splResult = AcousticMetrics::computeSPL(source->volume, isLeft, rayLeft, params_.nRays);
 
             QJsonObject pairMetrics;
             pairMetrics["source"] = QString::fromStdString(source->name);
@@ -379,24 +423,26 @@ void SimulationWorker::process() {
             }
             if (splResult.valid) {
                 QJsonObject spl;
-                spl["direct_dB"]    = static_cast<double>(splResult.directSPL);
+                spl["direct_dB"] = static_cast<double>(splResult.directSPL);
                 spl["reflected_dB"] = static_cast<double>(splResult.reflectedSPL);
-                spl["total_dB"]     = static_cast<double>(splResult.totalSPL);
+                spl["total_dB"] = static_cast<double>(splResult.totalSPL);
                 pairMetrics["sound_pressure_level"] = spl;
             }
             metricsArray.append(pairMetrics);
-            qInfo() << "  Metrics: T20=" << rtResult.t20 << "s T30=" << rtResult.t30
-                    << "s SPL=" << splResult.totalSPL << "dB";
+            qInfo() << "  Metrics: T20=" << rtResult.t20 << "s T30=" << rtResult.t30 << "s SPL=" << splResult.totalSPL
+                    << "dB";
 
             if (outLeft.empty() && outRight.empty())
                 continue;
-            if (outLeft.empty()) outLeft.resize(outRight.size(), 0.0f);
-            if (outRight.empty()) outRight.resize(outLeft.size(), 0.0f);
+            if (outLeft.empty())
+                outLeft.resize(outRight.size(), 0.0f);
+            if (outRight.empty())
+                outRight.resize(outLeft.size(), 0.0f);
             size_t outLen = std::max(outLeft.size(), outRight.size());
             outLeft.resize(outLen, 0.0f);
             outRight.resize(outLen, 0.0f);
 
-            SignalProcessing::normalize(outLeft,  0.95f);
+            SignalProcessing::normalize(outLeft, 0.95f);
             SignalProcessing::normalize(outRight, 0.95f);
 
             QString listenerName = QString::fromStdString(listener->name).replace(' ', '_');
@@ -409,8 +455,10 @@ void SimulationWorker::process() {
             size_t n = std::max(mix.left.size(), outLen);
             mix.left.resize(n, 0.0f);
             mix.right.resize(n, 0.0f);
-            for (size_t i = 0; i < outLeft.size(); ++i) mix.left[i] += outLeft[i];
-            for (size_t i = 0; i < outRight.size(); ++i) mix.right[i] += outRight[i];
+            for (size_t i = 0; i < outLeft.size(); ++i)
+                mix.left[i] += outLeft[i];
+            for (size_t i = 0; i < outRight.size(); ++i)
+                mix.right[i] += outRight[i];
 
             ++pairsDone;
         }
@@ -419,15 +467,19 @@ void SimulationWorker::process() {
     if (scene.soundSourceCount() > 1) {
         for (int li : listenerIndices) {
             auto* listener = scene.getListener(li);
-            if (!listener || mixedPerListener.find(li) == mixedPerListener.end()
-                || mixedPerListener[li].left.empty()) continue;
+            if (!listener || mixedPerListener.find(li) == mixedPerListener.end() || mixedPerListener[li].left.empty())
+                continue;
             MixedStereo& m = mixedPerListener[li];
             float maxVal = 0.0f;
-            for (float s : m.left)  maxVal = std::max(maxVal, std::abs(s));
-            for (float s : m.right) maxVal = std::max(maxVal, std::abs(s));
+            for (float s : m.left)
+                maxVal = std::max(maxVal, std::abs(s));
+            for (float s : m.right)
+                maxVal = std::max(maxVal, std::abs(s));
             if (maxVal > 1.0f) {
-                for (float& s : m.left)  s /= maxVal;
-                for (float& s : m.right) s /= maxVal;
+                for (float& s : m.left)
+                    s /= maxVal;
+                for (float& s : m.right)
+                    s /= maxVal;
             }
             QString listenerName = QString::fromStdString(listener->name).replace(' ', '_');
             AudioFile::saveStereo(QDir(outputDir).filePath(listenerName + "_mixed.wav"), mixedFs, m.left, m.right);

@@ -1,21 +1,22 @@
-#include <QtTest/QtTest>
-#include <QTemporaryFile>
 #include "rendering/MeshData.h"
 #include "rendering/SurfaceGrouper.h"
+
+#include <QTemporaryFile>
+#include <QtTest/QtTest>
 
 using namespace prs;
 
 static QByteArray createMinimalSTL() {
     // Single triangle STL: 80 header + 4 count + 50 per triangle
-    QByteArray data(80, '\0');  // header
+    QByteArray data(80, '\0'); // header
     uint32_t count = 1;
     data.append(reinterpret_cast<const char*>(&count), 4);
 
     float tri[12] = {
-        0, 0, 1,    // normal
-        0, 0, 0,    // v0
-        1, 0, 0,    // v1
-        0, 1, 0,    // v2
+        0, 0, 1, // normal
+        0, 0, 0, // v0
+        1, 0, 0, // v1
+        0, 1, 0, // v2
     };
     data.append(reinterpret_cast<const char*>(tri), 48);
     uint16_t attr = 0;
@@ -30,10 +31,8 @@ static QByteArray createBoxSTL() {
     uint32_t count = 12;
     data.append(reinterpret_cast<const char*>(&count), 4);
 
-    auto addTri = [&](float nx, float ny, float nz,
-                       float x0, float y0, float z0,
-                       float x1, float y1, float z1,
-                       float x2, float y2, float z2) {
+    auto addTri = [&](float nx, float ny, float nz, float x0, float y0, float z0, float x1, float y1, float z1,
+                      float x2, float y2, float z2) {
         float tri[12] = {nx, ny, nz, x0, y0, z0, x1, y1, z1, x2, y2, z2};
         data.append(reinterpret_cast<const char*>(tri), 48);
         uint16_t attr = 0;
@@ -41,30 +40,30 @@ static QByteArray createBoxSTL() {
     };
 
     // Front  (z=1)
-    addTri(0,0,1, 0,0,1, 1,0,1, 1,1,1);
-    addTri(0,0,1, 0,0,1, 1,1,1, 0,1,1);
+    addTri(0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1);
+    addTri(0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1);
     // Back (z=0)
-    addTri(0,0,-1, 1,0,0, 0,0,0, 0,1,0);
-    addTri(0,0,-1, 1,0,0, 0,1,0, 1,1,0);
+    addTri(0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 1, 0);
+    addTri(0, 0, -1, 1, 0, 0, 0, 1, 0, 1, 1, 0);
     // Right (x=1)
-    addTri(1,0,0, 1,0,0, 1,0,1, 1,1,1);
-    addTri(1,0,0, 1,0,0, 1,1,1, 1,1,0);
+    addTri(1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1);
+    addTri(1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0);
     // Left (x=0)
-    addTri(-1,0,0, 0,0,1, 0,0,0, 0,1,0);
-    addTri(-1,0,0, 0,0,1, 0,1,0, 0,1,1);
+    addTri(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0);
+    addTri(-1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1);
     // Top (y=1)
-    addTri(0,1,0, 0,1,0, 1,1,0, 1,1,1);
-    addTri(0,1,0, 0,1,0, 1,1,1, 0,1,1);
+    addTri(0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1);
+    addTri(0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1);
     // Bottom (y=0)
-    addTri(0,-1,0, 0,0,1, 1,0,1, 1,0,0);
-    addTri(0,-1,0, 0,0,1, 1,0,0, 0,0,0);
+    addTri(0, -1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0);
+    addTri(0, -1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0);
 
     return data;
 }
 
 class TestMesh : public QObject {
     Q_OBJECT
-private slots:
+  private slots:
     void testLoadSTL() {
         QTemporaryFile tmp;
         tmp.setAutoRemove(true);
@@ -117,7 +116,8 @@ private slots:
         QCOMPARE(static_cast<int>(surfaces.size()), 6);
 
         int totalTris = 0;
-        for (auto& s : surfaces) totalTris += static_cast<int>(s.size());
+        for (auto& s : surfaces)
+            totalTris += static_cast<int>(s.size());
         QCOMPARE(totalTris, 12);
     }
 

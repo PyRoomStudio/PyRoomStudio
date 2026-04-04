@@ -1,8 +1,9 @@
 #include "DGBasis2D.h"
-#include <cmath>
+
 #include <algorithm>
-#include <numeric>
 #include <cassert>
+#include <cmath>
+#include <numeric>
 
 namespace prs {
 namespace dg {
@@ -11,33 +12,28 @@ namespace dg {
 
 double jacobiP(double x, double alpha, double beta, int n) {
     if (n == 0) {
-        double g0 = std::pow(2.0, alpha + beta + 1.0)
-                   / (alpha + beta + 1.0)
-                   * std::tgamma(alpha + 1.0) * std::tgamma(beta + 1.0)
-                   / std::tgamma(alpha + beta + 1.0);
+        double g0 = std::pow(2.0, alpha + beta + 1.0) / (alpha + beta + 1.0) * std::tgamma(alpha + 1.0) *
+                    std::tgamma(beta + 1.0) / std::tgamma(alpha + beta + 1.0);
         return 1.0 / std::sqrt(g0);
     }
 
-    double g0 = std::pow(2.0, alpha + beta + 1.0)
-               / (alpha + beta + 1.0)
-               * std::tgamma(alpha + 1.0) * std::tgamma(beta + 1.0)
-               / std::tgamma(alpha + beta + 1.0);
+    double g0 = std::pow(2.0, alpha + beta + 1.0) / (alpha + beta + 1.0) * std::tgamma(alpha + 1.0) *
+                std::tgamma(beta + 1.0) / std::tgamma(alpha + beta + 1.0);
     double p0 = 1.0 / std::sqrt(g0);
 
     double g1 = (alpha + 1.0) * (beta + 1.0) / (alpha + beta + 3.0) * g0;
     double p1 = ((alpha + beta + 2.0) * x / 2.0 + (alpha - beta) / 2.0) / std::sqrt(g1);
 
-    if (n == 1) return p1;
+    if (n == 1)
+        return p1;
 
     double pPrev = p0, pCur = p1;
     for (int i = 1; i < n; ++i) {
         double di = static_cast<double>(i);
-        double a_n = 2.0 / (2.0 * di + alpha + beta + 2.0)
-                   * std::sqrt((di + 1.0) * (di + 1.0 + alpha + beta)
-                              * (di + 1.0 + alpha) * (di + 1.0 + beta)
-                              / ((2.0 * di + alpha + beta + 1.0) * (2.0 * di + alpha + beta + 3.0)));
-        double b_n = -(alpha * alpha - beta * beta)
-                    / ((2.0 * di + alpha + beta) * (2.0 * di + alpha + beta + 2.0));
+        double a_n = 2.0 / (2.0 * di + alpha + beta + 2.0) *
+                     std::sqrt((di + 1.0) * (di + 1.0 + alpha + beta) * (di + 1.0 + alpha) * (di + 1.0 + beta) /
+                               ((2.0 * di + alpha + beta + 1.0) * (2.0 * di + alpha + beta + 3.0)));
+        double b_n = -(alpha * alpha - beta * beta) / ((2.0 * di + alpha + beta) * (2.0 * di + alpha + beta + 2.0));
         double pNext = 1.0 / a_n * (-a_n * pPrev + (x - b_n) * pCur);
 
         // a_{n-1} for the previous step is already baked in via p values
@@ -53,16 +49,16 @@ double jacobiP(double x, double alpha, double beta, int n) {
     // Recompute with explicit three-term recurrence (Hesthaven/Warburton style)
     pPrev = p0;
     pCur = p1;
-    if (n <= 1) return (n == 0) ? p0 : p1;
+    if (n <= 1)
+        return (n == 0) ? p0 : p1;
 
     for (int i = 1; i < n; ++i) {
         double di = static_cast<double>(i);
         double h1 = 2.0 * di + alpha + beta;
 
-        double anew = 2.0 / (h1 + 2.0)
-                    * std::sqrt((di + 1.0) * (di + 1.0 + alpha + beta)
-                               * (di + 1.0 + alpha) * (di + 1.0 + beta)
-                               / ((h1 + 1.0) * (h1 + 3.0)));
+        double anew = 2.0 / (h1 + 2.0) *
+                      std::sqrt((di + 1.0) * (di + 1.0 + alpha + beta) * (di + 1.0 + alpha) * (di + 1.0 + beta) /
+                                ((h1 + 1.0) * (h1 + 3.0)));
         double bnew = -(alpha * alpha - beta * beta) / (h1 * (h1 + 2.0));
 
         double pNext = (1.0 / anew) * ((x - bnew) * pCur - anew * pPrev);
@@ -81,10 +77,8 @@ double jacobiP(double x, double alpha, double beta, int n) {
         double di = static_cast<double>(i);
         double h1 = 2.0 * (di - 1.0) + alpha + beta;
 
-        double a_cur = 2.0 / (h1 + 2.0)
-                     * std::sqrt(di * (di + alpha + beta)
-                                * (di + alpha) * (di + beta)
-                                / ((h1 + 1.0) * (h1 + 3.0)));
+        double a_cur = 2.0 / (h1 + 2.0) *
+                       std::sqrt(di * (di + alpha + beta) * (di + alpha) * (di + beta) / ((h1 + 1.0) * (h1 + 3.0)));
         double b_prev = -(alpha * alpha - beta * beta) / (h1 * (h1 + 2.0));
 
         double pNext = ((x - b_prev) * pCur - a_cur * pPrev) / a_cur;
@@ -101,22 +95,20 @@ double jacobiP(double x, double alpha, double beta, int n) {
         double P0 = 1.0;
         double P1 = 0.5 * (alpha - beta + (alpha + beta + 2.0) * x);
         if (n == 0) {
-            double norm = std::sqrt(std::pow(2.0, alpha + beta + 1.0)
-                        / (alpha + beta + 1.0)
-                        * std::tgamma(alpha + 1.0) * std::tgamma(beta + 1.0)
-                        / std::tgamma(alpha + beta + 1.0));
+            double norm =
+                std::sqrt(std::pow(2.0, alpha + beta + 1.0) / (alpha + beta + 1.0) * std::tgamma(alpha + 1.0) *
+                          std::tgamma(beta + 1.0) / std::tgamma(alpha + beta + 1.0));
             return P0 / norm;
         }
         if (n == 1) {
-            double norm = std::sqrt(std::pow(2.0, alpha + beta + 1.0)
-                        * std::tgamma(alpha + 2.0) * std::tgamma(beta + 2.0)
-                        / (std::tgamma(alpha + beta + 3.0) * (alpha + beta + 3.0)));
+            double norm = std::sqrt(std::pow(2.0, alpha + beta + 1.0) * std::tgamma(alpha + 2.0) *
+                                    std::tgamma(beta + 2.0) / (std::tgamma(alpha + beta + 3.0) * (alpha + beta + 3.0)));
             // Actually: h_1 = 2/(2+a+b) * (a+1)(b+1)/(a+b+3) * h_0
             // Normalization factor for P_n^{a,b}: h_n = int_{-1}^{1} (P_n)^2 (1-x)^a (1+x)^b dx
             // h_n = 2^{a+b+1} / (2n+a+b+1) * Gamma(n+a+1)Gamma(n+b+1) / (n! * Gamma(n+a+b+1))
-            double hn = std::pow(2.0, alpha + beta + 1.0) / (2.0 + alpha + beta + 1.0)
-                      * std::tgamma(1.0 + alpha + 1.0) * std::tgamma(1.0 + beta + 1.0)
-                      / (1.0 * std::tgamma(1.0 + alpha + beta + 1.0));
+            double hn = std::pow(2.0, alpha + beta + 1.0) / (2.0 + alpha + beta + 1.0) *
+                        std::tgamma(1.0 + alpha + 1.0) * std::tgamma(1.0 + beta + 1.0) /
+                        (1.0 * std::tgamma(1.0 + alpha + beta + 1.0));
             return P1 / std::sqrt(hn);
         }
         double Pprev = P0, Pcur = P1;
@@ -131,17 +123,17 @@ double jacobiP(double x, double alpha, double beta, int n) {
             Pcur = Pnext;
         }
         double dn = static_cast<double>(n);
-        double hn = std::pow(2.0, alpha + beta + 1.0) / (2.0 * dn + alpha + beta + 1.0)
-                  * std::tgamma(dn + alpha + 1.0) * std::tgamma(dn + beta + 1.0)
-                  / (std::tgamma(dn + 1.0) * std::tgamma(dn + alpha + beta + 1.0));
+        double hn = std::pow(2.0, alpha + beta + 1.0) / (2.0 * dn + alpha + beta + 1.0) *
+                    std::tgamma(dn + alpha + 1.0) * std::tgamma(dn + beta + 1.0) /
+                    (std::tgamma(dn + 1.0) * std::tgamma(dn + alpha + beta + 1.0));
         return Pcur / std::sqrt(hn);
     }
 }
 
 double gradJacobiP(double x, double alpha, double beta, int n) {
-    if (n == 0) return 0.0;
-    return std::sqrt(n * (n + alpha + beta + 1.0))
-         * jacobiP(x, alpha + 1.0, beta + 1.0, n - 1);
+    if (n == 0)
+        return 0.0;
+    return std::sqrt(n * (n + alpha + beta + 1.0)) * jacobiP(x, alpha + 1.0, beta + 1.0, n - 1);
 }
 
 // Gauss-Lobatto quadrature nodes on [-1,1]
@@ -156,7 +148,8 @@ VecXd jacobiGL(double alpha, double beta, int n) {
     VecXd interior = jacobiGQ(alpha + 1.0, beta + 1.0, n - 2, w);
     VecXd x(n + 1);
     x(0) = -1.0;
-    for (int i = 0; i < n - 1; ++i) x(i + 1) = interior(i);
+    for (int i = 0; i < n - 1; ++i)
+        x(i + 1) = interior(i);
     x(n) = 1.0;
     return x;
 }
@@ -165,9 +158,8 @@ VecXd jacobiGL(double alpha, double beta, int n) {
 VecXd jacobiGQ(double alpha, double beta, int n, VecXd& weights) {
     if (n < 0) {
         weights.resize(1);
-        weights(0) = std::pow(2.0, alpha + beta + 1.0)
-                   * std::tgamma(alpha + 1.0) * std::tgamma(beta + 1.0)
-                   / std::tgamma(alpha + beta + 2.0);
+        weights(0) = std::pow(2.0, alpha + beta + 1.0) * std::tgamma(alpha + 1.0) * std::tgamma(beta + 1.0) /
+                     std::tgamma(alpha + beta + 2.0);
         VecXd x(1);
         x(0) = (alpha - beta) / (alpha + beta + 2.0);
         return x;
@@ -190,9 +182,8 @@ VecXd jacobiGQ(double alpha, double beta, int n, VecXd& weights) {
     VecXd offDiag(np1 - 1);
     for (int i = 0; i < np1 - 1; ++i) {
         double di = static_cast<double>(i + 1);
-        offDiag(i) = 2.0 / (h1(i) + 2.0)
-                   * std::sqrt(di * (di + alpha + beta) * (di + alpha) * (di + beta)
-                              / ((h1(i) + 1.0) * (h1(i) + 3.0)));
+        offDiag(i) = 2.0 / (h1(i) + 2.0) *
+                     std::sqrt(di * (di + alpha + beta) * (di + alpha) * (di + beta) / ((h1(i) + 1.0) * (h1(i) + 3.0)));
     }
 
     // Correct first entry if alpha+beta=0
@@ -201,7 +192,8 @@ VecXd jacobiGQ(double alpha, double beta, int n, VecXd& weights) {
 
     // Solve eigenvalue problem
     MatXd J = MatXd::Zero(np1, np1);
-    for (int i = 0; i < np1; ++i) J(i, i) = mainDiag(i);
+    for (int i = 0; i < np1; ++i)
+        J(i, i) = mainDiag(i);
     for (int i = 0; i < np1 - 1; ++i) {
         J(i, i + 1) = offDiag(i);
         J(i + 1, i) = offDiag(i);
@@ -212,9 +204,8 @@ VecXd jacobiGQ(double alpha, double beta, int n, VecXd& weights) {
     MatXd V = es.eigenvectors();
 
     weights.resize(np1);
-    double w0 = std::pow(2.0, alpha + beta + 1.0)
-              * std::tgamma(alpha + 1.0) * std::tgamma(beta + 1.0)
-              / std::tgamma(alpha + beta + 2.0);
+    double w0 = std::pow(2.0, alpha + beta + 1.0) * std::tgamma(alpha + 1.0) * std::tgamma(beta + 1.0) /
+                std::tgamma(alpha + beta + 2.0);
     for (int i = 0; i < np1; ++i)
         weights(i) = w0 * V(0, i) * V(0, i);
 
@@ -263,8 +254,7 @@ MatXd vandermonde2D(int N, const VecXd& r, const VecXd& s) {
     return V2D;
 }
 
-void gradVandermonde2D(int N, const VecXd& r, const VecXd& s,
-                       MatXd& V2Dr, MatXd& V2Ds) {
+void gradVandermonde2D(int N, const VecXd& r, const VecXd& s, MatXd& V2Dr, MatXd& V2Ds) {
     int Np = (N + 1) * (N + 2) / 2;
     int npts = static_cast<int>(r.size());
     V2Dr.resize(npts, Np);
@@ -285,7 +275,8 @@ void gradVandermonde2D(int N, const VecXd& r, const VecXd& s,
 
                 // dP/da
                 double dmodedr = dfa * gb;
-                if (i > 0) dmodedr *= bfac;
+                if (i > 0)
+                    dmodedr *= bfac;
 
                 // dP/db
                 double dmodeds = 0.0;
@@ -303,7 +294,8 @@ void gradVandermonde2D(int N, const VecXd& r, const VecXd& s,
                 //       = dP/da * 2(1+r)/(1-s)^2 + dP/db
 
                 double fac = 2.0 / (1.0 - b(n));
-                if (std::abs(1.0 - b(n)) < 1e-14) fac = 0.0;
+                if (std::abs(1.0 - b(n)) < 1e-14)
+                    fac = 0.0;
 
                 V2Dr(n, sk) = std::sqrt(2.0) * dmodedr * fac;
                 V2Ds(n, sk) = std::sqrt(2.0) * (dmodedr * fac * 0.5 * (1.0 + a(n)) + dmodeds);
@@ -383,7 +375,8 @@ void warpAndBlendNodes2D(int N, VecXd& r, VecXd& s) {
     }
 
     // For N <= 1, no warp needed
-    if (N <= 1) return;
+    if (N <= 1)
+        return;
 
     // Compute warp for each edge blend
     // Edge 1: L1=0 (between vertices 2 and 3)
@@ -447,8 +440,8 @@ void warpAndBlendNodes2D(int N, VecXd& r, VecXd& s) {
 
     // Equilateral triangle vertices
     double v1x = -1.0, v1y = -1.0 / std::sqrt(3.0);
-    double v2x = 1.0,  v2y = -1.0 / std::sqrt(3.0);
-    double v3x = 0.0,  v3y = 2.0 / std::sqrt(3.0);
+    double v2x = 1.0, v2y = -1.0 / std::sqrt(3.0);
+    double v3x = 0.0, v3y = 2.0 / std::sqrt(3.0);
 
     // Equidistant (x,y) on equilateral triangle
     VecXd xeq(Np), yeq(Np);
@@ -475,18 +468,17 @@ void warpAndBlendNodes2D(int N, VecXd& r, VecXd& s) {
     double l1 = std::sqrt(t1x * t1x + t1y * t1y);
     double l2 = std::sqrt(t2x * t2x + t2y * t2y);
     double l3 = std::sqrt(t3x * t3x + t3y * t3y);
-    t1x /= l1; t1y /= l1;
-    t2x /= l2; t2y /= l2;
-    t3x /= l3; t3y /= l3;
+    t1x /= l1;
+    t1y /= l1;
+    t2x /= l2;
+    t2y /= l2;
+    t3x /= l3;
+    t3y /= l3;
 
     VecXd xw(Np), yw(Np);
     for (int i = 0; i < Np; ++i) {
-        xw(i) = xeq(i) + blend1(i) * warp1(i) * t1x
-                        + blend2(i) * warp2(i) * t2x
-                        + blend3(i) * warp3(i) * t3x;
-        yw(i) = yeq(i) + blend1(i) * warp1(i) * t1y
-                        + blend2(i) * warp2(i) * t2y
-                        + blend3(i) * warp3(i) * t3y;
+        xw(i) = xeq(i) + blend1(i) * warp1(i) * t1x + blend2(i) * warp2(i) * t2x + blend3(i) * warp3(i) * t3x;
+        yw(i) = yeq(i) + blend1(i) * warp1(i) * t1y + blend2(i) * warp2(i) * t2y + blend3(i) * warp3(i) * t3y;
     }
 
     // Convert (x,y) on equilateral back to (r,s) on reference [-1,1] triangle
@@ -503,9 +495,7 @@ void warpAndBlendNodes2D(int N, VecXd& r, VecXd& s) {
     // [y]   [v1y v2y v3y] [L2]
     // 1   = [1   1   1  ] [L3]
     MatXd Tmat(3, 3);
-    Tmat << v1x, v2x, v3x,
-            v1y, v2y, v3y,
-            1.0, 1.0, 1.0;
+    Tmat << v1x, v2x, v3x, v1y, v2y, v3y, 1.0, 1.0, 1.0;
     MatXd Tinv = Tmat.inverse();
 
     for (int i = 0; i < Np; ++i) {
@@ -549,9 +539,12 @@ Basis2D buildBasis2D(int N) {
     double tol = 1e-7;
     std::vector<int> f1, f2, f3;
     for (int i = 0; i < B.Np; ++i) {
-        if (std::abs(B.s(i) + 1.0) < tol) f1.push_back(i);
-        if (std::abs(B.r(i) + B.s(i)) < tol) f2.push_back(i);
-        if (std::abs(B.r(i) + 1.0) < tol) f3.push_back(i);
+        if (std::abs(B.s(i) + 1.0) < tol)
+            f1.push_back(i);
+        if (std::abs(B.r(i) + B.s(i)) < tol)
+            f2.push_back(i);
+        if (std::abs(B.r(i) + 1.0) < tol)
+            f3.push_back(i);
     }
 
     // Sort face nodes by coordinate along each edge
@@ -559,9 +552,12 @@ Basis2D buildBasis2D(int N) {
     std::sort(f2.begin(), f2.end(), [&](int a, int b) { return B.r(a) > B.r(b); });
     std::sort(f3.begin(), f3.end(), [&](int a, int b) { return B.s(a) > B.s(b); });
 
-    for (int i = 0; i < B.Nfp && i < static_cast<int>(f1.size()); ++i) B.Fmask(i, 0) = f1[i];
-    for (int i = 0; i < B.Nfp && i < static_cast<int>(f2.size()); ++i) B.Fmask(i, 1) = f2[i];
-    for (int i = 0; i < B.Nfp && i < static_cast<int>(f3.size()); ++i) B.Fmask(i, 2) = f3[i];
+    for (int i = 0; i < B.Nfp && i < static_cast<int>(f1.size()); ++i)
+        B.Fmask(i, 0) = f1[i];
+    for (int i = 0; i < B.Nfp && i < static_cast<int>(f2.size()); ++i)
+        B.Fmask(i, 1) = f2[i];
+    for (int i = 0; i < B.Nfp && i < static_cast<int>(f3.size()); ++i)
+        B.Fmask(i, 2) = f3[i];
 
     // LIFT matrix: LIFT = V * V^T * Emat, where Emat maps face to volume
     // Emat is (Np x Nfaces*Nfp) with entries for face integration

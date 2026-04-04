@@ -1,13 +1,15 @@
 #pragma once
 
 #include "GLHeaders.h"
+
 #include <QString>
+
 #include <map>
 
 namespace prs {
 
 class TextureManager {
-public:
+  public:
     TextureManager() = default;
     ~TextureManager();
 
@@ -19,7 +21,7 @@ public:
     void releaseAll();
     bool has(const QString& path) const;
 
-private:
+  private:
     std::map<QString, GLuint> cache_;
 };
 

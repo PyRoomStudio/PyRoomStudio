@@ -1,14 +1,13 @@
 #include "RoomImpulseResponse.h"
-#include <cmath>
+
 #include <algorithm>
+#include <cmath>
 
 namespace prs {
 
-std::array<std::vector<float>, NUM_FREQ_BANDS> RoomImpulseResponse::computeMultiband(
-    const std::vector<ImageSource>& imageSources,
-    const std::vector<RayContribution>& rayContributions,
-    int sampleRate)
-{
+std::array<std::vector<float>, NUM_FREQ_BANDS>
+RoomImpulseResponse::computeMultiband(const std::vector<ImageSource>& imageSources,
+                                      const std::vector<RayContribution>& rayContributions, int sampleRate) {
     float maxDelay = 0.0f;
     for (auto& is : imageSources)
         maxDelay = std::max(maxDelay, is.delay);
@@ -19,7 +18,8 @@ std::array<std::vector<float>, NUM_FREQ_BANDS> RoomImpulseResponse::computeMulti
     duration_ = maxDelay;
 
     int numSamples = static_cast<int>(maxDelay * sampleRate) + 1;
-    if (numSamples <= 0) numSamples = 1;
+    if (numSamples <= 0)
+        numSamples = 1;
 
     std::array<std::vector<float>, NUM_FREQ_BANDS> rirs;
     for (auto& rir : rirs)

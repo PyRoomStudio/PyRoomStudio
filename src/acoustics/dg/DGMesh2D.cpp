@@ -1,36 +1,35 @@
 #include "DGMesh2D.h"
+
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <map>
-#include <set>
 #include <numeric>
-#include <cassert>
+#include <set>
 
 namespace prs {
 namespace dg {
 
 // ========== Room polygon extraction ==========
 
-RoomPolygon2D extractRoomPolygon(
-    const std::vector<Viewport3D::WallInfo>& walls,
-    const std::vector<Vec3f>& modelVertices,
-    float sliceHeight)
-{
+RoomPolygon2D extractRoomPolygon(const std::vector<Viewport3D::WallInfo>& walls,
+                                 const std::vector<Vec3f>& modelVertices, float sliceHeight) {
     // Intersect every triangle with the horizontal plane z = sliceHeight.
     // Collect all intersection segments, then chain them into a polygon.
-    struct Seg { Vec2d a, b; double absorption; double scattering; };
+    struct Seg {
+        Vec2d a, b;
+        double absorption;
+        double scattering;
+    };
     std::vector<Seg> segments;
 
     for (const auto& wi : walls) {
         for (int triIdx : wi.triangleIndices) {
             int base = triIdx * 3;
-            if (base + 2 >= static_cast<int>(modelVertices.size())) continue;
+            if (base + 2 >= static_cast<int>(modelVertices.size()))
+                continue;
 
-            Vec3f verts[3] = {
-                modelVertices[base],
-                modelVertices[base + 1],
-                modelVertices[base + 2]
-            };
+            Vec3f verts[3] = {modelVertices[base], modelVertices[base + 1], modelVertices[base + 2]};
 
             // Classify each vertex relative to the slice plane
             double d[3];
@@ -53,7 +52,8 @@ RoomPolygon2D extractRoomPolygon(
             // A plane-triangle intersection produces 0 or 2 points (or degenerate)
             if (pts.size() >= 2) {
                 float avgAbs = 0.0f;
-                for (float a : wi.absorption) avgAbs += a;
+                for (float a : wi.absorption)
+                    avgAbs += a;
                 avgAbs /= NUM_FREQ_BANDS;
                 segments.push_back({pts[0], pts[1], static_cast<double>(avgAbs), static_cast<double>(wi.scattering)});
             }
@@ -72,12 +72,8 @@ RoomPolygon2D extractRoomPolygon(
         }
         double margin = 0.01;
         RoomPolygon2D poly;
-        poly.vertices = {
-            Vec2d(minX - margin, minY - margin),
-            Vec2d(maxX + margin, minY - margin),
-            Vec2d(maxX + margin, maxY + margin),
-            Vec2d(minX - margin, maxY + margin)
-        };
+        poly.vertices = {Vec2d(minX - margin, minY - margin), Vec2d(maxX + margin, minY - margin),
+                         Vec2d(maxX + margin, maxY + margin), Vec2d(minX - margin, maxY + margin)};
         poly.edgeAbsorption = {0.2, 0.2, 0.2, 0.2};
         poly.edgeScattering = {0.1, 0.1, 0.1, 0.1};
         return poly;
@@ -109,11 +105,20 @@ RoomPolygon2D extractRoomPolygon(
         bool bestFlip = false;
 
         for (int i = 0; i < static_cast<int>(segments.size()); ++i) {
-            if (used[i]) continue;
+            if (used[i])
+                continue;
             double da = dist2(tail, segments[i].a);
             double db = dist2(tail, segments[i].b);
-            if (da < bestDist) { bestDist = da; bestIdx = i; bestFlip = false; }
-            if (db < bestDist) { bestDist = db; bestIdx = i; bestFlip = true; }
+            if (da < bestDist) {
+                bestDist = da;
+                bestIdx = i;
+                bestFlip = false;
+            }
+            if (db < bestDist) {
+                bestDist = db;
+                bestIdx = i;
+                bestFlip = true;
+            }
         }
 
         if (bestIdx >= 0) {
@@ -136,8 +141,7 @@ RoomPolygon2D extractRoomPolygon(
     // Remove near-duplicate consecutive vertices
     RoomPolygon2D poly;
     for (size_t i = 0; i < chain.size(); ++i) {
-        if (poly.vertices.empty() ||
-            (chain[i] - poly.vertices.back()).squaredNorm() > snapTol * snapTol * 0.01) {
+        if (poly.vertices.empty() || (chain[i] - poly.vertices.back()).squaredNorm() > snapTol * snapTol * 0.01) {
             poly.vertices.push_back(chain[i]);
             if (i < chainAbsorption.size()) {
                 poly.edgeAbsorption.push_back(chainAbsorption[i]);
@@ -155,10 +159,7 @@ RoomPolygon2D extractRoomPolygon(
             minY = std::min(minY, (double)v.y());
             maxY = std::max(maxY, (double)v.y());
         }
-        poly.vertices = {
-            Vec2d(minX, minY), Vec2d(maxX, minY),
-            Vec2d(maxX, maxY), Vec2d(minX, maxY)
-        };
+        poly.vertices = {Vec2d(minX, minY), Vec2d(maxX, minY), Vec2d(maxX, maxY), Vec2d(minX, maxY)};
         poly.edgeAbsorption = {0.2, 0.2, 0.2, 0.2};
         poly.edgeScattering = {0.1, 0.1, 0.1, 0.1};
     }
@@ -178,8 +179,7 @@ static bool pointInPolygon(const Vec2d& p, const std::vector<Vec2d>& poly) {
     bool inside = false;
     for (int i = 0, j = n - 1; i < n; j = i++) {
         if (((poly[i].y() > p.y()) != (poly[j].y() > p.y())) &&
-            (p.x() < (poly[j].x() - poly[i].x()) * (p.y() - poly[i].y())
-                      / (poly[j].y() - poly[i].y()) + poly[i].x())) {
+            (p.x() < (poly[j].x() - poly[i].x()) * (p.y() - poly[i].y()) / (poly[j].y() - poly[i].y()) + poly[i].x())) {
             inside = !inside;
         }
     }
@@ -197,7 +197,8 @@ static double circumRadius2(const Vec2d& a, const Vec2d& b, const Vec2d& c) {
     double ax = a.x() - c.x(), ay = a.y() - c.y();
     double bx = b.x() - c.x(), by = b.y() - c.y();
     double D = 2.0 * (ax * by - ay * bx);
-    if (std::abs(D) < 1e-30) return 1e30;
+    if (std::abs(D) < 1e-30)
+        return 1e30;
     double ux = (by * (ax * ax + ay * ay) - ay * (bx * bx + by * by)) / D;
     double uy = (ax * (bx * bx + by * by) - bx * (ax * ax + ay * ay)) / D;
     return ux * ux + uy * uy;
@@ -207,7 +208,8 @@ static Vec2d circumCenter(const Vec2d& a, const Vec2d& b, const Vec2d& c) {
     double ax = a.x() - c.x(), ay = a.y() - c.y();
     double bx = b.x() - c.x(), by = b.y() - c.y();
     double D = 2.0 * (ax * by - ay * bx);
-    if (std::abs(D) < 1e-30) return (a + b + c) / 3.0;
+    if (std::abs(D) < 1e-30)
+        return (a + b + c) / 3.0;
     double ux = (by * (ax * ax + ay * ay) - ay * (bx * bx + by * by)) / D;
     double uy = (ax * (bx * bx + by * by) - bx * (ax * ax + ay * ay)) / D;
     return Vec2d(ux + c.x(), uy + c.y());
@@ -221,14 +223,10 @@ static bool inCircumcircle(const Vec2d& p, const Vec2d& a, const Vec2d& b, const
 
 struct Edge2D {
     int a, b;
-    bool operator==(const Edge2D& o) const {
-        return (a == o.a && b == o.b) || (a == o.b && b == o.a);
-    }
+    bool operator==(const Edge2D& o) const { return (a == o.a && b == o.b) || (a == o.b && b == o.a); }
 };
 
-static std::vector<BWTriangle> bowyerWatson(
-    const std::vector<Vec2d>& points, int nPts)
-{
+static std::vector<BWTriangle> bowyerWatson(const std::vector<Vec2d>& points, int nPts) {
     // Super-triangle that contains all points
     double minX = 1e30, maxX = -1e30, minY = 1e30, maxY = -1e30;
     for (int i = 0; i < nPts; ++i) {
@@ -260,27 +258,32 @@ static std::vector<BWTriangle> bowyerWatson(
         // Find boundary of the polygonal hole
         std::vector<Edge2D> polygon;
         for (const auto& tri : triangles) {
-            if (!tri.bad) continue;
+            if (!tri.bad)
+                continue;
             for (int e = 0; e < 3; ++e) {
                 Edge2D edge = {tri.v[e], tri.v[(e + 1) % 3]};
                 bool shared = false;
                 for (const auto& other : triangles) {
-                    if (&other == &tri || !other.bad) continue;
+                    if (&other == &tri || !other.bad)
+                        continue;
                     for (int oe = 0; oe < 3; ++oe) {
                         Edge2D otherEdge = {other.v[oe], other.v[(oe + 1) % 3]};
-                        if (edge == otherEdge) { shared = true; break; }
+                        if (edge == otherEdge) {
+                            shared = true;
+                            break;
+                        }
                     }
-                    if (shared) break;
+                    if (shared)
+                        break;
                 }
-                if (!shared) polygon.push_back(edge);
+                if (!shared)
+                    polygon.push_back(edge);
             }
         }
 
         // Remove bad triangles
-        triangles.erase(
-            std::remove_if(triangles.begin(), triangles.end(),
-                          [](const BWTriangle& t) { return t.bad; }),
-            triangles.end());
+        triangles.erase(std::remove_if(triangles.begin(), triangles.end(), [](const BWTriangle& t) { return t.bad; }),
+                        triangles.end());
 
         // Re-triangulate the hole
         for (const auto& edge : polygon) {
@@ -289,14 +292,14 @@ static std::vector<BWTriangle> bowyerWatson(
     }
 
     // Remove triangles that use super-triangle vertices
-    triangles.erase(
-        std::remove_if(triangles.begin(), triangles.end(),
-                      [s0, s1, s2](const BWTriangle& t) {
-                          for (int v : t.v)
-                              if (v == s0 || v == s1 || v == s2) return true;
-                          return false;
-                      }),
-        triangles.end());
+    triangles.erase(std::remove_if(triangles.begin(), triangles.end(),
+                                   [s0, s1, s2](const BWTriangle& t) {
+                                       for (int v : t.v)
+                                           if (v == s0 || v == s1 || v == s2)
+                                               return true;
+                                       return false;
+                                   }),
+                    triangles.end());
 
     return triangles;
 }
@@ -321,18 +324,17 @@ static int findNearestEdge(const Vec2d& mid, const std::vector<Vec2d>& polyVerts
             d = std::min(d, (mid - closest).squaredNorm());
         }
 
-        if (d < bestDist) { bestDist = d; best = i; }
+        if (d < bestDist) {
+            bestDist = d;
+            best = i;
+        }
     }
     return best;
 }
 
 // ========== Build the full 2D DG mesh ==========
 
-Mesh2D buildMesh2D(
-    const RoomPolygon2D& polygon,
-    const Basis2D& basis,
-    double targetElementSize)
-{
+Mesh2D buildMesh2D(const RoomPolygon2D& polygon, const Basis2D& basis, double targetElementSize) {
     Mesh2D mesh;
     int N = basis.N;
     int Np = basis.Np;
@@ -363,8 +365,10 @@ Mesh2D buildMesh2D(
     // Step 2: Generate interior points on a regular grid
     double minX = 1e30, maxX = -1e30, minY = 1e30, maxY = -1e30;
     for (const auto& v : polyVerts) {
-        minX = std::min(minX, v.x()); maxX = std::max(maxX, v.x());
-        minY = std::min(minY, v.y()); maxY = std::max(maxY, v.y());
+        minX = std::min(minX, v.x());
+        maxX = std::max(maxX, v.x());
+        minY = std::min(minY, v.y());
+        maxY = std::max(maxY, v.y());
     }
 
     double offset = h * 0.5;
@@ -381,7 +385,8 @@ Mesh2D buildMesh2D(
                         break;
                     }
                 }
-                if (!tooClose) allPoints.push_back(p);
+                if (!tooClose)
+                    allPoints.push_back(p);
             }
         }
     }
@@ -449,9 +454,9 @@ Mesh2D buildMesh2D(
         Vec2d v0(mesh.VX(mesh.EToV(k, 0)), mesh.VY(mesh.EToV(k, 0)));
         Vec2d v1(mesh.VX(mesh.EToV(k, 1)), mesh.VY(mesh.EToV(k, 1)));
         Vec2d v2(mesh.VX(mesh.EToV(k, 2)), mesh.VY(mesh.EToV(k, 2)));
-        double cross = (v1.x() - v0.x()) * (v2.y() - v0.y())
-                      - (v2.x() - v0.x()) * (v1.y() - v0.y());
-        if (cross < 0) std::swap(mesh.EToV(k, 1), mesh.EToV(k, 2));
+        double cross = (v1.x() - v0.x()) * (v2.y() - v0.y()) - (v2.x() - v0.x()) * (v1.y() - v0.y());
+        if (cross < 0)
+            std::swap(mesh.EToV(k, 1), mesh.EToV(k, 2));
     }
 
     // Step 8: Build high-order node coordinates via affine mapping
@@ -481,10 +486,10 @@ Mesh2D buildMesh2D(
 
     // For affine (straight-sided) elements, geometric factors are constant per element
     // but we store per node for generality.
-    MatXd xr = basis.Dr * mesh.x;  // dx/dr
-    MatXd xs = basis.Ds * mesh.x;  // dx/ds
-    MatXd yr = basis.Dr * mesh.y;  // dy/dr
-    MatXd ys = basis.Ds * mesh.y;  // dy/ds
+    MatXd xr = basis.Dr * mesh.x; // dx/dr
+    MatXd xs = basis.Ds * mesh.x; // dx/ds
+    MatXd yr = basis.Dr * mesh.y; // dy/dr
+    MatXd ys = basis.Ds * mesh.y; // dy/ds
 
     mesh.J = xr.cwiseProduct(ys) - xs.cwiseProduct(yr);
     mesh.rx = ys.cwiseQuotient(mesh.J);
@@ -507,19 +512,13 @@ Mesh2D buildMesh2D(
     // Face vertices for each face of each element (using EToV vertex indices)
     // Face 0: edge v0-v1 (s=-1), Face 1: edge v1-v2 (r+s=0), Face 2: edge v2-v0 (r=-1)
     using FaceKey = std::pair<int, int>;
-    auto makeFaceKey = [](int a, int b) -> FaceKey {
-        return (a < b) ? FaceKey{a, b} : FaceKey{b, a};
-    };
+    auto makeFaceKey = [](int a, int b) -> FaceKey { return (a < b) ? FaceKey{a, b} : FaceKey{b, a}; };
 
     std::map<FaceKey, std::pair<int, int>> faceMap; // key -> (element, localFace)
 
     for (int k = 0; k < mesh.K; ++k) {
         int v0 = mesh.EToV(k, 0), v1 = mesh.EToV(k, 1), v2 = mesh.EToV(k, 2);
-        FaceKey faces[3] = {
-            makeFaceKey(v0, v1),
-            makeFaceKey(v1, v2),
-            makeFaceKey(v2, v0)
-        };
+        FaceKey faces[3] = {makeFaceKey(v0, v1), makeFaceKey(v1, v2), makeFaceKey(v2, v0)};
         for (int f = 0; f < Nfaces; ++f) {
             auto it = faceMap.find(faces[f]);
             if (it != faceMap.end()) {
@@ -569,7 +568,10 @@ Mesh2D buildMesh2D(
                 }
 
                 double mag = std::sqrt(fnx * fnx + fny * fny);
-                if (mag > 1e-30) { fnx /= mag; fny /= mag; }
+                if (mag > 1e-30) {
+                    fnx /= mag;
+                    fny /= mag;
+                }
 
                 // Surface Jacobian: |ds/dx| * |J| for face normal direction
                 // For straight-sided elements: sJ = edge_length / 2
@@ -605,7 +607,8 @@ Mesh2D buildMesh2D(
         for (int f = 0; f < Nfaces; ++f) {
             int k2 = mesh.EToE(k, f);
             int f2 = mesh.EToF(k, f);
-            if (k2 == k && f2 == f) continue; // boundary
+            if (k2 == k && f2 == f)
+                continue; // boundary
 
             for (int i = 0; i < Nfp; ++i) {
                 int surfIdxM = k * totalFaceNodes + f * Nfp + i;
@@ -635,9 +638,8 @@ Mesh2D buildMesh2D(
                 Vec2d faceMid(mesh.x(nodeIdx, k), mesh.y(nodeIdx, k));
                 if (Nfp > 1) {
                     int nodeIdx2 = basis.Fmask(Nfp - 1, f);
-                    faceMid = Vec2d(
-                        (mesh.x(nodeIdx, k) + mesh.x(nodeIdx2, k)) * 0.5,
-                        (mesh.y(nodeIdx, k) + mesh.y(nodeIdx2, k)) * 0.5);
+                    faceMid = Vec2d((mesh.x(nodeIdx, k) + mesh.x(nodeIdx2, k)) * 0.5,
+                                    (mesh.y(nodeIdx, k) + mesh.y(nodeIdx2, k)) * 0.5);
                 }
 
                 int edgeIdx = findNearestEdge(faceMid, polyVerts);

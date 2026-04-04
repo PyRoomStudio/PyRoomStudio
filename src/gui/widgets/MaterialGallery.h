@@ -1,13 +1,14 @@
 #pragma once
 
-#include "core/Types.h"
 #include "core/Material.h"
+#include "core/Types.h"
 
-#include <QWidget>
 #include <QFrame>
 #include <QPushButton>
-#include <QVBoxLayout>
 #include <QString>
+#include <QVBoxLayout>
+#include <QWidget>
+
 #include <vector>
 
 namespace prs {
@@ -17,14 +18,13 @@ class ColorSwatch;
 class MaterialGallery : public QWidget {
     Q_OBJECT
 
-public:
-    MaterialGallery(const QString& title, const std::vector<Material>& materials,
-                    QWidget* parent = nullptr);
+  public:
+    MaterialGallery(const QString& title, const std::vector<Material>& materials, QWidget* parent = nullptr);
 
-signals:
+  signals:
     void materialClicked(const Material& material);
 
-private:
+  private:
     void setCollapsed(bool collapsed);
 
     QPushButton* header_ = nullptr;

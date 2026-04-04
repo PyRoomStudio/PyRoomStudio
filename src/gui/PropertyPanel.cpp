@@ -1,26 +1,29 @@
 #include "PropertyPanel.h"
 
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGroupBox>
-#include <QLabel>
 #include <QFont>
 #include <QFontMetrics>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QVBoxLayout>
 
 namespace prs {
 
 PropertyPanel::PropertyPanel(QWidget* parent)
-    : QWidget(parent)
-{
+    : QWidget(parent) {
     setupUI();
 }
 
 void PropertyPanel::setPropertyContext(Context ctx) {
     context_ = ctx;
-    if (roomGroup_) roomGroup_->setVisible(ctx == Context::Room);
-    if (pointDistGroup_) pointDistGroup_->setVisible(ctx == Context::Point);
-    if (pointGroup_) pointGroup_->setVisible(ctx == Context::Point);
-    if (surfaceGroup_) surfaceGroup_->setVisible(ctx == Context::Surface);
+    if (roomGroup_)
+        roomGroup_->setVisible(ctx == Context::Room);
+    if (pointDistGroup_)
+        pointDistGroup_->setVisible(ctx == Context::Point);
+    if (pointGroup_)
+        pointGroup_->setVisible(ctx == Context::Point);
+    if (surfaceGroup_)
+        surfaceGroup_->setVisible(ctx == Context::Surface);
 }
 
 void PropertyPanel::setupUI() {
@@ -38,8 +41,8 @@ void PropertyPanel::setupUI() {
     {
         roomGroup_ = new QGroupBox("Room Scale");
         auto* group = roomGroup_;
-        auto* gl    = new QVBoxLayout(group);
-        auto* row   = new QHBoxLayout;
+        auto* gl = new QVBoxLayout(group);
+        auto* row = new QHBoxLayout;
         scaleSlider_ = new QSlider(Qt::Horizontal);
         scaleSlider_->setRange(1, 100);
         scaleSlider_->setValue(10);
@@ -65,7 +68,8 @@ void PropertyPanel::setupUI() {
         layout->addWidget(group);
 
         connect(scaleSlider_, &QSlider::valueChanged, [this](int v) {
-            if (updatingSlider_) return;
+            if (updatingSlider_)
+                return;
             float value = v / 10.0f;
             scaleValueLabel_->setText(QString("%1x").arg(value, 0, 'f', 1));
             emit scaleChanged(value);
@@ -76,8 +80,8 @@ void PropertyPanel::setupUI() {
     {
         pointDistGroup_ = new QGroupBox("Point Distance");
         auto* group = pointDistGroup_;
-        auto* gl    = new QVBoxLayout(group);
-        auto* row   = new QHBoxLayout;
+        auto* gl = new QVBoxLayout(group);
+        auto* row = new QHBoxLayout;
         pointDistSlider_ = new QSlider(Qt::Horizontal);
         pointDistSlider_->setRange(-50, 50);
         pointDistSlider_->setValue(0);
@@ -88,7 +92,8 @@ void PropertyPanel::setupUI() {
         layout->addWidget(group);
 
         connect(pointDistSlider_, &QSlider::valueChanged, [this](int v) {
-            if (updatingSlider_) return;
+            if (updatingSlider_)
+                return;
             float value = v / 10.0f;
             pointDistValueLabel_->setText(QString("%1m").arg(value, 0, 'f', 1));
             emit pointDistanceChanged(value);
@@ -99,7 +104,7 @@ void PropertyPanel::setupUI() {
     {
         pointGroup_ = new QGroupBox("Selected Point");
         auto* group = pointGroup_;
-        auto* gl    = new QVBoxLayout(group);
+        auto* gl = new QVBoxLayout(group);
 
         pointNameEdit_ = new QLineEdit;
         pointNameEdit_->setPlaceholderText("Point name...");
@@ -107,7 +112,7 @@ void PropertyPanel::setupUI() {
         connect(pointNameEdit_, &QLineEdit::textChanged, this, &PropertyPanel::pointNameChanged);
 
         auto* typeRow = new QHBoxLayout;
-        sourceBtn_   = new QPushButton("Source");
+        sourceBtn_ = new QPushButton("Source");
         listenerBtn_ = new QPushButton("Listener");
         typeRow->addWidget(sourceBtn_);
         typeRow->addWidget(listenerBtn_);
@@ -125,7 +130,8 @@ void PropertyPanel::setupUI() {
         gl->addLayout(volRow);
 
         connect(pointVolumeSlider_, &QSlider::valueChanged, [this](int v) {
-            if (updatingSlider_) return;
+            if (updatingSlider_)
+                return;
             float vol = v / 100.0f;
             pointVolumeLabel_->setText(QString::number(vol, 'f', 2));
             emit pointVolumeChanged(vol);
@@ -163,13 +169,14 @@ void PropertyPanel::setupUI() {
         orientationWidget_->setVisible(false);
 
         connect(orientationDial_, &QDial::valueChanged, [this](int v) {
-            if (updatingSlider_) return;
+            if (updatingSlider_)
+                return;
             orientationLabel_->setText(QString("%1\u00B0").arg(v));
             emit pointOrientationYawChanged(static_cast<float>(v));
         });
 
         auto* actionRow = new QHBoxLayout;
-        deletePointBtn_  = new QPushButton("Delete");
+        deletePointBtn_ = new QPushButton("Delete");
         deselectPointBtn_ = new QPushButton("Deselect");
         actionRow->addWidget(deletePointBtn_);
         actionRow->addWidget(deselectPointBtn_);
@@ -177,9 +184,9 @@ void PropertyPanel::setupUI() {
 
         layout->addWidget(group);
 
-        connect(sourceBtn_,        &QPushButton::clicked, this, &PropertyPanel::setPointSource);
-        connect(listenerBtn_,      &QPushButton::clicked, this, &PropertyPanel::setPointListener);
-        connect(deletePointBtn_,   &QPushButton::clicked, this, &PropertyPanel::deletePoint);
+        connect(sourceBtn_, &QPushButton::clicked, this, &PropertyPanel::setPointSource);
+        connect(listenerBtn_, &QPushButton::clicked, this, &PropertyPanel::setPointListener);
+        connect(deletePointBtn_, &QPushButton::clicked, this, &PropertyPanel::deletePoint);
         connect(deselectPointBtn_, &QPushButton::clicked, this, &PropertyPanel::deselectPoint);
 
         setPointControlsEnabled(false);
@@ -189,14 +196,14 @@ void PropertyPanel::setupUI() {
     {
         surfaceGroup_ = new QGroupBox("Selected Surface");
         auto* group = surfaceGroup_;
-        auto* gl    = new QVBoxLayout(group);
+        auto* gl = new QVBoxLayout(group);
 
         materialLabel_ = new QLabel("Material: (none)");
         materialLabel_->setStyleSheet("font-size: 10px;");
         gl->addWidget(materialLabel_);
 
         auto* row = new QHBoxLayout;
-        textureBtn_     = new QPushButton("Texture");
+        textureBtn_ = new QPushButton("Texture");
         loadTextureBtn_ = new QPushButton("Load Texture...");
         deselectSurfBtn_ = new QPushButton("Deselect");
         row->addWidget(textureBtn_);
@@ -206,8 +213,8 @@ void PropertyPanel::setupUI() {
 
         layout->addWidget(group);
 
-        connect(textureBtn_,      &QPushButton::clicked, this, &PropertyPanel::toggleTexture);
-        connect(loadTextureBtn_,  &QPushButton::clicked, this, &PropertyPanel::loadTexture);
+        connect(textureBtn_, &QPushButton::clicked, this, &PropertyPanel::toggleTexture);
+        connect(loadTextureBtn_, &QPushButton::clicked, this, &PropertyPanel::loadTexture);
         connect(deselectSurfBtn_, &QPushButton::clicked, this, &PropertyPanel::deselectSurface);
 
         setSurfaceControlsEnabled(false);
@@ -274,7 +281,8 @@ void PropertyPanel::setSurfaceControlsEnabled(bool enabled) {
     textureBtn_->setEnabled(enabled);
     loadTextureBtn_->setEnabled(enabled);
     deselectSurfBtn_->setEnabled(enabled);
-    if (!enabled) materialLabel_->setText("Material: (none)");
+    if (!enabled)
+        materialLabel_->setText("Material: (none)");
 }
 
 void PropertyPanel::setMaterialName(const QString& name) {

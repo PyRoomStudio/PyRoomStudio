@@ -1,34 +1,34 @@
 #pragma once
 
-#include "core/Types.h"
-#include "core/PlacedPoint.h"
-#include "core/Material.h"
 #include "Camera.h"
+#include "core/Material.h"
+#include "core/PlacedPoint.h"
+#include "core/Types.h"
 #include "MeshData.h"
 #include "SurfaceGrouper.h"
 #include "TextureManager.h"
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
-#include <QMouseEvent>
-#include <QWheelEvent>
-#include <QKeyEvent>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QImage>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QOpenGLFunctions>
+#include <QOpenGLWidget>
+#include <QWheelEvent>
 
-#include <vector>
-#include <set>
+#include <functional>
 #include <map>
 #include <optional>
-#include <functional>
+#include <set>
+#include <vector>
 
 namespace prs {
 
 class Viewport3D : public QOpenGLWidget, protected QOpenGLFunctions {
     Q_OBJECT
 
-public:
+  public:
     explicit Viewport3D(QWidget* parent = nullptr);
     ~Viewport3D() override = default;
 
@@ -59,7 +59,7 @@ public:
     void restorePlacedPoints(const std::vector<PlacedPoint>& points);
     void selectPoint(int index);
     void notifyPlacedPointsChanged();
-    int  activePointIndex() const { return activePointIndex_; }
+    int activePointIndex() const { return activePointIndex_; }
     const std::vector<PlacedPoint>& placedPoints() const { return placedPoints_; }
     std::vector<PlacedPoint>& placedPoints() { return placedPoints_; }
 
@@ -68,7 +68,7 @@ public:
     bool measureMode() const { return measureMode_; }
 
     // Surface selection
-    int  selectedSurfaceIndex() const { return selectedSurfaceIndex_; }
+    int selectedSurfaceIndex() const { return selectedSurfaceIndex_; }
     void selectSurface(int index);
     void deselectSurface();
     void setSurfaceColor(int surfIdx, const Color3f& color);
@@ -82,10 +82,19 @@ public:
 
     // Acoustic simulation helpers
     std::pair<int, int> countSourcesAndListeners() const;
-    struct SourceData { Vec3f position; std::string audioFile; std::string name; float volume; };
-    struct ListenerData { Vec3f position; std::string name; Vec3f orientation; };
+    struct SourceData {
+        Vec3f position;
+        std::string audioFile;
+        std::string name;
+        float volume;
+    };
+    struct ListenerData {
+        Vec3f position;
+        std::string name;
+        Vec3f orientation;
+    };
     std::pair<std::vector<SourceData>, std::vector<ListenerData>>
-        getSourcesAndListeners(const std::string& audioFile) const;
+    getSourcesAndListeners(const std::string& audioFile) const;
 
     struct WallInfo {
         std::vector<int> triangleIndices;
@@ -119,7 +128,7 @@ public:
     // Mesh data access
     const MeshData& meshData() const { return mesh_; }
 
-signals:
+  signals:
     void modelLoaded(const QString& filepath);
     void meshOpenWarning(int boundaryEdges);
     void pointPlaced(int index);
@@ -135,7 +144,7 @@ signals:
     void moveFinished(int pointIndex, const PlacedPoint& oldState, const PlacedPoint& newState);
     void placedPointsChanged();
 
-protected:
+  protected:
     void initializeGL() override;
     void paintGL() override;
     void resizeGL(int w, int h) override;
@@ -149,7 +158,7 @@ protected:
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
 
-private:
+  private:
     void autoNormalizeScale();
     void updateProjection();
 
@@ -162,7 +171,11 @@ private:
 
     // Ray picking
     std::pair<Vec3f, Vec3f> getRayFromMouse(const QPoint& pos);
-    struct IntersectionResult { Vec3f point; Vec3f normal; int triIndex; };
+    struct IntersectionResult {
+        Vec3f point;
+        Vec3f normal;
+        int triIndex;
+    };
     std::optional<IntersectionResult> getIntersectionPoint(const QPoint& pos);
     std::optional<int> getPointAtMouse(const QPoint& pos);
     bool trySelectPointAtMouse(const QPoint& pos);

@@ -5,7 +5,7 @@
 namespace prs {
 
 class Camera {
-public:
+  public:
     Camera();
 
     void orbit(float dx, float dy);
@@ -14,11 +14,11 @@ public:
 
     void setDistanceLimits(float minDist, float maxDist);
 
-    float heading()  const { return heading_; }
-    float pitch()    const { return pitch_; }
+    float heading() const { return heading_; }
+    float pitch() const { return pitch_; }
     float distance() const { return distance_; }
 
-    void  setDistance(float d) { distance_ = d; }
+    void setDistance(float d) { distance_ = d; }
     float minDistance() const { return minDist_; }
     float maxDistance() const { return maxDist_; }
 
@@ -26,12 +26,12 @@ public:
 
     void applyViewMatrix() const;
 
-private:
-    float heading_  = 35.0f;
-    float pitch_    = 35.0f;
+  private:
+    float heading_ = 35.0f;
+    float pitch_ = 35.0f;
     float distance_ = 5.0f;
-    float minDist_  = 0.5f;
-    float maxDist_  = 50.0f;
+    float minDist_ = 0.5f;
+    float maxDist_ = 50.0f;
 };
 
 } // namespace prs

@@ -1,14 +1,14 @@
 #include "SimulationQueueWindow.h"
-#include "SimulationQueuePanel.h"
+
 #include "acoustics/SimulationQueue.h"
+#include "SimulationQueuePanel.h"
 
 #include <QCloseEvent>
 
 namespace prs {
 
 SimulationQueueWindow::SimulationQueueWindow(SimulationQueue* queue, QWidget* parent)
-    : QMainWindow(parent)
-{
+    : QMainWindow(parent) {
     setWindowTitle("Simulation Queue");
     resize(520, 320);
     panel_ = new SimulationQueuePanel(queue, this);

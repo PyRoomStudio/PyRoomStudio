@@ -1,39 +1,40 @@
 #include "MeshSimplifier.h"
 
+#include <queue>
+
 #include <algorithm>
+#include <cmath>
 #include <map>
 #include <numeric>
-#include <queue>
 #include <set>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
-#include <cmath>
-#include <tuple>
 
 namespace prs {
 
 namespace {
 
 struct PairHash {
-    std::size_t operator()(const std::pair<int,int>& p) const {
+    std::size_t operator()(const std::pair<int, int>& p) const {
         auto h1 = std::hash<int>{}(p.first);
         auto h2 = std::hash<int>{}(p.second);
         return h1 ^ (h2 * 2654435761u);
     }
 };
 
-using EdgeKey = std::pair<int,int>;
+using EdgeKey = std::pair<int, int>;
 
 EdgeKey makeEdgeKey(int a, int b) {
     return a < b ? EdgeKey{a, b} : EdgeKey{b, a};
 }
 
 int findOrCreateVertex(std::vector<MeshSimplifier::Vertex>& verts,
-                       std::map<std::tuple<float,float,float>, int>& vertexMap,
-                       const Vec3f& pos, int surfaceId) {
+                       std::map<std::tuple<float, float, float>, int>& vertexMap, const Vec3f& pos, int surfaceId) {
     auto key = std::make_tuple(pos.x(), pos.y(), pos.z());
     auto it = vertexMap.find(key);
-    if (it != vertexMap.end()) return it->second;
+    if (it != vertexMap.end())
+        return it->second;
     int idx = static_cast<int>(verts.size());
     MeshSimplifier::Vertex v;
     v.pos = pos;
@@ -48,23 +49,23 @@ int findOrCreateVertex(std::vector<MeshSimplifier::Vertex>& verts,
 Eigen::Matrix4f MeshSimplifier::computePlaneQuadric(const Vec3f& v0, const Vec3f& v1, const Vec3f& v2) {
     Vec3f n = (v1 - v0).cross(v2 - v0);
     float area = n.norm();
-    if (area < 1e-12f) return Eigen::Matrix4f::Zero();
+    if (area < 1e-12f)
+        return Eigen::Matrix4f::Zero();
     n /= area;
     float d = -n.dot(v0);
     Eigen::Vector4f p(n.x(), n.y(), n.z(), d);
     return p * p.transpose();
 }
 
-std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls,
-                                            const std::vector<int>& surfaceIds,
-                                            int targetCount) {
+std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls, const std::vector<int>& surfaceIds,
+                                           int targetCount) {
     if (static_cast<int>(walls.size()) <= targetCount)
         return walls;
 
     // Build indexed mesh
     std::vector<Vertex> verts;
     std::vector<Face> faces;
-    std::map<std::tuple<float,float,float>, int> vertexMap;
+    std::map<std::tuple<float, float, float>, int> vertexMap;
 
     for (int i = 0; i < static_cast<int>(walls.size()); ++i) {
         const auto& tri = walls[i].triangle;
@@ -74,7 +75,9 @@ std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls,
         int vi2 = findOrCreateVertex(verts, vertexMap, tri.v2, sid);
 
         Face f;
-        f.v[0] = vi0; f.v[1] = vi1; f.v[2] = vi2;
+        f.v[0] = vi0;
+        f.v[1] = vi1;
+        f.v[2] = vi2;
         f.surfaceId = sid;
         f.absorption = walls[i].absorption;
         f.scattering = walls[i].scattering;
@@ -90,10 +93,7 @@ std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls,
 
     // Compute vertex quadrics from adjacent faces
     for (int fi = 0; fi < static_cast<int>(faces.size()); ++fi) {
-        auto Q = computePlaneQuadric(
-            verts[faces[fi].v[0]].pos,
-            verts[faces[fi].v[1]].pos,
-            verts[faces[fi].v[2]].pos);
+        auto Q = computePlaneQuadric(verts[faces[fi].v[0]].pos, verts[faces[fi].v[1]].pos, verts[faces[fi].v[2]].pos);
         for (int k = 0; k < 3; ++k)
             verts[faces[fi].v[k]].quadric += Q;
     }
@@ -114,7 +114,8 @@ std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls,
     }
 
     // Mark vertices shared between multiple surface groups
-    for (auto& v : verts) v.surfaceId = -1;
+    for (auto& v : verts)
+        v.surfaceId = -1;
     for (int fi = 0; fi < static_cast<int>(faces.size()); ++fi) {
         for (int k = 0; k < 3; ++k) {
             int vi = faces[fi].v[k];
@@ -133,8 +134,7 @@ std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls,
         ec.cost = std::numeric_limits<float>::max();
 
         // Forbid collapsing edges that cross surface boundaries
-        if (verts[v0].surfaceId >= 0 && verts[v1].surfaceId >= 0 &&
-            verts[v0].surfaceId != verts[v1].surfaceId) {
+        if (verts[v0].surfaceId >= 0 && verts[v1].surfaceId >= 0 && verts[v0].surfaceId != verts[v1].surfaceId) {
             return ec;
         }
 
@@ -147,7 +147,10 @@ std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls,
 
         // Try to find optimal position via solving Q * v = 0
         Eigen::Matrix4f Qbar = Q;
-        Qbar(3, 0) = 0; Qbar(3, 1) = 0; Qbar(3, 2) = 0; Qbar(3, 3) = 1;
+        Qbar(3, 0) = 0;
+        Qbar(3, 1) = 0;
+        Qbar(3, 2) = 0;
+        Qbar(3, 3) = 1;
 
         float det = Qbar.determinant();
         if (std::abs(det) > 1e-10f) {
@@ -183,7 +186,8 @@ std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls,
     std::iota(remap.begin(), remap.end(), 0);
 
     auto findRoot = [&](int v) {
-        while (remap[v] != v) v = remap[v];
+        while (remap[v] != v)
+            v = remap[v];
         return v;
     };
 
@@ -195,31 +199,34 @@ std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls,
 
         int rv0 = findRoot(ec.v0);
         int rv1 = findRoot(ec.v1);
-        if (rv0 == rv1) continue;
+        if (rv0 == rv1)
+            continue;
 
         // Collapse rv1 into rv0
         remap[rv1] = rv0;
         verts[rv0].pos = ec.optimalPos;
         verts[rv0].quadric = verts[rv0].quadric + verts[rv1].quadric;
-        if (verts[rv1].boundary) verts[rv0].boundary = true;
+        if (verts[rv1].boundary)
+            verts[rv0].boundary = true;
         if (verts[rv0].surfaceId != verts[rv1].surfaceId)
             verts[rv0].surfaceId = -2;
 
         // Update faces
         std::unordered_set<EdgeKey, PairHash> newEdges;
         for (int fi : vertFaces[rv1]) {
-            if (faces[fi].removed) continue;
+            if (faces[fi].removed)
+                continue;
             vertFaces[rv0].insert(fi);
         }
 
         for (int fi : vertFaces[rv0]) {
-            if (faces[fi].removed) continue;
+            if (faces[fi].removed)
+                continue;
             for (int k = 0; k < 3; ++k)
                 faces[fi].v[k] = findRoot(faces[fi].v[k]);
 
             // Degenerate face check
-            if (faces[fi].v[0] == faces[fi].v[1] ||
-                faces[fi].v[1] == faces[fi].v[2] ||
+            if (faces[fi].v[0] == faces[fi].v[1] || faces[fi].v[1] == faces[fi].v[2] ||
                 faces[fi].v[2] == faces[fi].v[0]) {
                 faces[fi].removed = true;
                 activeFaces--;
@@ -246,11 +253,13 @@ std::vector<Wall> MeshSimplifier::simplify(const std::vector<Wall>& walls,
     std::vector<Wall> result;
     result.reserve(activeFaces);
     for (auto& f : faces) {
-        if (f.removed) continue;
+        if (f.removed)
+            continue;
         int a = findRoot(f.v[0]);
         int b = findRoot(f.v[1]);
         int c = findRoot(f.v[2]);
-        if (a == b || b == c || c == a) continue;
+        if (a == b || b == c || c == a)
+            continue;
 
         Wall w;
         w.triangle.v0 = verts[a].pos;

@@ -1,4 +1,5 @@
 #include "BottomToolbar.h"
+
 #include "IconUtils.h"
 
 #include <QHBoxLayout>
@@ -23,17 +24,16 @@ QToolButton* makeToolbarButton(const QString& text, const QString& iconQrcPath) 
 } // namespace
 
 BottomToolbar::BottomToolbar(QWidget* parent)
-    : QWidget(parent)
-{
+    : QWidget(parent) {
     auto* layout = new QHBoxLayout(this);
     layout->setContentsMargins(8, 4, 8, 4);
     layout->setSpacing(10);
     layout->addStretch();
 
-    importRoomBtn_   = makeToolbarButton("Import Room", ":/toolbar/import_room.svg");
-    addSourceBtn_    = makeToolbarButton("Add Source", ":/toolbar/place_sound.svg");
-    addListenerBtn_  = makeToolbarButton("Add Listener", ":/toolbar/place_listener.svg");
-    renderBtn_       = makeToolbarButton("Render", ":/toolbar/render.svg");
+    importRoomBtn_ = makeToolbarButton("Import Room", ":/toolbar/import_room.svg");
+    addSourceBtn_ = makeToolbarButton("Add Source", ":/toolbar/place_sound.svg");
+    addListenerBtn_ = makeToolbarButton("Add Listener", ":/toolbar/place_listener.svg");
+    renderBtn_ = makeToolbarButton("Render", ":/toolbar/render.svg");
 
     addSourceBtn_->setCheckable(true);
     addListenerBtn_->setCheckable(true);
@@ -44,10 +44,10 @@ BottomToolbar::BottomToolbar(QWidget* parent)
     layout->addWidget(renderBtn_);
     layout->addStretch();
 
-    connect(importRoomBtn_,  &QToolButton::clicked, this, &BottomToolbar::importRoomClicked);
-    connect(addSourceBtn_,   &QToolButton::clicked, this, &BottomToolbar::addSourceClicked);
+    connect(importRoomBtn_, &QToolButton::clicked, this, &BottomToolbar::importRoomClicked);
+    connect(addSourceBtn_, &QToolButton::clicked, this, &BottomToolbar::addSourceClicked);
     connect(addListenerBtn_, &QToolButton::clicked, this, &BottomToolbar::addListenerClicked);
-    connect(renderBtn_,      &QToolButton::clicked, this, &BottomToolbar::renderClicked);
+    connect(renderBtn_, &QToolButton::clicked, this, &BottomToolbar::renderClicked);
 }
 
 void BottomToolbar::setPlacementState(bool placementActive, bool sourceMode) {

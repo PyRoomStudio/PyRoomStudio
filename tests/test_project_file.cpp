@@ -1,12 +1,13 @@
-#include <QtTest/QtTest>
-#include <QTemporaryFile>
 #include "core/ProjectFile.h"
+
+#include <QTemporaryFile>
+#include <QtTest/QtTest>
 
 using namespace prs;
 
 class TestProjectFile : public QObject {
     Q_OBJECT
-private slots:
+  private slots:
     void testSaveAndLoadRoundTrip() {
         ProjectData data;
         data.stlFilePath = "model.stl";

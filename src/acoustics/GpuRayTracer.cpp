@@ -23,34 +23,17 @@ void GpuRayTracer::buildWallCache(const std::vector<Wall>& walls) {
     }
 }
 
-std::vector<RayContribution> GpuRayTracer::trace(
-    const Vec3f& sourcePos,
-    const Vec3f& listenerPos,
-    const std::vector<Wall>& walls,
-    const Bvh& bvh,
-    int numRays,
-    float listenerRadius,
-    int maxBounces,
-    float minEnergy,
-    const Vec3f* headCenter,
-    float headRadius)
-{
+std::vector<RayContribution> GpuRayTracer::trace(const Vec3f& sourcePos, const Vec3f& listenerPos,
+                                                 const std::vector<Wall>& walls, const Bvh& bvh, int numRays,
+                                                 float listenerRadius, int maxBounces, float minEnergy,
+                                                 const Vec3f* headCenter, float headRadius) {
     buildWallCache(walls);
 
     qWarning() << "GpuRayTracer::trace using CPU fallback; GPU kernels not yet implemented.";
 
     RayTracer cpuTracer;
-    return cpuTracer.trace(
-        sourcePos,
-        listenerPos,
-        walls,
-        bvh,
-        numRays,
-        listenerRadius,
-        maxBounces,
-        minEnergy,
-        headCenter,
-        headRadius);
+    return cpuTracer.trace(sourcePos, listenerPos, walls, bvh, numRays, listenerRadius, maxBounces, minEnergy,
+                           headCenter, headRadius);
 }
 
 } // namespace prs

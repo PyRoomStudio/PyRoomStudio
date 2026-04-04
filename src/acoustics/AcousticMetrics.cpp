@@ -1,14 +1,15 @@
 #include "AcousticMetrics.h"
 
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 #include <numeric>
 
 namespace prs {
 namespace AcousticMetrics {
 
 std::vector<float> computeSchroederCurve(const std::vector<float>& rir) {
-    if (rir.empty()) return {};
+    if (rir.empty())
+        return {};
 
     std::vector<float> squared(rir.size());
     for (size_t i = 0; i < rir.size(); ++i)
@@ -27,10 +28,12 @@ std::vector<float> computeSchroederCurve(const std::vector<float>& rir) {
 
 std::vector<float> schroederCurveDb(const std::vector<float>& rir) {
     auto edc = computeSchroederCurve(rir);
-    if (edc.empty()) return {};
+    if (edc.empty())
+        return {};
 
     float maxVal = edc[0];
-    if (maxVal < 1e-30f) return std::vector<float>(edc.size(), -200.0f);
+    if (maxVal < 1e-30f)
+        return std::vector<float>(edc.size(), -200.0f);
 
     std::vector<float> edcDb(edc.size());
     for (size_t i = 0; i < edc.size(); ++i) {
@@ -40,9 +43,9 @@ std::vector<float> schroederCurveDb(const std::vector<float>& rir) {
     return edcDb;
 }
 
-static float fitRT(const std::vector<float>& edcDb, int sampleRate,
-                    float startDb, float endDb) {
-    if (edcDb.empty() || sampleRate <= 0) return 0.0f;
+static float fitRT(const std::vector<float>& edcDb, int sampleRate, float startDb, float endDb) {
+    if (edcDb.empty() || sampleRate <= 0)
+        return 0.0f;
 
     int startIdx = -1, endIdx = -1;
     for (int i = 0; i < static_cast<int>(edcDb.size()); ++i) {
@@ -63,17 +66,19 @@ static float fitRT(const std::vector<float>& edcDb, int sampleRate,
     for (int i = startIdx; i <= endIdx; ++i) {
         double t = static_cast<double>(i) / sampleRate;
         double y = edcDb[i];
-        sumT  += t;
-        sumY  += y;
+        sumT += t;
+        sumY += y;
         sumTT += t * t;
         sumTY += t * y;
     }
 
     double denom = n * sumTT - sumT * sumT;
-    if (std::abs(denom) < 1e-30) return 0.0f;
+    if (std::abs(denom) < 1e-30)
+        return 0.0f;
 
     double slope = (n * sumTY - sumT * sumY) / denom;
-    if (slope >= 0.0) return 0.0f;
+    if (slope >= 0.0)
+        return 0.0f;
 
     // Extrapolate to -60 dB
     return static_cast<float>(-60.0 / slope);
@@ -81,7 +86,8 @@ static float fitRT(const std::vector<float>& edcDb, int sampleRate,
 
 RTResult computeRT(const std::vector<float>& rir, int sampleRate) {
     auto edcDb = schroederCurveDb(rir);
-    if (edcDb.empty()) return {};
+    if (edcDb.empty())
+        return {};
 
     RTResult result;
     result.t20 = fitRT(edcDb, sampleRate, -5.0f, -25.0f);
@@ -91,12 +97,8 @@ RTResult computeRT(const std::vector<float>& rir, int sampleRate) {
     return result;
 }
 
-SPLResult computeSPL(
-    float sourceVolumeLinear,
-    const std::vector<ImageSource>& imageSources,
-    const std::vector<RayContribution>& rayContributions,
-    int numRaysEmitted)
-{
+SPLResult computeSPL(float sourceVolumeLinear, const std::vector<ImageSource>& imageSources,
+                     const std::vector<RayContribution>& rayContributions, int numRaysEmitted) {
     SPLResult result;
     if (imageSources.empty() && rayContributions.empty())
         return result;
@@ -137,12 +139,12 @@ SPLResult computeSPL(
 
     // Convert to dB (reference: energy of 1.0 at 1m from a unit source)
     constexpr double REF_ENERGY = 1e-12;
-    result.directSPL    = (directEnergy > REF_ENERGY)
-        ? static_cast<float>(10.0 * std::log10(directEnergy / REF_ENERGY)) : 0.0f;
-    result.reflectedSPL = (reflectedEnergy > REF_ENERGY)
-        ? static_cast<float>(10.0 * std::log10(reflectedEnergy / REF_ENERGY)) : 0.0f;
-    result.totalSPL     = (totalEnergy > REF_ENERGY)
-        ? static_cast<float>(10.0 * std::log10(totalEnergy / REF_ENERGY)) : 0.0f;
+    result.directSPL =
+        (directEnergy > REF_ENERGY) ? static_cast<float>(10.0 * std::log10(directEnergy / REF_ENERGY)) : 0.0f;
+    result.reflectedSPL =
+        (reflectedEnergy > REF_ENERGY) ? static_cast<float>(10.0 * std::log10(reflectedEnergy / REF_ENERGY)) : 0.0f;
+    result.totalSPL =
+        (totalEnergy > REF_ENERGY) ? static_cast<float>(10.0 * std::log10(totalEnergy / REF_ENERGY)) : 0.0f;
     result.valid = true;
     return result;
 }

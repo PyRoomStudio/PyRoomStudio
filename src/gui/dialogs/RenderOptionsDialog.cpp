@@ -1,16 +1,14 @@
 #include "RenderOptionsDialog.h"
 
-#include <QLabel>
-#include <QHBoxLayout>
-#include <QGroupBox>
 #include <QFormLayout>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QLabel>
 
 namespace prs {
 
-RenderOptionsDialog::RenderOptionsDialog(
-    const std::vector<ListenerEntry>& listeners, QWidget* parent)
-    : QDialog(parent)
-{
+RenderOptionsDialog::RenderOptionsDialog(const std::vector<ListenerEntry>& listeners, QWidget* parent)
+    : QDialog(parent) {
     setWindowTitle("Render Options");
     setMinimumWidth(360);
 
@@ -51,8 +49,8 @@ RenderOptionsDialog::RenderOptionsDialog(
 
     mainLayout->addWidget(methodGroup);
 
-    connect(methodCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &RenderOptionsDialog::onMethodChanged);
+    connect(methodCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            &RenderOptionsDialog::onMethodChanged);
 
     // Listener selection
     mainLayout->addWidget(new QLabel("Select listeners to render:"));
@@ -72,10 +70,12 @@ RenderOptionsDialog::RenderOptionsDialog(
     mainLayout->addLayout(selectRow);
 
     connect(selectAllBtn, &QPushButton::clicked, [this]() {
-        for (auto* cb : checkboxes_) cb->setChecked(true);
+        for (auto* cb : checkboxes_)
+            cb->setChecked(true);
     });
     connect(deselectAllBtn, &QPushButton::clicked, [this]() {
-        for (auto* cb : checkboxes_) cb->setChecked(false);
+        for (auto* cb : checkboxes_)
+            cb->setChecked(false);
     });
 
     auto* btnRow = new QHBoxLayout;
@@ -106,9 +106,12 @@ std::vector<int> RenderOptionsDialog::selectedListenerIndices() const {
 
 SimMethod RenderOptionsDialog::selectedMethod() const {
     switch (methodCombo_->currentIndex()) {
-    case 1:  return SimMethod::DG_2D;
-    case 2:  return SimMethod::DG_3D;
-    default: return SimMethod::RayTracing;
+        case 1:
+            return SimMethod::DG_2D;
+        case 2:
+            return SimMethod::DG_3D;
+        default:
+            return SimMethod::RayTracing;
     }
 }
 

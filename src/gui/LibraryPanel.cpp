@@ -1,22 +1,22 @@
 #include "LibraryPanel.h"
-#include "widgets/MaterialGallery.h"
-#include "core/MaterialLoader.h"
 
-#include <QLabel>
-#include <QScrollArea>
-#include <QGroupBox>
+#include "core/MaterialLoader.h"
+#include "widgets/MaterialGallery.h"
+
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QSettings>
-#include <QCoreApplication>
 #include <QFontMetrics>
+#include <QGroupBox>
+#include <QLabel>
+#include <QScrollArea>
+#include <QSettings>
 
 namespace prs {
 
 LibraryPanel::LibraryPanel(QWidget* parent)
-    : QWidget(parent)
-{
+    : QWidget(parent) {
     setupUI();
 }
 
@@ -34,7 +34,7 @@ void LibraryPanel::setupUI() {
     tabWidget_ = new QTabWidget;
     tabWidget_->setTabPosition(QTabWidget::North);
 
-    auto* soundTab    = new QWidget;
+    auto* soundTab = new QWidget;
     auto* materialTab = new QWidget;
 
     createSoundTab(soundTab);
@@ -109,7 +109,7 @@ void LibraryPanel::createMaterialTab(QWidget* tab) {
     auto* scrollArea = new QScrollArea;
     scrollArea->setWidgetResizable(true);
 
-    auto* content       = new QWidget;
+    auto* content = new QWidget;
     auto* contentLayout = new QVBoxLayout(content);
     contentLayout->setContentsMargins(4, 4, 4, 4);
     contentLayout->setSpacing(4);
@@ -124,13 +124,10 @@ void LibraryPanel::createMaterialTab(QWidget* tab) {
     auto categories = MaterialLoader::loadFromDirectory(materialsDir);
 
     for (auto& category : categories) {
-        auto* gallery = new MaterialGallery(
-            QString::fromStdString(category.name), category.materials, content);
+        auto* gallery = new MaterialGallery(QString::fromStdString(category.name), category.materials, content);
 
         connect(gallery, &MaterialGallery::materialClicked,
-            [this](const Material& mat) {
-                emit materialSelected(mat);
-            });
+                [this](const Material& mat) { emit materialSelected(mat); });
 
         materialGalleries_.push_back(gallery);
         contentLayout->addWidget(gallery);

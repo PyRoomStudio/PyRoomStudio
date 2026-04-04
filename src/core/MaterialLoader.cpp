@@ -2,23 +2,25 @@
 
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
-#include <QFileInfo>
 
 namespace prs {
 
 std::vector<MaterialCategory> MaterialLoader::loadFromDirectory(const QString& dirPath) {
     std::vector<MaterialCategory> categories;
     QDir root(dirPath);
-    if (!root.exists()) return categories;
+    if (!root.exists())
+        return categories;
 
     QStringList subDirs = root.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
     for (const QString& sub : subDirs) {
         QDir catDir(root.filePath(sub));
         QStringList matFiles = catDir.entryList({"*.mat"}, QDir::Files, QDir::Name);
-        if (matFiles.isEmpty()) continue;
+        if (matFiles.isEmpty())
+            continue;
 
         MaterialCategory category;
         // Convert directory name to display name (e.g. "masonry_walls" -> "Masonry Walls")
@@ -26,7 +28,8 @@ std::vector<MaterialCategory> MaterialLoader::loadFromDirectory(const QString& d
         displayName.replace('_', ' ');
         QStringList words = displayName.split(' ', Qt::SkipEmptyParts);
         for (auto& w : words)
-            if (!w.isEmpty()) w[0] = w[0].toUpper();
+            if (!w.isEmpty())
+                w[0] = w[0].toUpper();
         category.name = words.join(' ').toStdString();
 
         for (const QString& file : matFiles) {

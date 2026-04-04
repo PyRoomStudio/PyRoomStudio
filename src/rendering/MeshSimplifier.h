@@ -1,22 +1,21 @@
 #pragma once
 
-#include "core/Types.h"
-#include "core/Material.h"
 #include "acoustics/Wall.h"
+#include "core/Material.h"
+#include "core/Types.h"
 
-#include <vector>
 #include <array>
+#include <vector>
 
 namespace prs {
 
 class MeshSimplifier {
-public:
+  public:
     // Simplify a wall list to targetCount triangles using QEM edge collapse.
     // surfaceIds maps each wall index to its surface group; collapses across
     // different surface groups are forbidden so material boundaries are preserved.
-    static std::vector<Wall> simplify(const std::vector<Wall>& walls,
-                                       const std::vector<int>& surfaceIds,
-                                       int targetCount);
+    static std::vector<Wall> simplify(const std::vector<Wall>& walls, const std::vector<int>& surfaceIds,
+                                      int targetCount);
 
     struct Vertex {
         Vec3f pos;
@@ -25,7 +24,7 @@ public:
         bool boundary = false;
     };
 
-private:
+  private:
     struct Face {
         int v[3]{-1, -1, -1};
         int surfaceId = -1;
