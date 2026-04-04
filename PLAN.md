@@ -59,11 +59,46 @@
 
 > The current stereo output path is useful, but it is still not the same as a real binaural pipeline.
 
-- [ ] Introduce an HRTF dataset abstraction for listener rendering
-- [ ] Add head-orientation-aware direction lookup before convolution
-- [ ] Add binaural output modes for mono, stereo, and per-listener export
-- [ ] Add a synthetic HRTF fixture so binaural tests can run without external SOFA files
+> SOFA is the primary target format for this phase. The implementation should introduce a format-agnostic HRTF layer first, then load SOFA datasets through `libmysofa`. DAFF/OpenDAFF support is a follow-on integration point and should not block the first deliverable.
+
+#### Phase 3.1 — HRTF model and data loading
+
+- [ ] Define a format-agnostic HRTF dataset interface for lookup, metadata, and filter length
+- [ ] Add a SOFA-backed dataset loader using `libmysofa`
+- [ ] Normalize the in-memory representation so the renderer can query any dataset by direction
+- [ ] Add validation for missing metadata, unsupported sample rates, and invalid filter lengths
+- [ ] Add a synthetic HRTF fixture that exercises the lookup path without external files
+
+#### Phase 3.2 — Binaural lookup and listener orientation
+
+- [ ] Convert listener orientation into a head-centric listener frame
+- [ ] Add head-orientation-aware direction lookup before HRTF convolution
+- [ ] Add nearest-neighbor or interpolated HRTF selection for azimuth/elevation queries
+- [ ] Define fallback behavior for missing or out-of-range directions
+- [ ] Add tests that confirm the same source produces different left/right responses as the listener turns
+
+#### Phase 3.3 — Audio rendering modes and export
+
+- [ ] Add binaural export modes for mono, stereo, and per-listener output
+- [ ] Keep the existing mono/stereo room output path available for non-binaural comparison workflows
+- [ ] Make HRTF selection part of the render job parameters and output metadata
+- [ ] Add per-listener file naming and directory layout rules for binaural renders
+- [ ] Add tests that verify export shape, filenames, and sample-rate handling
+
+#### Phase 3.4 — UI and project persistence
+
 - [ ] Add a UI path for selecting an HRTF dataset per listener
+- [ ] Persist the selected HRTF dataset in project data and restore it on load
+- [ ] Show a clear default state when no external HRTF dataset is selected
+- [ ] Add a minimal inspection view for the selected dataset metadata
+- [ ] Add tests for dialog behavior and project round-tripping
+
+#### Phase 3.5 — Future-format seam
+
+- [ ] Keep the HRTF interface isolated so DAFF/OpenDAFF support can be added without changing listener rendering
+- [ ] Add a loader registry or adapter layer that can accept additional HRTF formats later
+- [ ] Document the expected extension points for a future OpenDAFF implementation
+- [ ] Add one integration test placeholder that can be reused when DAFF support lands
 
 ## Phase 4 — Source Directivity
 

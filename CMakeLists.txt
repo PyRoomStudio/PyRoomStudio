@@ -44,6 +44,33 @@ if(PkgConfig_FOUND)
     pkg_check_modules(FFTW3 fftw3f)
 endif()
 
+find_package(mysofa CONFIG QUIET)
+if(TARGET mysofa::mysofa-shared)
+    set(MYSOFA_TARGET mysofa::mysofa-shared)
+elseif(TARGET mysofa::mysofa-static)
+    set(MYSOFA_TARGET mysofa::mysofa-static)
+endif()
+
+if(NOT MYSOFA_TARGET AND PkgConfig_FOUND)
+    pkg_check_modules(MYSOFA QUIET mysofa)
+    if(MYSOFA_FOUND)
+        add_library(mysofa::mysofa INTERFACE IMPORTED)
+        target_link_libraries(mysofa::mysofa INTERFACE PkgConfig::MYSOFA)
+        set(MYSOFA_TARGET mysofa::mysofa)
+    endif()
+endif()
+
+if(NOT MYSOFA_TARGET)
+    find_library(MYSOFA_LIBRARIES NAMES mysofa libmysofa)
+    find_path(MYSOFA_INCLUDE_DIRS mysofa.h)
+    if(MYSOFA_LIBRARIES AND MYSOFA_INCLUDE_DIRS)
+        add_library(mysofa::mysofa INTERFACE IMPORTED)
+        target_link_libraries(mysofa::mysofa INTERFACE ${MYSOFA_LIBRARIES})
+        target_include_directories(mysofa::mysofa INTERFACE ${MYSOFA_INCLUDE_DIRS})
+        set(MYSOFA_TARGET mysofa::mysofa)
+    endif()
+endif()
+
 if(NOT SNDFILE_FOUND)
     find_library(SNDFILE_LIBRARIES NAMES sndfile libsndfile-1)
     find_path(SNDFILE_INCLUDE_DIRS sndfile.h)
@@ -75,6 +102,8 @@ set(SOURCES
     src/acoustics/ImageSourceMethod.cpp
     src/acoustics/RayTracer.cpp
     src/acoustics/RoomImpulseResponse.cpp
+    src/acoustics/HrtfDataset.cpp
+    src/acoustics/SofaHrtfLoader.cpp
     src/acoustics/Wall.cpp
     src/acoustics/SimulationWorker.cpp
     src/acoustics/RenderExports.cpp
@@ -130,6 +159,8 @@ set(HEADERS
     src/acoustics/ImageSourceMethod.h
     src/acoustics/RayTracer.h
     src/acoustics/RoomImpulseResponse.h
+    src/acoustics/HrtfDataset.h
+    src/acoustics/SofaHrtfLoader.h
     src/acoustics/Wall.h
     src/acoustics/SimulationWorker.h
     src/acoustics/RenderOptions.h
@@ -186,6 +217,8 @@ set(CLI_SOURCES
     src/acoustics/ImageSourceMethod.cpp
     src/acoustics/RayTracer.cpp
     src/acoustics/RoomImpulseResponse.cpp
+    src/acoustics/HrtfDataset.cpp
+    src/acoustics/SofaHrtfLoader.cpp
     src/acoustics/Wall.cpp
     src/acoustics/SimulationWorker.cpp
     src/acoustics/RenderExports.cpp
@@ -250,6 +283,11 @@ if(FFTW3_LIBRARIES)
     target_include_directories(${PROJECT_NAME} PRIVATE ${FFTW3_INCLUDE_DIRS})
     target_link_libraries(${PROJECT_NAME} PRIVATE ${FFTW3_LIBRARIES})
     target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_FFTW3)
+endif()
+
+if(MYSOFA_TARGET)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${MYSOFA_TARGET})
+    target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_LIBMYSOFA)
 endif()
 
 if(WIN32)

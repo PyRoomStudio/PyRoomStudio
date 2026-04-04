@@ -20,6 +20,8 @@ set(TEST_COMMON_SOURCES
     ${CMAKE_SOURCE_DIR}/src/acoustics/ImageSourceMethod.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/RayTracer.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/RoomImpulseResponse.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/HrtfDataset.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/SofaHrtfLoader.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/AcousticSimulator.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/AcousticMetrics.cpp
     ${CMAKE_SOURCE_DIR}/src/audio/AudioFile.cpp
@@ -37,6 +39,10 @@ function(add_prs_test TEST_NAME TEST_SOURCE)
         Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Eigen3::Eigen)
     if(OpenMP_CXX_FOUND)
         target_link_libraries(${TEST_NAME} PRIVATE OpenMP::OpenMP_CXX)
+    endif()
+    if(MYSOFA_TARGET)
+        target_link_libraries(${TEST_NAME} PRIVATE ${MYSOFA_TARGET})
+        target_compile_definitions(${TEST_NAME} PRIVATE HAS_LIBMYSOFA)
     endif()
     if(WIN32)
         target_link_libraries(${TEST_NAME} PRIVATE opengl32 glu32)
@@ -59,6 +65,7 @@ add_prs_test(test_audio test_audio.cpp)
 add_prs_test(test_mesh test_mesh.cpp)
 add_prs_test(test_rendering test_rendering.cpp)
 add_prs_test(test_acoustics test_acoustics.cpp)
+add_prs_test(test_hrtf test_hrtf.cpp)
 add_prs_test(test_project_file test_project_file.cpp)
 add_prs_test(test_coverage test_coverage.cpp)
 add_prs_test(test_material_loader test_material_loader.cpp)
@@ -69,6 +76,10 @@ target_link_libraries(test_render_options_dialog PRIVATE
     Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Eigen3::Eigen)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(test_render_options_dialog PRIVATE OpenMP::OpenMP_CXX)
+endif()
+if(MYSOFA_TARGET)
+    target_link_libraries(test_render_options_dialog PRIVATE ${MYSOFA_TARGET})
+    target_compile_definitions(test_render_options_dialog PRIVATE HAS_LIBMYSOFA)
 endif()
 if(WIN32)
     target_link_libraries(test_render_options_dialog PRIVATE opengl32 glu32)
@@ -102,6 +113,10 @@ target_link_libraries(test_render_support PRIVATE
     Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Multimedia Eigen3::Eigen)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(test_render_support PRIVATE OpenMP::OpenMP_CXX)
+endif()
+if(MYSOFA_TARGET)
+    target_link_libraries(test_render_support PRIVATE ${MYSOFA_TARGET})
+    target_compile_definitions(test_render_support PRIVATE HAS_LIBMYSOFA)
 endif()
 if(WIN32)
     target_link_libraries(test_render_support PRIVATE opengl32 glu32)
@@ -155,6 +170,10 @@ target_link_libraries(test_gui PRIVATE
     Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Multimedia Qt6::Svg Eigen3::Eigen)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(test_gui PRIVATE OpenMP::OpenMP_CXX)
+endif()
+if(MYSOFA_TARGET)
+    target_link_libraries(test_gui PRIVATE ${MYSOFA_TARGET})
+    target_compile_definitions(test_gui PRIVATE HAS_LIBMYSOFA)
 endif()
 if(WIN32)
     target_link_libraries(test_gui PRIVATE opengl32 glu32)
