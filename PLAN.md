@@ -14,21 +14,6 @@
 - [x] Add a test runner script that builds `tests/` and executes all Qt tests headlessly
 - [x] Add build-status badges and a short contributor note to `README.md`
 
-## Phase X — Coverage Foundation and High-Risk Gaps
-
-### Milestone: measurable repo-wide coverage above 80%
-
-> The existing suite exercises the main paths, but the coverage target is not yet enforced or evenly distributed. This phase makes coverage measurable first, then pushes the weak spots over the threshold with focused tests instead of broad refactors.
-
-> Current source-only coverage from `gcovr` on `src/` sources, excluding tests, generated MOC/compiler-id files, and system headers: 23.3% line coverage, 26.3% function coverage, and 13.5% branch coverage.
-
-- [x] Add a repeatable Linux coverage job using `gcovr` that reports `src/` line coverage, excludes tests and generated files, and fails the build when coverage drops below 80%
-- [x] Add unit tests for `src/core/MaterialLoader.*`, `src/core/ProjectFile.*`, and `src/utils/ResourcePath.*` to cover malformed inputs, missing files, and canonical round-trips
-- [x] Add focused tests for `src/audio/AudioFile.*`, `src/audio/SignalProcessing.*`, `src/acoustics/AcousticMetrics.*`, `src/acoustics/ImageSourceMethod.*`, and `src/acoustics/SimulationQueue.*`
-- [x] Add focused tests for `src/rendering/Camera.*`, `src/rendering/MeshData.*`, `src/rendering/RayPicking.*`, `src/rendering/SurfaceGrouper.*`, and `src/rendering/TextureManager.*`
-- [ ] Add headless GUI smoke tests for `src/gui/MainWindow.*`, `src/gui/dialogs/SettingsDialogs.*`, and `src/gui/widgets/ColorSwatch.*` to cover launch, open/save/load, and preference changes
-- [ ] Document the coverage workflow and the 80% gate in `README.md` or `CONTRIBUTING.md`
-
 ## Phase 1 — Core Data Model and File Format
 
 ### Milestone: deterministic project files and clearer model boundaries
@@ -136,7 +121,22 @@
 - [ ] Benchmark CPU vs. GPU for representative room sizes and ray counts
 - [ ] Add tests that verify GPU and CPU results stay within an acceptable tolerance
 
-## Phase 7 — DG Solver and Low-Frequency Accuracy
+## Phase 7 — Coverage Foundation and High-Risk Gaps
+
+### Milestone: measurable repo-wide coverage above 80%
+
+> The existing suite exercises the main paths, but the coverage target is not yet enforced or evenly distributed. This phase makes coverage measurable first, then pushes the weak spots over the threshold with focused tests instead of broad refactors.
+
+> Current source-only coverage from `gcovr` on `src/` sources, excluding tests, generated MOC/compiler-id files, and system headers: 23.3% line coverage, 26.3% function coverage, and 13.5% branch coverage.
+
+- [x] Add a repeatable Linux coverage job using `gcovr` that reports `src/` line coverage, excludes tests and generated files, and fails the build when coverage drops below 80%
+- [x] Add unit tests for `src/core/MaterialLoader.*`, `src/core/ProjectFile.*`, and `src/utils/ResourcePath.*` to cover malformed inputs, missing files, and canonical round-trips
+- [x] Add focused tests for `src/audio/AudioFile.*`, `src/audio/SignalProcessing.*`, `src/acoustics/AcousticMetrics.*`, `src/acoustics/ImageSourceMethod.*`, and `src/acoustics/SimulationQueue.*`
+- [x] Add focused tests for `src/rendering/Camera.*`, `src/rendering/MeshData.*`, `src/rendering/RayPicking.*`, `src/rendering/SurfaceGrouper.*`, and `src/rendering/TextureManager.*`
+- [ ] Add headless GUI smoke tests for `src/gui/MainWindow.*`, `src/gui/dialogs/SettingsDialogs.*`, and `src/gui/widgets/ColorSwatch.*` to cover launch, open/save/load, and preference changes
+- [ ] Document the coverage workflow and the 80% gate in `README.md` or `CONTRIBUTING.md`
+
+## Phase 8 — DG Solver and Low-Frequency Accuracy
 
 ### Milestone: a clearer low-frequency alternative to the geometric solvers
 
@@ -148,7 +148,7 @@
 - [ ] Document when to choose DG over ray tracing in the UI and user guide
 - [ ] Add a small set of modal and low-frequency validation scenes
 
-## Phase 8 — Metrics, Regression, and Comparison Workflow
+## Phase 9 — Metrics, Regression, and Comparison Workflow
 
 ### Milestone: stable audio comparisons and meaningful QA
 
@@ -160,7 +160,7 @@
 - [ ] Add regression tests for project loading, solver selection, and export
 - [ ] Add a small corpus of golden `.wav` outputs for CI
 
-## Phase 9 — Release and Distribution
+## Phase 10 — Release and Distribution
 
 ### Milestone: easier to build, package, and share
 
@@ -172,18 +172,44 @@
 - [ ] Expand the user guide with solver selection, render workflow, and troubleshooting
 - [ ] Add a release checklist that covers tests, docs, and packaging assets
 
+## Phase 11 — Web Foundation
+
+### Milestone: a browser build that launches and reuses the core app model
+
+> This phase is about proving that Seiche can cross the Qt for WebAssembly boundary without rewriting the whole product. The goal is not feature parity yet; the goal is to get the editor booting in a browser with a browser-safe build and a narrow but useful core workflow.
+
+- [ ] Add a WebAssembly build target with a Qt for WebAssembly toolchain and a documented local run workflow
+- [ ] Split native-only dependencies and code paths behind platform guards or build options
+- [ ] Replace direct filesystem assumptions with browser-safe import/export flows for project, mesh, and audio inputs
+- [ ] Make the editor launch in-browser with a minimal scene workflow using CPU-only simulation paths
+- [ ] Add a small set of WebAssembly build and smoke tests that verify startup, resource loading, and project open/save
+
+## Phase 12 — Browser Workflow and Performance
+
+### Milestone: the web build becomes a practical browser-first variant
+
+> Once the app can start in the browser, the next step is making the workflow feel intentional instead of merely functional. This phase focuses on persistence, long-running work, and output handling in the constraints of the web platform.
+
+- [ ] Add browser storage support for recently opened projects and user preferences
+- [ ] Add explicit upload/download handling for project bundles, rendered audio, and simulation reports
+- [ ] Move long-running simulation work onto browser-safe background execution where supported, with responsive progress reporting
+- [ ] Define browser-appropriate fallbacks for unsupported features such as native folder selection, unrestricted local paths, and desktop audio device integration
+- [ ] Add WebAssembly regression fixtures for the editor workflow, simulation launch, and export path
+
 ## Milestone Summary
 
 | Milestone | Phases | Deliverable                          |
 | --------- | ------ | ------------------------------------ |
 | A         | 0      | Buildable, testable repo with CI     |
-| B         | X      | Coverage workflow and >80% gate      |
+| B         | 7      | Coverage workflow and >80% gate      |
 | C         | 1      | Stable project format and validation |
 | D         | 2      | Headless rendering and export        |
 | E         | 3      | Real binaural output                 |
 | F         | 4      | Directivity-aware sources            |
 | G         | 5      | Cleaner solver architecture          |
 | H         | 6      | Working GPU acceleration             |
-| I         | 7      | Better DG low-frequency accuracy     |
-| J         | 8      | Regression and comparison workflow   |
-| K         | 9      | Release packaging and docs           |
+| I         | 8      | Better DG low-frequency accuracy     |
+| J         | 9      | Regression and comparison workflow   |
+| K         | 10     | Release packaging and docs           |
+| L         | 11     | Browser build foundation             |
+| M         | 12     | Browser workflow and performance     |

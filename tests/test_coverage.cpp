@@ -157,9 +157,9 @@ class TestCoverage : public QObject {
         QTemporaryFile legacy;
         legacy.setAutoRemove(true);
         QVERIFY(legacy.open());
-        QVERIFY(writeTextFile(legacy.fileName(), makeLegacyProjectJson(DEFAULT_SAMPLE_RATE, false).toUtf8()));
         const QString legacyPath = legacy.fileName();
         legacy.close();
+        QVERIFY(writeTextFile(legacyPath, makeLegacyProjectJson(DEFAULT_SAMPLE_RATE, false).toUtf8()));
 
         auto legacyLoaded = ProjectFile::load(legacyPath);
         QVERIFY(legacyLoaded.has_value());
@@ -168,11 +168,12 @@ class TestCoverage : public QObject {
         QTemporaryFile badPoint;
         badPoint.setAutoRemove(true);
         QVERIFY(badPoint.open());
-        QVERIFY(writeTextFile(
-            badPoint.fileName(),
-            R"({"version":1,"stlFilePath":"model.stl","scaleFactor":1,"soundSourceFile":"source.wav","surfaceColors":[[0.1,0.2,0.3]],"surfaceMaterials":[null],"placedPoints":[{"surfacePoint":{"x":0,"y":0,"z":0},"normal":{"x":0,"y":0,"z":1},"distance":0,"color":[0.1,0.2,0.3],"pointType":"speaker","name":"bad","volume":1,"audioFile":"","orientationYaw":0}]})"));
         const QString badPointPath = badPoint.fileName();
         badPoint.close();
+        QVERIFY(writeTextFile(
+            badPointPath,
+            R"({"version":1,"stlFilePath":"model.stl","scaleFactor":1,"soundSourceFile":"source.wav","surfaceColors":[[0.1,0.2,0.3]],"surfaceMaterials":[null],"placedPoints":[{"surfacePoint":{"x":0,"y":0,"z":0},"normal":{"x":0,"y":0,"z":1},"distance":0,"color":[0.1,0.2,0.3],"pointType":"speaker","name":"bad","volume":1,"audioFile":"","orientationYaw":0}]})"
+        ));
 
         auto badLoaded = ProjectFile::load(badPointPath);
         QVERIFY(!badLoaded.has_value());
