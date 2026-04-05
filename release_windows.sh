@@ -65,6 +65,16 @@ fi
   "${WINDEPLOYQT}" "./${PROJECT_NAME}.exe"
 )
 
+# Copy MinGW runtime DLLs that windeployqt doesn't handle
+MINGW_BIN="${MINGW_BIN:-C:/Qt/Tools/mingw1310_64/bin}"
+for dll in libgomp-1.dll libgcc_s_seh-1.dll libstdc++-6.dll libwinpthread-1.dll; do
+  if [[ -f "${MINGW_BIN}/${dll}" ]]; then
+    cp -f "${MINGW_BIN}/${dll}" "${STAGE_DIR}/"
+  else
+    echo "Warning: ${dll} not found in ${MINGW_BIN}" >&2
+  fi
+done
+
 # Create zip for upload (zip creates ${ZIP_PATH} from STAGE_DIR content)
 (
   cd "${REPO_ROOT}/${DIST_DIR}"
