@@ -24,9 +24,9 @@ bool writeTextFile(const QString& path, const QByteArray& contents) {
 
 QString cliExecutablePath() {
 #ifdef Q_OS_WIN
-    const QString name = "SeicheRender.exe";
+    const QString name = "SeicheCLI.exe";
 #else
-    const QString name = "SeicheRender";
+    const QString name = "SeicheCLI";
 #endif
     const QDir appDir(QCoreApplication::applicationDirPath());
     const QString local = appDir.filePath(name);
@@ -88,6 +88,98 @@ ProjectData makeProject() {
 class TestRenderCli : public QObject {
     Q_OBJECT
   private slots:
+
+    void initTestCase() {
+        cliPath_ = cliExecutablePath();
+        QVERIFY2(QFileInfo::exists(cliPath_), qPrintable(QString("Missing CLI executable: %1").arg(cliPath_)));
+    }
+
+    // -- Error-handling tests ------------------------------------------------
+
+    void testNoArguments() {
+        QProcess proc;
+        proc.setProgram(cliPath_);
+        proc.start();
+        QVERIFY(proc.waitForFinished(5000));
+        QCOMPARE(proc.exitCode(), 1);
+        QVERIFY(proc.readAllStandardError().contains("--project"));
+    }
+
+    void testMissingProjectFile() {
+        QProcess proc;
+        proc.setProgram(cliPath_);
+        proc.setArguments({"--project", "/nonexistent/path/does_not_exist.room"});
+        proc.start();
+        QVERIFY(proc.waitForFinished(5000));
+        QCOMPARE(proc.exitCode(), 1);
+        QVERIFY(proc.readAllStandardError().contains("Failed to load"));
+    }
+
+    void testInvalidMethod() {
+        QTemporaryDir tempDir;
+        QVERIFY(tempDir.isValid());
+        const QString projectDir = tempDir.path();
+        writeSquarePlaneObj(QDir(projectDir).filePath("model.obj"));
+        writeFixtureAudio(QDir(projectDir).filePath("source.wav"));
+        QVERIFY(ProjectFile::save(QDir(projectDir).filePath("test.room"), makeProject()));
+
+        QProcess proc;
+        proc.setProgram(cliPath_);
+        proc.setArguments({"--project", QDir(projectDir).filePath("test.room"), "--method", "bogus"});
+        proc.start();
+        QVERIFY(proc.waitForFinished(5000));
+        QCOMPARE(proc.exitCode(), 1);
+        QVERIFY(proc.readAllStandardError().contains("--method"));
+    }
+
+    void testInvalidAirAbsorption() {
+        QTemporaryDir tempDir;
+        QVERIFY(tempDir.isValid());
+        const QString projectDir = tempDir.path();
+        writeSquarePlaneObj(QDir(projectDir).filePath("model.obj"));
+        writeFixtureAudio(QDir(projectDir).filePath("source.wav"));
+        QVERIFY(ProjectFile::save(QDir(projectDir).filePath("test.room"), makeProject()));
+
+        QProcess proc;
+        proc.setProgram(cliPath_);
+        proc.setArguments({"--project", QDir(projectDir).filePath("test.room"), "--air-absorption", "maybe"});
+        proc.start();
+        QVERIFY(proc.waitForFinished(5000));
+        QCOMPARE(proc.exitCode(), 1);
+        QVERIFY(proc.readAllStandardError().contains("--air-absorption"));
+    }
+
+    void testCorruptProjectFile() {
+        QTemporaryDir tempDir;
+        QVERIFY(tempDir.isValid());
+        QVERIFY(writeTextFile(QDir(tempDir.path()).filePath("bad.room"), "{ not valid json !!!"));
+
+        QProcess proc;
+        proc.setProgram(cliPath_);
+        proc.setArguments({"--project", QDir(tempDir.path()).filePath("bad.room")});
+        proc.start();
+        QVERIFY(proc.waitForFinished(5000));
+        QCOMPARE(proc.exitCode(), 1);
+    }
+
+    void testProjectWithNoMesh() {
+        QTemporaryDir tempDir;
+        QVERIFY(tempDir.isValid());
+
+        ProjectData data;
+        data.scaleFactor = 1.0f;
+        QVERIFY(ProjectFile::save(QDir(tempDir.path()).filePath("empty.room"), data));
+
+        QProcess proc;
+        proc.setProgram(cliPath_);
+        proc.setArguments({"--project", QDir(tempDir.path()).filePath("empty.room")});
+        proc.start();
+        QVERIFY(proc.waitForFinished(5000));
+        QCOMPARE(proc.exitCode(), 1);
+    }
+
+    // -- Happy-path tests ----------------------------------------------------
+
     void testCliRendersFixtureProject() {
         QTemporaryDir tempDir;
         QVERIFY(tempDir.isValid());
@@ -99,12 +191,9 @@ class TestRenderCli : public QObject {
         ProjectData project = makeProject();
         QVERIFY(ProjectFile::save(QDir(projectDir).filePath("fixture.room"), project));
 
-        const QString cliPath = cliExecutablePath();
-        QVERIFY2(QFileInfo::exists(cliPath), qPrintable(QString("Missing CLI executable: %1").arg(cliPath)));
-
         const QString outputDir = QDir(projectDir).filePath("out");
         QProcess proc;
-        proc.setProgram(cliPath);
+        proc.setProgram(cliPath_);
         proc.setArguments({"--project", QDir(projectDir).filePath("fixture.room"), "--output", outputDir, "--method",
                            "ray", "--max-order", "1", "--n-rays", "128", "--scattering", "0.1", "--air-absorption",
                            "off", "--sample-rate", "22050"});
@@ -150,6 +239,115 @@ class TestRenderCli : public QObject {
         csvFile.close();
         QVERIFY(csvContents.startsWith("source,listener"));
     }
+
+    void testVersionFlag() {
+        QProcess proc;
+        proc.setProgram(cliPath_);
+        proc.setArguments({"--version"});
+        proc.start();
+        QVERIFY(proc.waitForFinished(5000));
+        QCOMPARE(proc.exitCode(), 0);
+        const QByteArray output = proc.readAllStandardOutput();
+        QVERIFY2(output.contains("1.0.0"), qPrintable(QString("Unexpected version output: %1").arg(QString(output))));
+    }
+
+    void testSampleRateOverride() {
+        QTemporaryDir tempDir;
+        QVERIFY(tempDir.isValid());
+
+        const QString projectDir = tempDir.path();
+        writeSquarePlaneObj(QDir(projectDir).filePath("model.obj"));
+        writeFixtureAudio(QDir(projectDir).filePath("source.wav"));
+        QVERIFY(ProjectFile::save(QDir(projectDir).filePath("fixture.room"), makeProject()));
+
+        const QString outputDir = QDir(projectDir).filePath("out");
+        QProcess proc;
+        proc.setProgram(cliPath_);
+        proc.setArguments({"--project", QDir(projectDir).filePath("fixture.room"), "--output", outputDir,
+                           "--max-order", "1", "--n-rays", "64", "--sample-rate", "16000"});
+        proc.setWorkingDirectory(projectDir);
+        proc.start();
+        QVERIFY(proc.waitForStarted());
+        QVERIFY2(proc.waitForFinished(120000), "CLI render timed out");
+        QCOMPARE(proc.exitCode(), 0);
+
+        QFile metricsFile(QDir(outputDir).filePath("metrics.json"));
+        QVERIFY(metricsFile.open(QIODevice::ReadOnly));
+        const QJsonDocument doc = QJsonDocument::fromJson(metricsFile.readAll());
+        metricsFile.close();
+        QCOMPARE(doc.object().value("sample_rate").toInt(), 16000);
+    }
+
+    void testMetricsVersionConsistency() {
+        QTemporaryDir tempDir;
+        QVERIFY(tempDir.isValid());
+
+        const QString projectDir = tempDir.path();
+        writeSquarePlaneObj(QDir(projectDir).filePath("model.obj"));
+        writeFixtureAudio(QDir(projectDir).filePath("source.wav"));
+        QVERIFY(ProjectFile::save(QDir(projectDir).filePath("fixture.room"), makeProject()));
+
+        const QString outputDir = QDir(projectDir).filePath("out");
+        QProcess proc;
+        proc.setProgram(cliPath_);
+        proc.setArguments({"--project", QDir(projectDir).filePath("fixture.room"), "--output", outputDir,
+                           "--max-order", "1", "--n-rays", "64"});
+        proc.setWorkingDirectory(projectDir);
+        proc.start();
+        QVERIFY(proc.waitForStarted());
+        QVERIFY2(proc.waitForFinished(120000), "CLI render timed out");
+        QCOMPARE(proc.exitCode(), 0);
+
+        QFile metricsFile(QDir(outputDir).filePath("metrics.json"));
+        QVERIFY(metricsFile.open(QIODevice::ReadOnly));
+        const QJsonDocument metricsDoc = QJsonDocument::fromJson(metricsFile.readAll());
+        metricsFile.close();
+        const QString metricsVersion = metricsDoc.object().value("version").toString();
+
+        QFile summaryFile(QDir(outputDir).filePath("summary.json"));
+        QVERIFY(summaryFile.open(QIODevice::ReadOnly));
+        const QJsonDocument summaryDoc = QJsonDocument::fromJson(summaryFile.readAll());
+        summaryFile.close();
+        const QString summaryVersion = summaryDoc.object().value("version").toString();
+
+        QCOMPARE(metricsVersion, summaryVersion);
+    }
+
+    void testCsvRowCount() {
+        QTemporaryDir tempDir;
+        QVERIFY(tempDir.isValid());
+
+        const QString projectDir = tempDir.path();
+        writeSquarePlaneObj(QDir(projectDir).filePath("model.obj"));
+        writeFixtureAudio(QDir(projectDir).filePath("source.wav"));
+        QVERIFY(ProjectFile::save(QDir(projectDir).filePath("fixture.room"), makeProject()));
+
+        const QString outputDir = QDir(projectDir).filePath("out");
+        QProcess proc;
+        proc.setProgram(cliPath_);
+        proc.setArguments({"--project", QDir(projectDir).filePath("fixture.room"), "--output", outputDir,
+                           "--max-order", "1", "--n-rays", "64"});
+        proc.setWorkingDirectory(projectDir);
+        proc.start();
+        QVERIFY(proc.waitForStarted());
+        QVERIFY2(proc.waitForFinished(120000), "CLI render timed out");
+        QCOMPARE(proc.exitCode(), 0);
+
+        QFile csvFile(QDir(outputDir).filePath("metrics.csv"));
+        QVERIFY(csvFile.open(QIODevice::ReadOnly | QIODevice::Text));
+        const QList<QByteArray> lines = csvFile.readAll().split('\n');
+        csvFile.close();
+
+        QVERIFY(lines.at(0).startsWith("source,listener"));
+        int dataRows = 0;
+        for (int i = 1; i < lines.size(); ++i)
+            if (!lines.at(i).trimmed().isEmpty())
+                ++dataRows;
+        QCOMPARE(dataRows, 1);
+    }
+
+  private:
+    QString cliPath_;
 };
 
 QTEST_MAIN(TestRenderCli)

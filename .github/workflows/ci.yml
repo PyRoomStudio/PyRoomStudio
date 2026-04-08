@@ -19,7 +19,7 @@ jobs:
             qt-arch: ""
           - name: Windows
             os: windows-latest
-            qt-arch: win64_msvc2019_64
+            qt-arch: win64_msvc2022_64
           - name: macOS
             os: macos-latest
             qt-arch: clang_64
@@ -28,9 +28,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
-          version: "6.7.3"
+          version: "6.10.2"
           arch: ${{ matrix.qt-arch }}
           modules: "qtmultimedia"
           cache: true

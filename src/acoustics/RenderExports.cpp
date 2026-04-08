@@ -41,7 +41,7 @@ bool saveStereoWav(const QString& path, int sampleRate, const std::vector<float>
 
 QJsonObject buildMetricsSummary(const QJsonArray& pairs, int sampleRate) {
     QJsonObject summary;
-    summary["version"] = "1.0";
+    summary["version"] = "1.0.0";
     summary["sample_rate"] = sampleRate;
     summary["pair_count"] = pairs.size();
     return summary;

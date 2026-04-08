@@ -274,14 +274,14 @@ set(CLI_SOURCES
     src/utils/ResourcePath.cpp
 )
 
-add_executable(SeicheRender ${CLI_SOURCES})
+add_executable(SeicheCLI ${CLI_SOURCES})
 
-target_include_directories(SeicheRender PRIVATE
+target_include_directories(SeicheCLI PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${EIGEN3_INCLUDE_DIR}
 )
 
-target_link_libraries(SeicheRender PRIVATE
+target_link_libraries(SeicheCLI PRIVATE
     Qt6::Widgets
     Qt6::OpenGL
     Qt6::OpenGLWidgets
@@ -291,34 +291,34 @@ target_link_libraries(SeicheRender PRIVATE
 )
 
 if(OpenMP_CXX_FOUND)
-    target_link_libraries(SeicheRender PRIVATE OpenMP::OpenMP_CXX)
+    target_link_libraries(SeicheCLI PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
 if(SNDFILE_LIBRARIES)
-    target_include_directories(SeicheRender PRIVATE ${SNDFILE_INCLUDE_DIRS})
-    target_link_libraries(SeicheRender PRIVATE ${SNDFILE_LIBRARIES})
-    target_compile_definitions(SeicheRender PRIVATE HAS_SNDFILE)
+    target_include_directories(SeicheCLI PRIVATE ${SNDFILE_INCLUDE_DIRS})
+    target_link_libraries(SeicheCLI PRIVATE ${SNDFILE_LIBRARIES})
+    target_compile_definitions(SeicheCLI PRIVATE HAS_SNDFILE)
 endif()
 
 if(FFTW3_LIBRARIES)
-    target_include_directories(SeicheRender PRIVATE ${FFTW3_INCLUDE_DIRS})
-    target_link_libraries(SeicheRender PRIVATE ${FFTW3_LIBRARIES})
-    target_compile_definitions(SeicheRender PRIVATE HAS_FFTW3)
+    target_include_directories(SeicheCLI PRIVATE ${FFTW3_INCLUDE_DIRS})
+    target_link_libraries(SeicheCLI PRIVATE ${FFTW3_LIBRARIES})
+    target_compile_definitions(SeicheCLI PRIVATE HAS_FFTW3)
 endif()
 
 if(WIN32)
-    target_link_libraries(SeicheRender PRIVATE opengl32 glu32)
+    target_link_libraries(SeicheCLI PRIVATE opengl32 glu32)
 elseif(APPLE)
     find_package(OpenGL REQUIRED)
-    target_link_libraries(SeicheRender PRIVATE OpenGL::GL OpenGL::GLU)
+    target_link_libraries(SeicheCLI PRIVATE OpenGL::GL OpenGL::GLU)
 else()
     find_package(OpenGL REQUIRED)
-    target_link_libraries(SeicheRender PRIVATE OpenGL::GL OpenGL::GLU)
+    target_link_libraries(SeicheCLI PRIVATE OpenGL::GL OpenGL::GLU)
 endif()
 
-target_compile_definitions(SeicheRender PRIVATE _USE_MATH_DEFINES)
+target_compile_definitions(SeicheCLI PRIVATE _USE_MATH_DEFINES)
 
-install(TARGETS SeicheRender
+install(TARGETS SeicheCLI
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

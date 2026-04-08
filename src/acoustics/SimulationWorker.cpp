@@ -12,6 +12,7 @@
 #include "audio/AudioFile.h"
 #include "audio/SignalProcessing.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QDateTime>
 #include <QDebug>
@@ -189,7 +190,8 @@ void SimulationWorker::process() {
     QString outputDir = params_.outputDir;
     if (outputDir.isEmpty()) {
         QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss");
-        outputDir = QDir("sounds/simulations").filePath("simulation_" + timestamp);
+        QString appDir = QCoreApplication::applicationDirPath();
+        outputDir = QDir(appDir).filePath("outputs/simulation_" + timestamp);
     }
     QDir().mkpath(outputDir);
     scene.saveToFile(QDir(outputDir).filePath("scene.json"));
@@ -439,7 +441,7 @@ void SimulationWorker::process() {
     // Save metrics JSON
     if (!metricsArray.isEmpty()) {
         QJsonObject metricsRoot;
-        metricsRoot["version"] = "1.0";
+        metricsRoot["version"] = "1.0.0";
         metricsRoot["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
         metricsRoot["sample_rate"] = params_.sampleRate;
         metricsRoot["pairs"] = metricsArray;

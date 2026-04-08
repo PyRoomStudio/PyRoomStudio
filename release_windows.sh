@@ -4,9 +4,15 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 QT_PREFIX_PATH="${QT_PREFIX_PATH:-C:/Qt/6.10.2/mingw_64}"
+QT_CMAKE="${QT_CMAKE:-C:/Qt/Tools/CMake_64/bin}"
+QT_NINJA="${QT_NINJA:-C:/Qt/Tools/Ninja}"
+MINGW_BIN="${MINGW_BIN:-C:/Qt/Tools/mingw1310_64/bin}"
 PROJECT_NAME="${PROJECT_NAME:-Seiche}"
 BUILD_DIR="${BUILD_DIR:-build}"
 DIST_DIR="${DIST_DIR:-dist}"
+
+# Prefer Qt-bundled cmake/ninja and the project's MinGW over anything else
+export PATH="${QT_CMAKE}:${QT_NINJA}:${MINGW_BIN}:${PATH}"
 
 cleanup_build=false
 if [[ "${1:-}" == "--fresh" ]]; then

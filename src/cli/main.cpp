@@ -53,7 +53,7 @@ void printError(const QString& message) {
 
 int main(int argc, char* argv[]) {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("SeicheRender");
+    QCoreApplication::setApplicationName("SeicheCLI");
     QCoreApplication::setApplicationVersion("1.0.0");
 
     QCommandLineParser parser;

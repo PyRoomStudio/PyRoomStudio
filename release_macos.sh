@@ -8,6 +8,22 @@ PROJECT_NAME="${PROJECT_NAME:-Seiche}"
 BUILD_DIR="${BUILD_DIR:-build}"
 DIST_DIR="${DIST_DIR:-dist}"
 
+# Resolve QT_PREFIX_PATH before calling the build script so the child process
+# inherits the same value (auto-detect from macdeployqt if not explicitly set).
+if [[ -z "${QT_PREFIX_PATH}" ]]; then
+  if command -v macdeployqt >/dev/null 2>&1; then
+    QT_PREFIX_PATH="$(cd "$(dirname "$(command -v macdeployqt)")/.." && pwd)"
+  fi
+fi
+
+if [[ -z "${QT_PREFIX_PATH}" ]]; then
+  echo "Error: QT_PREFIX_PATH is not set and could not be inferred from macdeployqt." >&2
+  echo "Set QT_PREFIX_PATH to your Qt macOS prefix (e.g. ~/Qt/6.x/macos)." >&2
+  exit 1
+fi
+
+export QT_PREFIX_PATH
+
 cleanup_build=false
 if [[ "${1:-}" == "--fresh" ]]; then
   cleanup_build=true
@@ -17,48 +33,8 @@ if [[ "$cleanup_build" == "true" ]]; then
   rm -rf "${REPO_ROOT:?}/${BUILD_DIR}"
 fi
 
-# Build (uses Qt paths to configure CMake)
-#
-# Examples:
-#   QT_PREFIX_PATH="/path/to/Qt/6.x/macos" ./release_macos.sh
-#   CMAKE_GENERATOR="Ninja" ./release_macos.sh
-#
-# If QT_PREFIX_PATH is not set, the script will try to infer it from `macdeployqt`.
-if [[ -z "${QT_PREFIX_PATH}" ]]; then
-  if command -v macdeployqt >/dev/null 2>&1; then
-    QT_PREFIX_PATH="$(cd "$(dirname "$(command -v macdeployqt)")/.." && pwd)"
-  fi
-fi
-
-if [[ -z "${QT_PREFIX_PATH}" ]]; then
-  echo "Error: QT_PREFIX_PATH is not set and could not be inferred from macdeployqt." >&2
-  echo "Set QT_PREFIX_PATH to your Qt macOS prefix (e.g. /path/to/Qt/6.x/macos)." >&2
-  exit 1
-fi
-
-if [[ ! -d "${QT_PREFIX_PATH}" ]]; then
-  echo "Error: QT_PREFIX_PATH does not exist: ${QT_PREFIX_PATH}" >&2
-  exit 1
-fi
-
-CMAKE_GENERATOR="${CMAKE_GENERATOR:-Ninja}"
-if [[ -n "${Qt6_DIR:-}" && -d "${Qt6_DIR}" ]]; then
-  CMAKE_QT6_DIR_ARGS=( -DQt6_DIR="${Qt6_DIR}" )
-else
-  QT6_DIR_CANDIDATE="${QT_PREFIX_PATH}/lib/cmake/Qt6"
-  if [[ -d "${QT6_DIR_CANDIDATE}" ]]; then
-    CMAKE_QT6_DIR_ARGS=( -DQt6_DIR="${QT6_DIR_CANDIDATE}" )
-  else
-    CMAKE_QT6_DIR_ARGS=()
-  fi
-fi
-
-cmake -S "${REPO_ROOT}" -B "${REPO_ROOT}/${BUILD_DIR}" \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_PREFIX_PATH="${QT_PREFIX_PATH}" \
-  -G "${CMAKE_GENERATOR}" \
-  "${CMAKE_QT6_DIR_ARGS[@]}"
-cmake --build "${REPO_ROOT}/${BUILD_DIR}" --config Release
+# Build via the shared build script (inherits exported QT_PREFIX_PATH)
+"${REPO_ROOT}/build_macos.sh"
 
 PROJECT_VERSION="$(sed -n 's/^project([^ ]* VERSION \([^ ]*\) LANGUAGES.*$/\1/p' "${REPO_ROOT}/CMakeLists.txt")"
 if [[ -z "${PROJECT_VERSION}" ]]; then

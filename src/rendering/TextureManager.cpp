@@ -17,7 +17,7 @@ GLuint TextureManager::getOrLoad(const QString& path) {
     QImage img(path);
     if (img.isNull()) return 0;
 
-    QImage glImg = img.convertToFormat(QImage::Format_RGBA8888).mirrored(false, true);
+    QImage glImg = img.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
 
     GLuint texId = 0;
     glGenTextures(1, &texId);
