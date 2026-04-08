@@ -1,3 +1,6 @@
 build/
 sounds/
 dist/
+*_out.txt
+*_output.txt
+CLAUDE.md

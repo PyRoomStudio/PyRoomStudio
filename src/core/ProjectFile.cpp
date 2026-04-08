@@ -39,6 +39,7 @@ bool ProjectFile::save(const QString& filepath, const ProjectData& data) {
     root["version"] = 1;
     root["stlFilePath"] = data.stlFilePath;
     root["scaleFactor"] = static_cast<double>(data.scaleFactor);
+    root["sampleRate"] = data.sampleRate;
     root["soundSourceFile"] = data.soundSourceFile;
 
     QJsonArray colorsArr;
@@ -109,6 +110,7 @@ std::optional<ProjectData> ProjectFile::load(const QString& filepath) {
 
     data.stlFilePath     = root["stlFilePath"].toString();
     data.scaleFactor     = static_cast<float>(root["scaleFactor"].toDouble(1.0));
+    data.sampleRate      = root.contains("sampleRate") ? root["sampleRate"].toInt(DEFAULT_SAMPLE_RATE) : DEFAULT_SAMPLE_RATE;
     data.soundSourceFile = root["soundSourceFile"].toString();
 
     for (auto val : root["surfaceColors"].toArray())

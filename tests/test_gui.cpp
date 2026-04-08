@@ -21,7 +21,7 @@ class TestGUI : public QObject {
 private slots:
     void testMainWindowCreation() {
         MainWindow w;
-        QVERIFY(w.windowTitle().contains("PyRoomStudio"));
+        QVERIFY(w.windowTitle().contains("Seiche"));
         QVERIFY(w.viewport() != nullptr);
         QVERIFY(w.propertyPanel() != nullptr);
         QVERIFY(w.libraryPanel() != nullptr);
@@ -108,7 +108,7 @@ private slots:
 
     void testWindowTitleUpdates() {
         MainWindow w;
-        QVERIFY(w.windowTitle() == "PyRoomStudio");
+        QVERIFY(w.windowTitle() == "Seiche");
     }
 
     // ==================== New Feature Tests ====================

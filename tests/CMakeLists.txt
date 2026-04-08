@@ -75,6 +75,7 @@ set(GUI_TEST_EXTRA
     ${CMAKE_SOURCE_DIR}/src/gui/widgets/ColorSwatch.cpp
     ${CMAKE_SOURCE_DIR}/src/utils/ResourcePath.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationWorker.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/RenderExports.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationQueue.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGBasis2D.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGBasis3D.cpp
@@ -108,3 +109,40 @@ endif()
 target_compile_definitions(test_gui PRIVATE _USE_MATH_DEFINES)
 set_target_properties(test_gui PROPERTIES AUTOMOC ON AUTORCC ON)
 add_test(NAME test_gui COMMAND test_gui)
+
+# CLI render integration test
+set(RENDER_CLI_TEST_EXTRA
+    ${CMAKE_SOURCE_DIR}/src/acoustics/RenderExports.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/RenderPipeline.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationWorker.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/SimulationQueue.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGBasis2D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGBasis3D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGMesh2D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGMesh3D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGAcoustics2D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGAcoustics3D.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGSolver.cpp
+    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGGpuCompute.cpp
+    ${CMAKE_SOURCE_DIR}/src/utils/ResourcePath.cpp
+    ${CMAKE_SOURCE_DIR}/src/rendering/Viewport3D.cpp
+)
+add_executable(test_render_cli test_render_cli.cpp ${TEST_COMMON_SOURCES} ${RENDER_CLI_TEST_EXTRA})
+target_include_directories(test_render_cli PRIVATE ${TEST_INCLUDE_DIRS})
+target_link_libraries(test_render_cli PRIVATE
+    Qt6::Test Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Multimedia Qt6::Svg Eigen3::Eigen)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(test_render_cli PRIVATE OpenMP::OpenMP_CXX)
+endif()
+if(WIN32)
+    target_link_libraries(test_render_cli PRIVATE opengl32 glu32)
+elseif(APPLE)
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(test_render_cli PRIVATE OpenGL::GL OpenGL::GLU)
+else()
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(test_render_cli PRIVATE OpenGL::GL OpenGL::GLU)
+endif()
+target_compile_definitions(test_render_cli PRIVATE _USE_MATH_DEFINES)
+set_target_properties(test_render_cli PROPERTIES AUTOMOC ON)
+add_test(NAME test_render_cli COMMAND test_render_cli)

@@ -8,6 +8,7 @@
 #include "audio/AudioFile.h"
 #include "audio/SignalProcessing.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QDateTime>
 #include <QDebug>
@@ -96,7 +97,8 @@ QString AcousticSimulator::simulateScene(
             << "Listeners:" << scene.listenerCount();
 
     QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss");
-    QString outputDir = QDir("sounds/simulations").filePath("simulation_" + timestamp);
+    QString appDir = QCoreApplication::applicationDirPath();
+    QString outputDir = QDir(appDir).filePath("outputs/simulation_" + timestamp);
     QDir().mkpath(outputDir);
     scene.saveToFile(QDir(outputDir).filePath("scene.json"));
 

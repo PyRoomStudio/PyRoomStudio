@@ -20,10 +20,20 @@ if(NOT Eigen3_FOUND)
         GIT_TAG        3.4.0
         GIT_SHALLOW    TRUE
     )
-    set(EIGEN_BUILD_DOC OFF CACHE BOOL "" FORCE)
-    set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
-    set(EIGEN_BUILD_PKGCONFIG OFF CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(eigen)
+    # Use Populate (not MakeAvailable) to skip Eigen's CMakeLists.txt entirely.
+    # MakeAvailable triggers BLAS detection which calls enable_language(Fortran)
+    # and fails on CI runners that have a broken gfortran in PATH.
+    # Eigen is header-only for our use; no Fortran is needed.
+    FetchContent_GetProperties(eigen)
+    if(NOT eigen_POPULATED)
+        if(POLICY CMP0168)
+            cmake_policy(SET CMP0168 OLD) # suppress FetchContent_Populate deprecation (CMake 3.30+)
+        endif()
+        FetchContent_Populate(eigen)
+    endif()
+    add_library(Eigen3::Eigen INTERFACE IMPORTED GLOBAL)
+    target_include_directories(Eigen3::Eigen INTERFACE "${eigen_SOURCE_DIR}")
+    set(EIGEN3_INCLUDE_DIR "${eigen_SOURCE_DIR}")
 endif()
 
 find_package(OpenMP)
@@ -67,6 +77,7 @@ set(SOURCES
     src/acoustics/RoomImpulseResponse.cpp
     src/acoustics/Wall.cpp
     src/acoustics/SimulationWorker.cpp
+    src/acoustics/RenderExports.cpp
     src/acoustics/SimulationQueue.cpp
     src/acoustics/AcousticMetrics.cpp
     src/acoustics/dg/DGBasis2D.cpp
@@ -121,6 +132,9 @@ set(HEADERS
     src/acoustics/RoomImpulseResponse.h
     src/acoustics/Wall.h
     src/acoustics/SimulationWorker.h
+    src/acoustics/RenderOptions.h
+    src/acoustics/RenderExports.h
+    src/acoustics/RenderPipeline.h
     src/acoustics/SimulationQueue.h
     src/acoustics/AcousticMetrics.h
     src/acoustics/dg/DGTypes.h
@@ -216,6 +230,95 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 install(TARGETS ${PROJECT_NAME}
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# ── Headless CLI render tool ─────────────────────────────────────────────────
+set(CLI_SOURCES
+    src/cli/main.cpp
+    src/core/Material.cpp
+    src/core/MaterialLoader.cpp
+    src/core/SoundSource.cpp
+    src/core/Listener.cpp
+    src/core/PlacedPoint.cpp
+    src/core/ProjectFile.cpp
+    src/scene/SceneManager.cpp
+    src/rendering/Camera.cpp
+    src/rendering/MeshData.cpp
+    src/rendering/SurfaceGrouper.cpp
+    src/rendering/RayPicking.cpp
+    src/rendering/MeshSimplifier.cpp
+    src/rendering/TextureManager.cpp
+    src/acoustics/AcousticSimulator.cpp
+    src/acoustics/Bvh.cpp
+    src/acoustics/ImageSourceMethod.cpp
+    src/acoustics/RayTracer.cpp
+    src/acoustics/RoomImpulseResponse.cpp
+    src/acoustics/Wall.cpp
+    src/acoustics/SimulationWorker.cpp
+    src/acoustics/RenderExports.cpp
+    src/acoustics/RenderPipeline.cpp
+    src/acoustics/AcousticMetrics.cpp
+    src/acoustics/dg/DGBasis2D.cpp
+    src/acoustics/dg/DGBasis3D.cpp
+    src/acoustics/dg/DGMesh2D.cpp
+    src/acoustics/dg/DGMesh3D.cpp
+    src/acoustics/dg/DGAcoustics2D.cpp
+    src/acoustics/dg/DGAcoustics3D.cpp
+    src/acoustics/dg/DGSolver.cpp
+    src/acoustics/dg/DGGpuCompute.cpp
+    src/audio/AudioFile.cpp
+    src/audio/SignalProcessing.cpp
+    src/utils/ResourcePath.cpp
+)
+
+add_executable(SeicheCLI ${CLI_SOURCES})
+
+target_include_directories(SeicheCLI PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${EIGEN3_INCLUDE_DIR}
+)
+
+target_link_libraries(SeicheCLI PRIVATE
+    Qt6::Widgets
+    Qt6::OpenGL
+    Qt6::OpenGLWidgets
+    Qt6::Multimedia
+    Qt6::Svg
+    Eigen3::Eigen
+)
+
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(SeicheCLI PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
+if(SNDFILE_LIBRARIES)
+    target_include_directories(SeicheCLI PRIVATE ${SNDFILE_INCLUDE_DIRS})
+    target_link_libraries(SeicheCLI PRIVATE ${SNDFILE_LIBRARIES})
+    target_compile_definitions(SeicheCLI PRIVATE HAS_SNDFILE)
+endif()
+
+if(FFTW3_LIBRARIES)
+    target_include_directories(SeicheCLI PRIVATE ${FFTW3_INCLUDE_DIRS})
+    target_link_libraries(SeicheCLI PRIVATE ${FFTW3_LIBRARIES})
+    target_compile_definitions(SeicheCLI PRIVATE HAS_FFTW3)
+endif()
+
+if(WIN32)
+    target_link_libraries(SeicheCLI PRIVATE opengl32 glu32)
+elseif(APPLE)
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(SeicheCLI PRIVATE OpenGL::GL OpenGL::GLU)
+else()
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(SeicheCLI PRIVATE OpenGL::GL OpenGL::GLU)
+endif()
+
+target_compile_definitions(SeicheCLI PRIVATE _USE_MATH_DEFINES)
+
+install(TARGETS SeicheCLI
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

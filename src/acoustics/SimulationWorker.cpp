@@ -4,6 +4,7 @@
 #include "ImageSourceMethod.h"
 #include "RayTracer.h"
 #include "RoomImpulseResponse.h"
+#include "RenderExports.h"
 #include "AcousticMetrics.h"
 #include "dg/DGSolver.h"
 #include "rendering/RayPicking.h"
@@ -11,6 +12,7 @@
 #include "audio/AudioFile.h"
 #include "audio/SignalProcessing.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QDateTime>
 #include <QDebug>
@@ -185,8 +187,12 @@ void SimulationWorker::process() {
 
     if (isCancelled()) { emit error("Cancelled"); return; }
 
-    QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss");
-    QString outputDir = QDir("sounds/simulations").filePath("simulation_" + timestamp);
+    QString outputDir = params_.outputDir;
+    if (outputDir.isEmpty()) {
+        QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss");
+        QString appDir = QCoreApplication::applicationDirPath();
+        outputDir = QDir(appDir).filePath("outputs/simulation_" + timestamp);
+    }
     QDir().mkpath(outputDir);
     scene.saveToFile(QDir(outputDir).filePath("scene.json"));
 
@@ -263,9 +269,7 @@ void SimulationWorker::process() {
                 QString listenerName = QString::fromStdString(listener->name).replace(' ', '_');
                 QString sourceName = QString::fromStdString(source->name).replace(' ', '_');
                 QString filename = QString("%1_from_%2.wav").arg(listenerName, sourceName);
-                AudioFile outFile;
-                outFile.samples() = std::move(outMono);
-                if (!outFile.save(QDir(outputDir).filePath(filename), fs))
+                if (!RenderExports::saveMonoWav(QDir(outputDir).filePath(filename), fs, outMono))
                     qWarning() << "Failed to write" << filename;
 
                 ++pairsDoneDG;
@@ -402,7 +406,7 @@ void SimulationWorker::process() {
             QString listenerName = QString::fromStdString(listener->name).replace(' ', '_');
             QString sourceName = QString::fromStdString(source->name).replace(' ', '_');
             QString filename = QString("%1_from_%2.wav").arg(listenerName, sourceName);
-            if (!AudioFile::saveStereo(QDir(outputDir).filePath(filename), fs, outLeft, outRight))
+            if (!RenderExports::saveStereoWav(QDir(outputDir).filePath(filename), fs, outLeft, outRight))
                 qWarning() << "Failed to write" << filename;
 
             MixedStereo& mix = mixedPerListener[li];
@@ -430,23 +434,23 @@ void SimulationWorker::process() {
                 for (float& s : m.right) s /= maxVal;
             }
             QString listenerName = QString::fromStdString(listener->name).replace(' ', '_');
-            AudioFile::saveStereo(QDir(outputDir).filePath(listenerName + "_mixed.wav"), mixedFs, m.left, m.right);
+            RenderExports::saveStereoWav(QDir(outputDir).filePath(listenerName + "_mixed.wav"), mixedFs, m.left, m.right);
         }
     }
 
     // Save metrics JSON
     if (!metricsArray.isEmpty()) {
         QJsonObject metricsRoot;
-        metricsRoot["version"] = "1.0";
+        metricsRoot["version"] = "1.0.0";
         metricsRoot["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
         metricsRoot["sample_rate"] = params_.sampleRate;
         metricsRoot["pairs"] = metricsArray;
 
-        QFile metricsFile(QDir(outputDir).filePath("metrics.json"));
-        if (metricsFile.open(QIODevice::WriteOnly)) {
-            metricsFile.write(QJsonDocument(metricsRoot).toJson(QJsonDocument::Indented));
+        if (RenderExports::saveJsonObject(QDir(outputDir).filePath("metrics.json"), metricsRoot))
             qInfo() << "Saved metrics for" << metricsArray.size() << "source-listener pairs";
-        }
+        RenderExports::saveJsonObject(QDir(outputDir).filePath("summary.json"),
+                                      RenderExports::buildMetricsSummary(metricsArray, params_.sampleRate));
+        RenderExports::saveMetricsCsv(QDir(outputDir).filePath("metrics.csv"), metricsArray);
     }
 
     qInfo() << "=== SIMULATION COMPLETE in" << totalTimer.elapsed() << "ms ===";
