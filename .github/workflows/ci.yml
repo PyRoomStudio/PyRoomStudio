@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build & Test / ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-22.04
+            qt-arch: ""
+          - name: Windows
+            os: windows-latest
+            qt-arch: win64_msvc2022_64
+          - name: macOS
+            os: macos-latest
+            qt-arch: clang_64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.10.2"
+          arch: ${{ matrix.qt-arch }}
+          modules: "qtmultimedia"
+          cache: true
+
+      - name: Platform dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ninja-build libeigen3-dev libgl1-mesa-dev libglu1-mesa-dev
+
+      - name: Platform dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja eigen
+
+      - name: Platform dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ninja --no-progress
+
+      - name: Set up MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
+        run: cmake --preset test
+
+      - name: Build
+        run: cmake --build --preset test
+
+      - name: Test
+        run: ctest --preset test

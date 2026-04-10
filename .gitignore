@@ -3,3 +3,6 @@ sounds/
 dist/
 test_files/
 test_files.zip
+*_out.txt
+*_output.txt
+CLAUDE.md

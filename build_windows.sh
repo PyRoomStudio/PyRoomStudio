@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-QT_ROOT="C:/Qt/6.10.2/mingw_64"
-MINGW_BIN="C:/Qt/Tools/mingw1310_64/bin"
+QT_ROOT="${QT_ROOT:-C:/Qt/6.10.2/mingw_64}"
+MINGW_BIN="${MINGW_BIN:-C:/Qt/Tools/mingw1310_64/bin}"
+QT_CMAKE="${QT_CMAKE:-C:/Qt/Tools/CMake_64/bin}"
+QT_NINJA="${QT_NINJA:-C:/Qt/Tools/Ninja}"
+
+# Prefer Qt-bundled cmake/ninja and the project's MinGW over anything else
+# (avoids conflicts with e.g. Strawberry Perl's cmake).
+export PATH="${QT_CMAKE}:${QT_NINJA}:${MINGW_BIN}:${PATH}"
 
 # rm -rf build
 
