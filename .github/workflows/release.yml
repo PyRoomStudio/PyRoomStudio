@@ -1,0 +1,166 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.2.0)'
+        required: true
+
+jobs:
+  build:
+    name: Build / ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-22.04
+            qt-arch: ""
+            artifact: Seiche-linux
+          - name: Windows
+            os: windows-latest
+            qt-arch: win64_msvc2022_64
+            artifact: Seiche-windows
+          - name: macOS
+            os: macos-latest
+            qt-arch: clang_64
+            artifact: Seiche-macos
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.10.2"
+          arch: ${{ matrix.qt-arch }}
+          modules: "qtmultimedia"
+          cache: true
+
+      - name: Platform dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ninja-build libeigen3-dev libgl1-mesa-dev libglu1-mesa-dev ccache
+
+      - name: Platform dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja eigen ccache
+
+      - name: Platform dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ninja ccache --no-progress
+
+      - name: Set up MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-release-${{ runner.os }}-${{ hashFiles('src/**') }}
+          restore-keys: ccache-release-${{ runner.os }}-
+
+      - name: Zero ccache stats
+        run: ccache --zero-stats
+
+      - name: Configure
+        run: cmake --preset release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Build
+        run: cmake --build --preset release
+
+      - name: ccache stats
+        run: ccache --show-stats
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            TAG="${GITHUB_REF#refs/tags/v}"
+            echo "version=${TAG}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p staging/Seiche
+          cp build/release/Seiche staging/Seiche/
+          cp build/release/SeicheCLI staging/Seiche/ || true
+          cp -r materials staging/Seiche/
+          tar -czf "Seiche-${VERSION}-linux.tar.gz" -C staging Seiche
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p staging
+          cp -R build/release/Seiche.app staging/
+          mkdir -p staging/Seiche.app/Contents/MacOS
+          cp -R materials staging/Seiche.app/Contents/MacOS/
+          macdeployqt staging/Seiche.app
+          cd staging && zip -r "../Seiche-${VERSION}-macos.zip" Seiche.app
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p staging
+          cp build/release/Seiche.exe staging/
+          cp build/release/SeicheCLI.exe staging/ || true
+          cp -r materials staging/
+          windeployqt6 --release staging/Seiche.exe
+          powershell -Command "Compress-Archive -Path staging/* -DestinationPath 'Seiche-${VERSION}-windows.zip'"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: Seiche-*.*
+
+  release:
+    name: Publish Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+            echo "tag=v${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+            echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+            echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: List release assets
+        run: ls -lh Seiche-*
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Seiche ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: Seiche-*.*

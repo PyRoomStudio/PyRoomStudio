@@ -10,6 +10,8 @@ jobs:
   build:
     name: Build & Test / ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
     strategy:
       fail-fast: false
       matrix:
@@ -39,25 +41,38 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y ninja-build libeigen3-dev libgl1-mesa-dev libglu1-mesa-dev
+          sudo apt-get install -y ninja-build libeigen3-dev libgl1-mesa-dev libglu1-mesa-dev ccache
 
       - name: Platform dependencies (macOS)
         if: runner.os == 'macOS'
-        run: brew install ninja eigen
+        run: brew install ninja eigen ccache
 
       - name: Platform dependencies (Windows)
         if: runner.os == 'Windows'
-        run: choco install ninja --no-progress
+        run: choco install ninja ccache --no-progress
 
       - name: Set up MSVC (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-test-${{ runner.os }}-${{ hashFiles('src/**', 'tests/**') }}
+          restore-keys: ccache-test-${{ runner.os }}-
+
+      - name: Zero ccache stats
+        run: ccache --zero-stats
+
       - name: Configure
-        run: cmake --preset test
+        run: cmake --preset test -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
       - name: Build
         run: cmake --build --preset test
+
+      - name: ccache stats
+        run: ccache --show-stats
 
       - name: Test
         run: ctest --preset test
