@@ -46,8 +46,12 @@ function(add_prs_test TEST_NAME TEST_SOURCE)
         find_package(OpenGL REQUIRED)
         target_link_libraries(${TEST_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
     endif()
-    target_compile_definitions(${TEST_NAME} PRIVATE _USE_MATH_DEFINES)
+    target_compile_definitions(${TEST_NAME} PRIVATE
+        _USE_MATH_DEFINES
+        SEICHE_ENABLE_GL_COMPUTE=$<BOOL:${SEICHE_ENABLE_GL_COMPUTE}>
+    )
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+    set_tests_properties(${TEST_NAME} PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endfunction()
 
 add_prs_test(test_core test_core.cpp)
@@ -84,7 +88,7 @@ set(GUI_TEST_EXTRA
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGAcoustics2D.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGAcoustics3D.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGSolver.cpp
-    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGGpuCompute.cpp
+    ${CMAKE_SOURCE_DIR}/${DG_GPU_SOURCE}
     ${CMAKE_SOURCE_DIR}/src/gui/SimulationQueuePanel.cpp
     ${CMAKE_SOURCE_DIR}/src/gui/SimulationQueueWindow.cpp
     ${CMAKE_SOURCE_DIR}/src/rendering/Viewport3D.cpp
@@ -106,9 +110,13 @@ else()
     find_package(OpenGL REQUIRED)
     target_link_libraries(test_gui PRIVATE OpenGL::GL OpenGL::GLU)
 endif()
-target_compile_definitions(test_gui PRIVATE _USE_MATH_DEFINES)
+target_compile_definitions(test_gui PRIVATE
+    _USE_MATH_DEFINES
+    SEICHE_ENABLE_GL_COMPUTE=$<BOOL:${SEICHE_ENABLE_GL_COMPUTE}>
+)
 set_target_properties(test_gui PROPERTIES AUTOMOC ON AUTORCC ON)
 add_test(NAME test_gui COMMAND test_gui)
+set_tests_properties(test_gui PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 # CLI render integration test
 set(RENDER_CLI_TEST_EXTRA
@@ -123,7 +131,7 @@ set(RENDER_CLI_TEST_EXTRA
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGAcoustics2D.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGAcoustics3D.cpp
     ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGSolver.cpp
-    ${CMAKE_SOURCE_DIR}/src/acoustics/dg/DGGpuCompute.cpp
+    ${CMAKE_SOURCE_DIR}/${DG_GPU_SOURCE}
     ${CMAKE_SOURCE_DIR}/src/utils/ResourcePath.cpp
     ${CMAKE_SOURCE_DIR}/src/rendering/Viewport3D.cpp
 )
@@ -143,6 +151,10 @@ else()
     find_package(OpenGL REQUIRED)
     target_link_libraries(test_render_cli PRIVATE OpenGL::GL OpenGL::GLU)
 endif()
-target_compile_definitions(test_render_cli PRIVATE _USE_MATH_DEFINES)
+target_compile_definitions(test_render_cli PRIVATE
+    _USE_MATH_DEFINES
+    SEICHE_ENABLE_GL_COMPUTE=$<BOOL:${SEICHE_ENABLE_GL_COMPUTE}>
+)
 set_target_properties(test_render_cli PROPERTIES AUTOMOC ON)
 add_test(NAME test_render_cli COMMAND test_render_cli)
+set_tests_properties(test_render_cli PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")

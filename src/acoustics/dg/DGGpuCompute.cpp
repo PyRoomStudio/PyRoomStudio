@@ -1,3 +1,7 @@
+#if !SEICHE_ENABLE_GL_COMPUTE
+#error "DGGpuCompute.cpp must not be compiled when SEICHE_ENABLE_GL_COMPUTE is disabled"
+#endif
+
 #include "DGGpuCompute.h"
 
 #include <QOpenGLContext>

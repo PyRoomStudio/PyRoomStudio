@@ -38,6 +38,17 @@ endif()
 
 find_package(OpenMP)
 
+option(SEICHE_ENABLE_GL_COMPUTE "Enable OpenGL 4.3 compute/SSBO backend" ON)
+if(APPLE)
+    set(SEICHE_ENABLE_GL_COMPUTE OFF CACHE BOOL "" FORCE)
+endif()
+
+if(SEICHE_ENABLE_GL_COMPUTE)
+    set(DG_GPU_SOURCE src/acoustics/dg/DGGpuCompute.cpp)
+else()
+    set(DG_GPU_SOURCE src/acoustics/dg/DGGpuCompute_stub.cpp)
+endif()
+
 find_package(PkgConfig QUIET)
 if(PkgConfig_FOUND)
     pkg_check_modules(SNDFILE sndfile)
@@ -87,7 +98,7 @@ set(SOURCES
     src/acoustics/dg/DGAcoustics2D.cpp
     src/acoustics/dg/DGAcoustics3D.cpp
     src/acoustics/dg/DGSolver.cpp
-    src/acoustics/dg/DGGpuCompute.cpp
+    ${DG_GPU_SOURCE}
     src/audio/AudioFile.cpp
     src/audio/SignalProcessing.cpp
     src/gui/MainWindow.cpp
@@ -227,6 +238,7 @@ endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Debug>:QT_QML_DEBUG>
     _USE_MATH_DEFINES
+    SEICHE_ENABLE_GL_COMPUTE=$<BOOL:${SEICHE_ENABLE_GL_COMPUTE}>
 )
 
 install(TARGETS ${PROJECT_NAME}
@@ -268,7 +280,7 @@ set(CLI_SOURCES
     src/acoustics/dg/DGAcoustics2D.cpp
     src/acoustics/dg/DGAcoustics3D.cpp
     src/acoustics/dg/DGSolver.cpp
-    src/acoustics/dg/DGGpuCompute.cpp
+    ${DG_GPU_SOURCE}
     src/audio/AudioFile.cpp
     src/audio/SignalProcessing.cpp
     src/utils/ResourcePath.cpp
@@ -316,7 +328,10 @@ else()
     target_link_libraries(SeicheCLI PRIVATE OpenGL::GL OpenGL::GLU)
 endif()
 
-target_compile_definitions(SeicheCLI PRIVATE _USE_MATH_DEFINES)
+target_compile_definitions(SeicheCLI PRIVATE
+    _USE_MATH_DEFINES
+    SEICHE_ENABLE_GL_COMPUTE=$<BOOL:${SEICHE_ENABLE_GL_COMPUTE}>
+)
 
 install(TARGETS SeicheCLI
     BUNDLE DESTINATION .
