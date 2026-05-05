@@ -14,7 +14,7 @@
 The project is inspired by [pyroomacoustics](https://github.com/LCAV/pyroomacoustics), a library for testing and simulating acoustics algorithms written by Robin Scheibler.
 
 <p align="center">
-  <img width="700" src="assets/screenshot.png" alt="PyRoomStudio ">
+  <img width="700" src="assets/seiche-screenshot.png" alt="SeicheAcoustics ">
 </p>
 
 ## **Get Involved!**
