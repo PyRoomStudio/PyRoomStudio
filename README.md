@@ -19,7 +19,7 @@ The project is inspired by [pyroomacoustics](https://github.com/LCAV/pyroomacous
 
 ## **Get Involved!**
 
-# [Discord](https://discord.gg/Q9ZtTcZZvH)
+## [Discord](https://discord.gg/Q9ZtTcZZvH)
 
 #### Contacts:
 
