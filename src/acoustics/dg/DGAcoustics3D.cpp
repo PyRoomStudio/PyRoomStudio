@@ -141,7 +141,6 @@ void DGAcoustics3D::computeRHS(
 
     // Surface terms (parallelized over elements)
     double Z = rho_ * c_;
-    double invZ = 1.0 / Z;
 
     #ifdef _OPENMP
     #pragma omp parallel for schedule(static)
@@ -189,8 +188,9 @@ void DGAcoustics3D::computeRHS(
                 double dp = pP - pM;
                 double dunM = (uxP-uxM)*fnx + (uyP-uyM)*fny + (uzP-uzM)*fnz;
 
-                fluxP_(fid, k) = 0.5 * (c_ * invZ * dp - c2 * dunM);
-                double fluxUn = 0.5 * (-invRho * dp + c_ * Z * invRho * dunM);
+                // Upwind flux n.(F- - F*): rho*c^2 = c*Z on the p equation, penalty c on u
+                fluxP_(fid, k) = 0.5 * (c_ * dp - c_ * Z * dunM);
+                double fluxUn = 0.5 * (-invRho * dp + c_ * dunM);
 
                 fluxUx_(fid, k) = fluxUn * fnx;
                 fluxUy_(fid, k) = fluxUn * fny;

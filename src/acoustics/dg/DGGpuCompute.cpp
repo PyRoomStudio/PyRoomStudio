@@ -240,7 +240,6 @@ void main() {
     float c2 = uC * uC;
     float invRho = 1.0 / uRho;
     float Z = uRho * uC;
-    float invZ = 1.0 / Z;
 
     int fieldBase = k * cNp;
 
@@ -341,8 +340,8 @@ void main() {
         float dunM = (uxP - uxM) * fnx + (uyP - uyM) * fny;
         float fsc = surf[2 * uK * cTFN + surfDataBase];
 
-        s_flux_p[tid]  = 0.5 * (uC * invZ * dp - c2 * dunM) * fsc;
-        float fluxUn   = 0.5 * (-invRho * dp + uC * Z * invRho * dunM) * fsc;
+        s_flux_p[tid]  = 0.5 * (uC * dp - uC * Z * dunM) * fsc;
+        float fluxUn   = 0.5 * (-invRho * dp + uC * dunM) * fsc;
         s_flux_ux[tid] = fluxUn * fnx;
         s_flux_uy[tid] = fluxUn * fny;
     }
@@ -699,7 +698,6 @@ void main() {
     float c2 = uC * uC;
     float invRho = 1.0 / uRho;
     float Z = uRho * uC;
-    float invZ = 1.0 / Z;
 
     int NK = uK * cNp;
     int fieldBase = k * cNp;
@@ -812,8 +810,8 @@ void main() {
         float dunM = (uxP-uxM)*fnx + (uyP-uyM)*fny + (uzP-uzM)*fnz;
         float fsc = surf[3*TK + sd];
 
-        s_flux_p[tid]  = 0.5 * (uC * invZ * dp - c2 * dunM) * fsc;
-        float fluxUn   = 0.5 * (-invRho * dp + uC * Z * invRho * dunM) * fsc;
+        s_flux_p[tid]  = 0.5 * (uC * dp - uC * Z * dunM) * fsc;
+        float fluxUn   = 0.5 * (-invRho * dp + uC * dunM) * fsc;
         s_flux_ux[tid] = fluxUn * fnx;
         s_flux_uy[tid] = fluxUn * fny;
         s_flux_uz[tid] = fluxUn * fnz;

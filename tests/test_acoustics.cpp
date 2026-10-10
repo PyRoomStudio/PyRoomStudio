@@ -9,6 +9,8 @@
 #include "acoustics/AcousticMetrics.h"
 #include "acoustics/dg/DGBasis2D.h"
 #include "acoustics/dg/DGBasis3D.h"
+#include "acoustics/dg/DGMesh2D.h"
+#include "acoustics/dg/DGAcoustics2D.h"
 
 using namespace prs;
 
@@ -239,6 +241,32 @@ private slots:
             QVERIFY2((B.Ds * f - fs).cwiseAbs().maxCoeff() < 1e-8, qPrintable(QString("Ds N=%1").arg(N)));
             QVERIFY2((B.Dt * f - ft).cwiseAbs().maxCoeff() < 1e-8, qPrintable(QString("Dt N=%1").arg(N)));
         }
+    }
+    // A short DG run in a square room must stay finite and actually carry the pulse.
+    void testDG2DStaysFinite() {
+        dg::RoomPolygon2D room;
+        room.vertices = {{0, 0}, {2, 0}, {2, 2}, {0, 2}};
+        room.edgeAbsorption.assign(4, 0.2);
+        room.edgeScattering.assign(4, 0.1);
+
+        dg::DGParams params;
+        params.polynomialOrder = 2;
+        params.maxFrequency = 300.0;
+        params.simulationDuration = 0.008; // pulse peaks at ~4.2 ms
+
+        auto basis = dg::buildBasis2D(params.polynomialOrder);
+        auto mesh = dg::buildMesh2D(room, basis, 0.4);
+        QVERIFY(mesh.K > 0);
+
+        dg::DGAcoustics2D solver(basis, mesh, params);
+        auto result = solver.solve(dg::Vec2d(0.6, 0.7), dg::Vec2d(1.4, 1.2));
+        QVERIFY(!result.impulseResponse.empty());
+        float peak = 0.0f;
+        for (float v : result.impulseResponse) {
+            QVERIFY(std::isfinite(v));
+            peak = std::max(peak, std::abs(v));
+        }
+        QVERIFY(peak > 0.0f);
     }
 };
 
