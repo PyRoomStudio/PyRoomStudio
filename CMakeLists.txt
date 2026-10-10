@@ -65,8 +65,7 @@ if(NOT FFTW3_FOUND)
     find_path(FFTW3_INCLUDE_DIRS fftw3.h)
 endif()
 
-set(SOURCES
-    src/main.cpp
+set(CORE_SOURCES
     src/core/Material.cpp
     src/core/MaterialLoader.cpp
     src/core/SoundSource.cpp
@@ -89,6 +88,7 @@ set(SOURCES
     src/acoustics/Wall.cpp
     src/acoustics/SimulationWorker.cpp
     src/acoustics/RenderExports.cpp
+    src/acoustics/RenderPipeline.cpp
     src/acoustics/SimulationQueue.cpp
     src/acoustics/AcousticMetrics.cpp
     src/acoustics/dg/DGBasis2D.cpp
@@ -179,30 +179,15 @@ set(HEADERS
     src/utils/ResourcePath.h
 )
 
-qt6_add_resources(RESOURCES resources/resources.qrc)
+# Everything except the entry points, shared by the GUI, the CLI and the tests.
+add_library(seiche_core STATIC ${CORE_SOURCES} ${HEADERS})
 
-if(WIN32)
-    set(APP_RC resources/app.rc)
-    add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
-else()
-    # APP_RC is only used on Windows; keep it defined to avoid accidental expansion issues.
-    set(APP_RC "")
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES} ${APP_RC})
-endif()
-
-# On macOS, build a proper .app bundle so macdeployqt can package it.
-if(APPLE)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        MACOSX_BUNDLE TRUE
-    )
-endif()
-
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(seiche_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${EIGEN3_INCLUDE_DIR}
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(seiche_core PUBLIC
     Qt6::Widgets
     Qt6::OpenGL
     Qt6::OpenGLWidgets
@@ -212,36 +197,42 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 if(OpenMP_CXX_FOUND)
-    target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
+    target_link_libraries(seiche_core PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
 if(SNDFILE_LIBRARIES)
-    target_include_directories(${PROJECT_NAME} PRIVATE ${SNDFILE_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${SNDFILE_LIBRARIES})
-    target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_SNDFILE)
+    target_include_directories(seiche_core PUBLIC ${SNDFILE_INCLUDE_DIRS})
+    target_link_libraries(seiche_core PUBLIC ${SNDFILE_LIBRARIES})
+    target_compile_definitions(seiche_core PUBLIC HAS_SNDFILE)
 endif()
 
 if(FFTW3_LIBRARIES)
-    target_include_directories(${PROJECT_NAME} PRIVATE ${FFTW3_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${FFTW3_LIBRARIES})
-    target_compile_definitions(${PROJECT_NAME} PRIVATE HAS_FFTW3)
+    target_include_directories(seiche_core PUBLIC ${FFTW3_INCLUDE_DIRS})
+    target_link_libraries(seiche_core PUBLIC ${FFTW3_LIBRARIES})
+    target_compile_definitions(seiche_core PUBLIC HAS_FFTW3)
 endif()
 
 if(WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE opengl32 glu32)
-elseif(APPLE)
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
+    target_link_libraries(seiche_core PUBLIC opengl32 glu32)
 else()
     find_package(OpenGL REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL OpenGL::GLU)
+    target_link_libraries(seiche_core PUBLIC OpenGL::GL OpenGL::GLU)
 endif()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-    $<$<CONFIG:Debug>:QT_QML_DEBUG>
+target_compile_definitions(seiche_core PUBLIC
     _USE_MATH_DEFINES
     SEICHE_ENABLE_GL_COMPUTE=$<BOOL:${SEICHE_ENABLE_GL_COMPUTE}>
 )
+
+qt6_add_resources(RESOURCES resources/resources.qrc)
+
+# WIN32 / MACOSX_BUNDLE are ignored on other platforms; the bundle lets macdeployqt package it.
+add_executable(${PROJECT_NAME} WIN32 MACOSX_BUNDLE src/main.cpp ${RESOURCES})
+if(WIN32)
+    target_sources(${PROJECT_NAME} PRIVATE resources/app.rc)
+endif()
+target_link_libraries(${PROJECT_NAME} PRIVATE seiche_core)
+target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:QT_QML_DEBUG>)
 
 install(TARGETS ${PROJECT_NAME}
     BUNDLE DESTINATION .
@@ -250,90 +241,8 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 # ── Headless CLI render tool ─────────────────────────────────────────────────
-set(CLI_SOURCES
-    src/cli/main.cpp
-    src/core/Material.cpp
-    src/core/MaterialLoader.cpp
-    src/core/SoundSource.cpp
-    src/core/Listener.cpp
-    src/core/PlacedPoint.cpp
-    src/core/ProjectFile.cpp
-    src/scene/SceneManager.cpp
-    src/rendering/Camera.cpp
-    src/rendering/MeshData.cpp
-    src/rendering/SurfaceGrouper.cpp
-    src/rendering/RayPicking.cpp
-    src/rendering/MeshSimplifier.cpp
-    src/rendering/TextureManager.cpp
-    src/acoustics/AcousticSimulator.cpp
-    src/acoustics/Bvh.cpp
-    src/acoustics/ImageSourceMethod.cpp
-    src/acoustics/RayTracer.cpp
-    src/acoustics/RoomImpulseResponse.cpp
-    src/acoustics/Wall.cpp
-    src/acoustics/SimulationWorker.cpp
-    src/acoustics/RenderExports.cpp
-    src/acoustics/RenderPipeline.cpp
-    src/acoustics/AcousticMetrics.cpp
-    src/acoustics/dg/DGBasis2D.cpp
-    src/acoustics/dg/DGBasis3D.cpp
-    src/acoustics/dg/DGMesh2D.cpp
-    src/acoustics/dg/DGMesh3D.cpp
-    src/acoustics/dg/DGAcoustics2D.cpp
-    src/acoustics/dg/DGAcoustics3D.cpp
-    src/acoustics/dg/DGSolver.cpp
-    ${DG_GPU_SOURCE}
-    src/audio/AudioFile.cpp
-    src/audio/SignalProcessing.cpp
-    src/utils/ResourcePath.cpp
-)
-
-add_executable(SeicheCLI ${CLI_SOURCES})
-
-target_include_directories(SeicheCLI PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${EIGEN3_INCLUDE_DIR}
-)
-
-target_link_libraries(SeicheCLI PRIVATE
-    Qt6::Widgets
-    Qt6::OpenGL
-    Qt6::OpenGLWidgets
-    Qt6::Multimedia
-    Qt6::Svg
-    Eigen3::Eigen
-)
-
-if(OpenMP_CXX_FOUND)
-    target_link_libraries(SeicheCLI PRIVATE OpenMP::OpenMP_CXX)
-endif()
-
-if(SNDFILE_LIBRARIES)
-    target_include_directories(SeicheCLI PRIVATE ${SNDFILE_INCLUDE_DIRS})
-    target_link_libraries(SeicheCLI PRIVATE ${SNDFILE_LIBRARIES})
-    target_compile_definitions(SeicheCLI PRIVATE HAS_SNDFILE)
-endif()
-
-if(FFTW3_LIBRARIES)
-    target_include_directories(SeicheCLI PRIVATE ${FFTW3_INCLUDE_DIRS})
-    target_link_libraries(SeicheCLI PRIVATE ${FFTW3_LIBRARIES})
-    target_compile_definitions(SeicheCLI PRIVATE HAS_FFTW3)
-endif()
-
-if(WIN32)
-    target_link_libraries(SeicheCLI PRIVATE opengl32 glu32)
-elseif(APPLE)
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(SeicheCLI PRIVATE OpenGL::GL OpenGL::GLU)
-else()
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(SeicheCLI PRIVATE OpenGL::GL OpenGL::GLU)
-endif()
-
-target_compile_definitions(SeicheCLI PRIVATE
-    _USE_MATH_DEFINES
-    SEICHE_ENABLE_GL_COMPUTE=$<BOOL:${SEICHE_ENABLE_GL_COMPUTE}>
-)
+add_executable(SeicheCLI src/cli/main.cpp)
+target_link_libraries(SeicheCLI PRIVATE seiche_core)
 
 install(TARGETS SeicheCLI
     BUNDLE DESTINATION .
