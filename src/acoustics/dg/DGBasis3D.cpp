@@ -80,80 +80,34 @@ void gradVandermonde3D(int N, const VecXd& r, const VecXd& s, const VecXd& t,
         for (int j = 0; j <= N - i; ++j) {
             for (int k = 0; k <= N - i - j; ++k) {
                 for (int n = 0; n < npts; ++n) {
+                    // Hesthaven & Warburton GradSimplex3DP: exact, and finite on the collapsed edges.
                     double fa  = jacobiP(a(n), 0.0, 0.0, i);
                     double dfa = gradJacobiP(a(n), 0.0, 0.0, i);
                     double gb  = jacobiP(b(n), 2.0 * i + 1.0, 0.0, j);
                     double dgb = gradJacobiP(b(n), 2.0 * i + 1.0, 0.0, j);
-                    double hc  = jacobiP(cv(n), 2.0 * (i + j) + 2.0, 0.0, k);
-                    double dhc = gradJacobiP(cv(n), 2.0 * (i + j) + 2.0, 0.0, k);
+                    double fc  = jacobiP(cv(n), 2.0 * (i + j) + 2.0, 0.0, k);
+                    double dfc = gradJacobiP(cv(n), 2.0 * (i + j) + 2.0, 0.0, k);
+                    double hb = 0.5 * (1.0 - b(n));
+                    double hc = 0.5 * (1.0 - cv(n));
+                    double hbm1 = i > 0 ? std::pow(hb, i - 1) : 1.0;
+                    double hcm1 = i + j > 0 ? std::pow(hc, i + j - 1) : 1.0;
 
-                    double bfac = std::pow(1.0 - b(n), i);
-                    double cfac = std::pow(1.0 - cv(n), i + j);
+                    double dr = dfa * gb * fc * hbm1 * hcm1;
 
-                    // d/da (full mode)
-                    double dMda = dfa * gb * bfac * hc * cfac;
+                    double tmp = dgb * std::pow(hb, i);
+                    if (i > 0) tmp -= 0.5 * i * gb * hbm1;
+                    tmp = fa * tmp * hcm1 * fc;
+                    double ds = 0.5 * (1.0 + a(n)) * dr + tmp;
+                    double dt = 0.5 * (1.0 + a(n)) * dr + 0.5 * (1.0 + b(n)) * tmp;
 
-                    // d/db
-                    double dMdb = 0.0;
-                    if (i > 0)
-                        dMdb += dfa * gb * 0.5 * (1.0 + a(n)) * std::pow(1.0 - b(n), i - 1) * hc * cfac;
-                    dMdb += fa * dgb * bfac * hc * cfac;
-                    if (i > 0)
-                        dMdb += fa * gb * (-static_cast<double>(i)) * std::pow(1.0 - b(n), i - 1) * hc * cfac;
+                    tmp = dfc * std::pow(hc, i + j);
+                    if (i + j > 0) tmp -= 0.5 * (i + j) * fc * hcm1;
+                    dt += fa * gb * tmp * std::pow(hb, i);
 
-                    // d/dc
-                    double dMdc = 0.0;
-                    if (i + j > 0) {
-                        dMdc += fa * gb * bfac * hc * (-static_cast<double>(i + j))
-                              * std::pow(1.0 - cv(n), i + j - 1);
-                        // Also contribution from dfa * ... via chain rule through a(c)
-                        // But a doesn't depend on c (it depends on r,s,t through different path)
-                    }
-                    dMdc += fa * gb * bfac * dhc * cfac;
-                    // Cross term from a depending on t:
-                    // a = 2(1+r)/(-s-t) - 1, so da/dt = 2(1+r)/(-s-t)^2 = (1+a)/(−s−t) = (1+a)/(-s-t)
-                    // b = 2(1+s)/(1-t) - 1, so db/dt = 2(1+s)/(1-t)^2 = (1+b)/(1-t)
-                    if (std::abs(-s(n) - t(n)) > 1e-14) {
-                        double dadt = (1.0 + a(n)) / (-s(n) - t(n));
-                        dMdc += dfa * gb * bfac * hc * cfac * dadt;
-                        // But wait, dMdc should be d/dc of the mode, where c = t
-                        // No: dMode/dt = dMode/da * da/dt + dMode/db * db/dt + dMode/dc * dc/dt (where dc/dt=1)
-                    }
-                    if (std::abs(1.0 - t(n)) > 1e-14) {
-                        double dbdt = (1.0 + b(n)) / (1.0 - t(n));
-                        (void)dbdt; // included in chain rule below
-                    }
-
-                    // Chain rule from (a,b,c) to (r,s,t):
-                    // da/dr = 2/(-s-t), da/ds = (1+a)/(-s-t), da/dt = (1+a)/(-s-t)
-                    // db/dr = 0, db/ds = 2/(1-t), db/dt = (1+b)/(1-t)
-                    // dc/dr = 0, dc/ds = 0, dc/dt = 1
-
-                    double dadr = 0, dads = 0, dadt = 0;
-                    double dbdr = 0, dbds = 0, dbdt = 0;
-
-                    if (std::abs(-s(n) - t(n)) > 1e-14) {
-                        dadr = 2.0 / (-s(n) - t(n));
-                        dads = (1.0 + a(n)) / (-s(n) - t(n));
-                        dadt = (1.0 + a(n)) / (-s(n) - t(n));
-                    }
-                    if (std::abs(1.0 - t(n)) > 1e-14) {
-                        dbds = 2.0 / (1.0 - t(n));
-                        dbdt = (1.0 + b(n)) / (1.0 - t(n));
-                    }
-
-                    // Recompute using proper chain rule
-                    double scale = 2.0 * std::sqrt(2.0);
-                    double mode = simplex3DP(a, b, cv, i, j, k, n) / scale;
-
-                    // Partial derivatives of mode w.r.t. a, b, c (the collapsed coords)
-                    // These are the raw derivatives before chain rule to (r,s,t)
-                    // Already computed as dMda, dMdb, dMdc above (without the scale)
-                    // Let me just apply chain rule directly:
-
-                    V3Dr(n, sk) = scale * dMda * dadr;
-                    V3Ds(n, sk) = scale * (dMda * dads + dMdb * dbds);
-                    V3Dt(n, sk) = scale * (dMda * dadt + dMdb * dbdt + dMdc);
+                    double scale = std::pow(2.0, 2 * i + j + 1.5);
+                    V3Dr(n, sk) = scale * dr;
+                    V3Ds(n, sk) = scale * ds;
+                    V3Dt(n, sk) = scale * dt;
                 }
                 ++sk;
             }

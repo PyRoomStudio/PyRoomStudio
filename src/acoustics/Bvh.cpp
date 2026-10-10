@@ -17,6 +17,7 @@ AABB Bvh::triangleBounds(const Triangle& tri) {
 
 void Bvh::build(const std::vector<Wall>& walls) {
     walls_ = &walls;
+    nodes_.clear(); // a rebuild must not keep stale nodes (buildRecursive also relies on reserve() below)
     int n = static_cast<int>(walls.size());
     if (n == 0) return;
 

@@ -7,6 +7,8 @@
 #include "acoustics/RayTracer.h"
 #include "acoustics/RoomImpulseResponse.h"
 #include "acoustics/AcousticMetrics.h"
+#include "acoustics/dg/DGBasis2D.h"
+#include "acoustics/dg/DGBasis3D.h"
 
 using namespace prs;
 
@@ -213,6 +215,30 @@ private slots:
 
         auto spl = AcousticMetrics::computeSPL(1.0f, {}, {}, 0);
         QVERIFY(!spl.valid);
+    }
+    // Dr/Ds(/Dt) must differentiate any polynomial of degree <= N exactly.
+    void testDGBasis2DDerivatives() {
+        for (int N : {3, 4}) {
+            auto B = dg::buildBasis2D(N);
+            dg::VecXd f = B.r.array().square() * B.s.array() + B.s.array().cube();
+            dg::VecXd fr = 2.0 * B.r.array() * B.s.array();
+            dg::VecXd fs = B.r.array().square() + 3.0 * B.s.array().square();
+            QVERIFY2((B.Dr * f - fr).cwiseAbs().maxCoeff() < 1e-8, qPrintable(QString("Dr N=%1").arg(N)));
+            QVERIFY2((B.Ds * f - fs).cwiseAbs().maxCoeff() < 1e-8, qPrintable(QString("Ds N=%1").arg(N)));
+        }
+    }
+
+    void testDGBasis3DDerivatives() {
+        for (int N : {3, 4}) {
+            auto B = dg::buildBasis3D(N);
+            dg::VecXd f = B.r.array().square() * B.s.array() + B.t.array().cube() + B.s.array() * B.t.array();
+            dg::VecXd fr = 2.0 * B.r.array() * B.s.array();
+            dg::VecXd fs = B.r.array().square() + B.t.array();
+            dg::VecXd ft = 3.0 * B.t.array().square() + B.s.array();
+            QVERIFY2((B.Dr * f - fr).cwiseAbs().maxCoeff() < 1e-8, qPrintable(QString("Dr N=%1").arg(N)));
+            QVERIFY2((B.Ds * f - fs).cwiseAbs().maxCoeff() < 1e-8, qPrintable(QString("Ds N=%1").arg(N)));
+            QVERIFY2((B.Dt * f - ft).cwiseAbs().maxCoeff() < 1e-8, qPrintable(QString("Dt N=%1").arg(N)));
+        }
     }
 };
 

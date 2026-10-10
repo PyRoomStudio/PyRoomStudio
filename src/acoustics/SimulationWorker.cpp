@@ -247,8 +247,8 @@ void SimulationWorker::process() {
                     .arg(QString::fromStdString(source->name),
                          QString::fromStdString(listener->name)));
 
-                auto dgProgress = [this, pct](int subPct, const QString& msg) {
-                    emit progressChanged(pct + subPct * 80 / (100 * std::max(1, 1)), msg);
+                auto dgProgress = [this, pct, totalPairsDG](int subPct, const QString& msg) {
+                    emit progressChanged(pct + subPct * 80 / (100 * std::max(totalPairsDG, 1)), msg);
                 };
                 auto dgCancel = [this]() -> bool { return isCancelled(); };
 

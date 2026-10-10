@@ -277,36 +277,22 @@ void gradVandermonde2D(int N, const VecXd& r, const VecXd& s,
     for (int i = 0; i <= N; ++i) {
         for (int j = 0; j <= N - i; ++j) {
             for (int n = 0; n < npts; ++n) {
+                // Hesthaven & Warburton GradSimplex2DP: exact, and finite at the collapsed vertex s=1.
                 double fa = jacobiP(a(n), 0.0, 0.0, i);
                 double dfa = gradJacobiP(a(n), 0.0, 0.0, i);
                 double gb = jacobiP(b(n), 2.0 * i + 1.0, 0.0, j);
                 double dgb = gradJacobiP(b(n), 2.0 * i + 1.0, 0.0, j);
-                double bfac = std::pow(1.0 - b(n), i);
+                double hb = 0.5 * (1.0 - b(n));
+                double hbm1 = i > 0 ? std::pow(hb, i - 1) : 1.0;
 
-                // dP/da
-                double dmodedr = dfa * gb;
-                if (i > 0) dmodedr *= bfac;
+                double dr = dfa * gb * hbm1;
+                double tmp = dgb * std::pow(hb, i);
+                if (i > 0) tmp -= 0.5 * i * gb * hbm1;
+                double ds = 0.5 * (1.0 + a(n)) * dr + fa * tmp;
 
-                // dP/db
-                double dmodeds = 0.0;
-                if (i > 0)
-                    dmodeds = dfa * gb * 0.5 * (1.0 + a(n)) * std::pow(1.0 - b(n), i - 1);
-                dmodeds += fa * (dgb * bfac);
-                if (i > 0)
-                    dmodeds += fa * gb * (-static_cast<double>(i)) * std::pow(1.0 - b(n), i - 1);
-
-                // Chain rule: dr/da = 2/(1-s), dr/db = (1+r)/(1-s)^2 * 0 (rs are independent)
-                // Actually (r,s) -> (a,b) via a=2(1+r)/(1-s)-1, b=s
-                // So da/dr = 2/(1-s), da/ds = 2(1+r)/(1-s)^2, db/dr = 0, db/ds = 1
-                // dP/dr = dP/da * da/dr + dP/db * db/dr = dP/da * 2/(1-s)
-                // dP/ds = dP/da * da/ds + dP/db * db/ds
-                //       = dP/da * 2(1+r)/(1-s)^2 + dP/db
-
-                double fac = 2.0 / (1.0 - b(n));
-                if (std::abs(1.0 - b(n)) < 1e-14) fac = 0.0;
-
-                V2Dr(n, sk) = std::sqrt(2.0) * dmodedr * fac;
-                V2Ds(n, sk) = std::sqrt(2.0) * (dmodedr * fac * 0.5 * (1.0 + a(n)) + dmodeds);
+                double scale = std::pow(2.0, i + 0.5);
+                V2Dr(n, sk) = scale * dr;
+                V2Ds(n, sk) = scale * ds;
             }
             ++sk;
         }
