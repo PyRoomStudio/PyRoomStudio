@@ -148,57 +148,13 @@ bool AudioFile::load(const QString& filepath) {
     return false;
 }
 
-bool AudioFile::save(const QString& filepath, int sampleRate) const {
+// 16-bit PCM WAV; `interleaved` holds channels * frames samples in [-1, 1].
+static bool writeWav16(const QString& filepath, int sampleRate, int16_t channels,
+                       const std::vector<float>& interleaved) {
     QFile file(filepath);
     if (!file.open(QIODevice::WriteOnly)) return false;
 
-    int numSamples = static_cast<int>(samples_.size());
-    int dataSize   = numSamples * 2;
-
-    // WAV header
-    struct {
-        char     riff[4]         = {'R','I','F','F'};
-        int32_t  fileSize        = 0;
-        char     wave[4]         = {'W','A','V','E'};
-        char     fmt[4]          = {'f','m','t',' '};
-        int32_t  fmtSize         = 16;
-        int16_t  audioFormat     = 1;
-        int16_t  numChannels     = 1;
-        int32_t  sampleRate      = 0;
-        int32_t  byteRate        = 0;
-        int16_t  blockAlign      = 2;
-        int16_t  bitsPerSample   = 16;
-        char     data[4]         = {'d','a','t','a'};
-        int32_t  dataSize        = 0;
-    } header;
-
-    header.fileSize      = 36 + dataSize;
-    header.sampleRate    = sampleRate;
-    header.byteRate      = sampleRate * 2;
-    header.dataSize      = dataSize;
-
-    file.write(reinterpret_cast<const char*>(&header), sizeof(header));
-
-    for (float s : samples_) {
-        float clamped = std::clamp(s, -1.0f, 1.0f);
-        int16_t val   = static_cast<int16_t>(clamped * 32767.0f);
-        file.write(reinterpret_cast<const char*>(&val), 2);
-    }
-
-    file.close();
-    return true;
-}
-
-bool AudioFile::saveStereo(const QString& filepath, int sampleRate,
-                          const std::vector<float>& left,
-                          const std::vector<float>& right)
-{
-    if (left.size() != right.size() || left.empty()) return false;
-    QFile file(filepath);
-    if (!file.open(QIODevice::WriteOnly)) return false;
-
-    const int numFrames = static_cast<int>(left.size());
-    const int dataSize  = numFrames * 4;  // 2 channels * 2 bytes
+    const int dataSize = static_cast<int>(interleaved.size()) * 2;
 
     struct {
         char     riff[4]       = {'R','I','F','F'};
@@ -207,31 +163,47 @@ bool AudioFile::saveStereo(const QString& filepath, int sampleRate,
         char     fmt[4]        = {'f','m','t',' '};
         int32_t  fmtSize       = 16;
         int16_t  audioFormat   = 1;
-        int16_t  numChannels   = 2;
+        int16_t  numChannels   = 1;
         int32_t  sampleRate    = 0;
         int32_t  byteRate      = 0;
-        int16_t  blockAlign    = 4;
+        int16_t  blockAlign    = 2;
         int16_t  bitsPerSample = 16;
         char     data[4]       = {'d','a','t','a'};
         int32_t  dataSize      = 0;
     } header;
 
-    header.fileSize   = 36 + dataSize;
-    header.sampleRate = sampleRate;
-    header.byteRate   = sampleRate * 4;
-    header.dataSize   = dataSize;
+    header.fileSize    = 36 + dataSize;
+    header.numChannels = channels;
+    header.sampleRate  = sampleRate;
+    header.byteRate    = sampleRate * 2 * channels;
+    header.blockAlign  = static_cast<int16_t>(2 * channels);
+    header.dataSize    = dataSize;
+
+    std::vector<int16_t> pcm(interleaved.size());
+    for (size_t i = 0; i < interleaved.size(); ++i)
+        pcm[i] = static_cast<int16_t>(std::clamp(interleaved[i], -1.0f, 1.0f) * 32767.0f);
 
     file.write(reinterpret_cast<const char*>(&header), sizeof(header));
-
-    for (int i = 0; i < numFrames; ++i) {
-        int16_t l = static_cast<int16_t>(std::clamp(left[i],  -1.0f, 1.0f) * 32767.0f);
-        int16_t r = static_cast<int16_t>(std::clamp(right[i], -1.0f, 1.0f) * 32767.0f);
-        file.write(reinterpret_cast<const char*>(&l), 2);
-        file.write(reinterpret_cast<const char*>(&r), 2);
-    }
-
+    file.write(reinterpret_cast<const char*>(pcm.data()), dataSize);
     file.close();
     return true;
+}
+
+bool AudioFile::save(const QString& filepath, int sampleRate) const {
+    return writeWav16(filepath, sampleRate, 1, samples_);
+}
+
+bool AudioFile::saveStereo(const QString& filepath, int sampleRate,
+                          const std::vector<float>& left,
+                          const std::vector<float>& right)
+{
+    if (left.size() != right.size() || left.empty()) return false;
+    std::vector<float> interleaved(left.size() * 2);
+    for (size_t i = 0; i < left.size(); ++i) {
+        interleaved[2 * i]     = left[i];
+        interleaved[2 * i + 1] = right[i];
+    }
+    return writeWav16(filepath, sampleRate, 2, interleaved);
 }
 
 #endif // HAS_SNDFILE

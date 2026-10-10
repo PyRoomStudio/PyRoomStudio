@@ -79,30 +79,39 @@ DGSolver::Result DGSolver::solve2D(
     QElapsedTimer timer;
     timer.start();
 
-    if (progressCallback)
-        progressCallback(0, "DG 2D: Building basis...");
-
-    Basis2D basis = buildBasis2D(params.polynomialOrder);
-    qInfo() << "DG 2D basis: N=" << params.polynomialOrder
-            << "Np=" << basis.Np << "in" << timer.elapsed() << "ms";
-
-    if (cancelCheck && cancelCheck()) return {};
-
     double h = SOUND_SPEED / (params.maxFrequency * (2.0 * params.polynomialOrder + 1.0)) * 0.8;
-
-    if (progressCallback)
-        progressCallback(5, "DG 2D: Extracting room polygon...");
-
     float sliceZ = (sourcePos.z() + listenerPos.z()) * 0.5f;
-    RoomPolygon2D polygon = extractRoomPolygon(walls, modelVertices, sliceZ);
-    qInfo() << "Room polygon:" << polygon.vertices.size() << "vertices, z=" << sliceZ;
 
-    if (progressCallback)
-        progressCallback(10, QString("DG 2D: Meshing (h=%1m)...").arg(h, 0, 'f', 3));
+    if (cache2D_.N != params.polynomialOrder || cache2D_.h != h || cache2D_.sliceZ != sliceZ) {
+        if (progressCallback)
+            progressCallback(0, "DG 2D: Building basis...");
 
-    timer.restart();
-    Mesh2D mesh = buildMesh2D(polygon, basis, h);
-    qInfo() << "DG 2D mesh:" << mesh.K << "elements," << mesh.Nv << "vertices in" << timer.elapsed() << "ms";
+        cache2D_.N = -1;
+        cache2D_.basis = buildBasis2D(params.polynomialOrder);
+        qInfo() << "DG 2D basis: N=" << params.polynomialOrder
+                << "Np=" << cache2D_.basis.Np << "in" << timer.elapsed() << "ms";
+
+        if (cancelCheck && cancelCheck()) return {};
+
+        if (progressCallback)
+            progressCallback(5, "DG 2D: Extracting room polygon...");
+
+        RoomPolygon2D polygon = extractRoomPolygon(walls, modelVertices, sliceZ);
+        qInfo() << "Room polygon:" << polygon.vertices.size() << "vertices, z=" << sliceZ;
+
+        if (progressCallback)
+            progressCallback(10, QString("DG 2D: Meshing (h=%1m)...").arg(h, 0, 'f', 3));
+
+        timer.restart();
+        cache2D_.mesh = buildMesh2D(polygon, cache2D_.basis, h);
+        qInfo() << "DG 2D mesh:" << cache2D_.mesh.K << "elements," << cache2D_.mesh.Nv
+                << "vertices in" << timer.elapsed() << "ms";
+        cache2D_.N = params.polynomialOrder;
+        cache2D_.h = h;
+        cache2D_.sliceZ = sliceZ;
+    }
+    const Basis2D& basis = cache2D_.basis;
+    const Mesh2D& mesh = cache2D_.mesh;
 
     if (mesh.K == 0) {
         qWarning() << "DG 2D: Empty mesh, aborting";
@@ -197,8 +206,7 @@ DGSolver::Result DGSolver::solve2D(
         gpu.setSource2D(sourceElem, sourceWeights);
         gpu.setListener2D(listenerElem, listenerWeights);
         gpu.resetFields2D();
-
-        std::vector<float> irData(nSteps, 0.0f);
+        gpu.allocImpulseResponse(nSteps);
 
         auto wallStart = Clock::now();
         double stepTimeSec = 0.0;
@@ -218,9 +226,10 @@ DGSolver::Result DGSolver::solve2D(
                 gpu.rkStageUpdate2D(float(LSRK4_A[stage]), float(LSRK4_B[stage]), dtF);
             }
 
-            irData[step] = gpu.readListenerPressure2D();
+            gpu.recordListenerPressure2D(step);
 
             if (step == warmupSteps - 1) {
+                gpu.finish(); // dispatches are async: sync so the ETA reflects GPU time
                 auto now = Clock::now();
                 stepTimeSec = std::chrono::duration<double>(now - wallStart).count() / warmupSteps;
             }
@@ -229,6 +238,7 @@ DGSolver::Result DGSolver::solve2D(
                 int reportEvery = std::max(1, std::min(nSteps / 200,
                     static_cast<int>(0.5 / std::max(stepTimeSec, 1e-9))));
                 if (step % reportEvery == 0) {
+                    gpu.finish(); // keep the CPU at most one report interval ahead (cancel stays responsive)
                     int pct = static_cast<int>(100.0 * step / nSteps);
                     double remaining = stepTimeSec * (nSteps - step);
                     int etaMin = static_cast<int>(remaining / 60.0);
@@ -240,6 +250,7 @@ DGSolver::Result DGSolver::solve2D(
             }
         }
 
+        std::vector<float> irData = gpu.readImpulseResponse(nSteps);
         gpu.cleanup();
 
         AcousticsResult2D acousticResult;
@@ -290,23 +301,31 @@ DGSolver::Result DGSolver::solve3D(
     QElapsedTimer timer;
     timer.start();
 
-    if (progressCallback)
-        progressCallback(0, "DG 3D: Building basis...");
-
-    Basis3D basis = buildBasis3D(params.polynomialOrder);
-    qInfo() << "DG 3D basis: N=" << params.polynomialOrder
-            << "Np=" << basis.Np << "in" << timer.elapsed() << "ms";
-
-    if (cancelCheck && cancelCheck()) return {};
-
     double h = SOUND_SPEED / (params.maxFrequency * (2.0 * params.polynomialOrder + 1.0)) * 0.8;
 
-    if (progressCallback)
-        progressCallback(5, QString("DG 3D: Meshing (h=%1m)...").arg(h, 0, 'f', 3));
+    if (cache3D_.N != params.polynomialOrder || cache3D_.h != h) {
+        if (progressCallback)
+            progressCallback(0, "DG 3D: Building basis...");
 
-    timer.restart();
-    Mesh3D mesh = buildMesh3D(walls, modelVertices, bvh, basis, h);
-    qInfo() << "DG 3D mesh:" << mesh.K << "elements," << mesh.Nv << "vertices in" << timer.elapsed() << "ms";
+        cache3D_.N = -1;
+        cache3D_.basis = buildBasis3D(params.polynomialOrder);
+        qInfo() << "DG 3D basis: N=" << params.polynomialOrder
+                << "Np=" << cache3D_.basis.Np << "in" << timer.elapsed() << "ms";
+
+        if (cancelCheck && cancelCheck()) return {};
+
+        if (progressCallback)
+            progressCallback(5, QString("DG 3D: Meshing (h=%1m)...").arg(h, 0, 'f', 3));
+
+        timer.restart();
+        cache3D_.mesh = buildMesh3D(walls, modelVertices, bvh, cache3D_.basis, h);
+        qInfo() << "DG 3D mesh:" << cache3D_.mesh.K << "elements," << cache3D_.mesh.Nv
+                << "vertices in" << timer.elapsed() << "ms";
+        cache3D_.N = params.polynomialOrder;
+        cache3D_.h = h;
+    }
+    const Basis3D& basis = cache3D_.basis;
+    const Mesh3D& mesh = cache3D_.mesh;
 
     if (mesh.K == 0) {
         qWarning() << "DG 3D: Empty mesh, aborting";
@@ -401,8 +420,7 @@ DGSolver::Result DGSolver::solve3D(
         gpu.setSource3D(sourceElem, sourceWeights);
         gpu.setListener3D(listenerElem, listenerWeights);
         gpu.resetFields3D();
-
-        std::vector<float> irData(nSteps, 0.0f);
+        gpu.allocImpulseResponse(nSteps);
         auto wallStart = Clock::now();
         double stepTimeSec = 0.0;
         int warmupSteps = std::min(50, nSteps);
@@ -419,9 +437,10 @@ DGSolver::Result DGSolver::solve3D(
                 gpu.rkStageUpdate3D(float(LSRK4_A[stage]), float(LSRK4_B[stage]), dtF);
             }
 
-            irData[step] = gpu.readListenerPressure3D();
+            gpu.recordListenerPressure3D(step);
 
             if (step == warmupSteps - 1) {
+                gpu.finish(); // dispatches are async: sync so the ETA reflects GPU time
                 auto now = Clock::now();
                 stepTimeSec = std::chrono::duration<double>(now - wallStart).count() / warmupSteps;
             }
@@ -429,6 +448,7 @@ DGSolver::Result DGSolver::solve3D(
                 int reportEvery = std::max(1, std::min(nSteps / 200,
                     static_cast<int>(0.5 / std::max(stepTimeSec, 1e-9))));
                 if (step % reportEvery == 0) {
+                    gpu.finish(); // keep the CPU at most one report interval ahead (cancel stays responsive)
                     int pct = static_cast<int>(100.0 * step / nSteps);
                     double remaining = stepTimeSec * (nSteps - step);
                     int etaMin = static_cast<int>(remaining / 60.0);
@@ -440,6 +460,7 @@ DGSolver::Result DGSolver::solve3D(
             }
         }
 
+        std::vector<float> irData = gpu.readImpulseResponse(nSteps);
         gpu.cleanup();
 
         result.duration = static_cast<float>(nSteps * dt);

@@ -410,11 +410,11 @@ Mesh2D buildMesh2D(
     }
 
     // Step 6: Build vertex array (only used vertices)
-    std::map<int, int> vertexRemap;
+    std::vector<int> vertexRemap(allPoints.size(), -1);
     std::vector<Vec2d> usedVertices;
     for (const auto& tri : validTriangles) {
         for (int v : tri.v) {
-            if (vertexRemap.find(v) == vertexRemap.end()) {
+            if (vertexRemap[v] < 0) {
                 vertexRemap[v] = static_cast<int>(usedVertices.size());
                 usedVertices.push_back(allPoints[v]);
             }

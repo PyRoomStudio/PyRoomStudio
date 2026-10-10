@@ -30,7 +30,7 @@ class Viewport3D : public QOpenGLWidget, protected QOpenGLFunctions {
 
 public:
     explicit Viewport3D(QWidget* parent = nullptr);
-    ~Viewport3D() override = default;
+    ~Viewport3D() override;
 
     bool loadModel(const QString& filepath);
     bool hasModel() const { return mesh_.triangleCount() > 0; }
@@ -175,7 +175,7 @@ private:
     std::vector<Color3f> surfaceColors_;
     std::vector<std::optional<Material>> surfaceMaterials_;
     std::vector<bool> surfaceTextured_;
-    std::map<int, int> triangleToSurface_;
+    std::vector<int> triangleToSurface_; // -1 = triangle not in any surface
 
     // Points
     std::vector<PlacedPoint> placedPoints_;
@@ -187,6 +187,8 @@ private:
 
     // Surface selection
     int selectedSurfaceIndex_ = -1;
+    int outlineSurface_ = -1;         // surface whose boundary is cached in outlineVerts_
+    std::vector<Vec3f> outlineVerts_; // GL_LINES vertex pairs
 
     // Multi-selection
     std::set<int> selectedPointIndices_;
@@ -214,7 +216,6 @@ private:
 
     Color3f defaultSurfaceColor_ = {0.6f, 0.8f, 1.0f};
     unsigned int textureId_ = 0;
-    QImage textureImage_;
     TextureManager textureManager_;
     std::vector<GLuint> surfaceTextureIds_;
 };

@@ -28,24 +28,30 @@ static bool pointInsideMesh(const Vec3f& point, const Bvh& bvh) {
     return (crossings % 2) == 1;
 }
 
-// Find nearest wall to a point for material assignment
-static int findNearestWall(const Vec3f& point,
-                           const std::vector<Viewport3D::WallInfo>& walls,
-                           const std::vector<Vec3f>& modelVertices) {
-    int bestWall = 0;
-    float bestDist = 1e30f;
+// Find nearest wall to a point for material assignment (centroids precomputed once per mesh)
+struct WallCentroid { Vec3f centroid; int wall; };
 
+static std::vector<WallCentroid> wallCentroids(const std::vector<Viewport3D::WallInfo>& walls,
+                                               const std::vector<Vec3f>& modelVertices) {
+    std::vector<WallCentroid> out;
     for (int w = 0; w < static_cast<int>(walls.size()); ++w) {
         for (int triIdx : walls[w].triangleIndices) {
             int base = triIdx * 3;
             if (base + 2 >= static_cast<int>(modelVertices.size())) continue;
+            out.push_back({(modelVertices[base] + modelVertices[base + 1] + modelVertices[base + 2]) / 3.0f, w});
+        }
+    }
+    return out;
+}
 
-            Vec3f centroid = (modelVertices[base] + modelVertices[base + 1] + modelVertices[base + 2]) / 3.0f;
-            float d = (point - centroid).squaredNorm();
-            if (d < bestDist) {
-                bestDist = d;
-                bestWall = w;
-            }
+static int findNearestWall(const Vec3f& point, const std::vector<WallCentroid>& centroids) {
+    int bestWall = 0;
+    float bestDist = 1e30f;
+    for (const auto& c : centroids) {
+        float d = (point - c.centroid).squaredNorm();
+        if (d < bestDist) {
+            bestDist = d;
+            bestWall = c.wall;
         }
     }
     return bestWall;
@@ -171,11 +177,11 @@ Mesh3D buildMesh3D(
 
     // Step 4: Build vertex and connectivity arrays
     if (mesh.K > 1 || allTets.size() > 0) {
-        std::map<int, int> vertexRemap;
+        std::vector<int> vertexRemap(gridVerts.size(), -1);
         std::vector<Vec3d> usedVerts;
         for (const auto& tet : allTets) {
             for (int v : tet.v) {
-                if (vertexRemap.find(v) == vertexRemap.end()) {
+                if (vertexRemap[v] < 0) {
                     vertexRemap[v] = static_cast<int>(usedVerts.size());
                     usedVerts.push_back(gridVerts[v]);
                 }
@@ -391,6 +397,7 @@ Mesh3D buildMesh3D(
     }
 
     // Step 10: Boundary detection and material assignment (interior surface nodes = 0)
+    const auto centroids = wallCentroids(walls, modelVertices);
     mesh.boundaryImpedance = VecXd::Zero(totalSurfNodes);
     for (int k = 0; k < mesh.K; ++k) {
         for (int f = 0; f < Nfaces; ++f) {
@@ -406,7 +413,7 @@ Mesh3D buildMesh3D(
                 Vec3f centF(static_cast<float>(faceCentroid.x()),
                            static_cast<float>(faceCentroid.y()),
                            static_cast<float>(faceCentroid.z()));
-                int wallIdx = findNearestWall(centF, walls, modelVertices);
+                int wallIdx = findNearestWall(centF, centroids);
                 float avgAbs = 0.0f;
                 for (float a : walls[wallIdx].absorption) avgAbs += a;
                 avgAbs /= NUM_FREQ_BANDS;

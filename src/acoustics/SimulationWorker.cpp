@@ -180,11 +180,6 @@ void SimulationWorker::process() {
     bvh.build(walls);
     qInfo() << "BVH built in" << phaseTimer.elapsed() << "ms";
 
-    // Build acoustic surfaces for ISM
-    phaseTimer.restart();
-    auto acousticSurfaces = buildAcousticSurfaces(params_.walls, params_.modelVertices);
-    qInfo() << "Built" << acousticSurfaces.size() << "acoustic surfaces for ISM in" << phaseTimer.elapsed() << "ms";
-
     if (isCancelled()) { emit error("Cancelled"); return; }
 
     QString outputDir = params_.outputDir;
@@ -279,6 +274,10 @@ void SimulationWorker::process() {
     }
 
     // ========== Ray-tracing path (existing) ==========
+    // Acoustic surfaces are only used by the ISM (the DG path returned above)
+    phaseTimer.restart();
+    auto acousticSurfaces = buildAcousticSurfaces(params_.walls, params_.modelVertices);
+    qInfo() << "Built" << acousticSurfaces.size() << "acoustic surfaces for ISM in" << phaseTimer.elapsed() << "ms";
 
     int totalPairs = scene.soundSourceCount() * numListeners;
     int pairsDone = 0;

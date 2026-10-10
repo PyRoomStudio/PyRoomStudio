@@ -84,6 +84,7 @@ void DGGpuCompute::cleanup() {
 
     deleteProgram(rkProgram_);
     deleteProgram(readbackProgram_);
+    deleteBuf(irBuf_);
 
     deleteProgram(s2d_.rhsProgram);
     deleteBuf(s2d_.fieldBuf); deleteBuf(s2d_.rhsBuf); deleteBuf(s2d_.resBuf);
@@ -147,6 +148,43 @@ void DGGpuCompute::uploadBuffer(GLuint buf, GLsizeiptr size, const void* data) {
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
+// Uniform values persist in the program object: set the constant ones once and cache the
+// locations of the per-dispatch ones.
+void DGGpuCompute::initUniforms(GLuint rhsProgram, int Np, int K, int nFields, GLint& locPulse) {
+    gl_->glUseProgram(rhsProgram);
+    gl_->glUniform1i(gl_->glGetUniformLocation(rhsProgram, "uK"), K);
+    gl_->glUniform1f(gl_->glGetUniformLocation(rhsProgram, "uRho"), static_cast<float>(AIR_DENSITY));
+    gl_->glUniform1f(gl_->glGetUniformLocation(rhsProgram, "uC"), static_cast<float>(SOUND_SPEED));
+    locPulse = gl_->glGetUniformLocation(rhsProgram, "uPulse");
+
+    gl_->glUseProgram(rkProgram_);
+    gl_->glUniform1i(gl_->glGetUniformLocation(rkProgram_, "uTotalNodes"), nFields * Np * K);
+    locRkA_ = gl_->glGetUniformLocation(rkProgram_, "uRkA");
+    locRkB_ = gl_->glGetUniformLocation(rkProgram_, "uRkB");
+    locDt_  = gl_->glGetUniformLocation(rkProgram_, "uDt");
+
+    gl_->glUseProgram(readbackProgram_);
+    gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uNp"), Np);
+    locStep_ = gl_->glGetUniformLocation(readbackProgram_, "uStep");
+}
+
+void DGGpuCompute::allocImpulseResponse(int nSteps) {
+    if (irBuf_) gl_->glDeleteBuffers(1, &irBuf_);
+    std::vector<float> zeros(nSteps, 0.0f);
+    irBuf_ = createBuffer(GL_DYNAMIC_READ, nSteps * sizeof(float), zeros.data());
+}
+
+std::vector<float> DGGpuCompute::readImpulseResponse(int nSteps) {
+    std::vector<float> ir(nSteps, 0.0f);
+    gl_->glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+    gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, irBuf_);
+    gl_->glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, nSteps * sizeof(float), ir.data());
+    gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    return ir;
+}
+
+void DGGpuCompute::finish() { gl_->glFinish(); }
+
 // ==================== 2D SHADER GENERATION ====================
 
 std::string DGGpuCompute::generateRHSShader2D(int Np, int totalFaceNodes, int localSize) {
@@ -184,6 +222,7 @@ const int cTFN = )" << totalFaceNodes << R"(;
 uniform int uK;
 uniform float uRho;
 uniform float uC;
+uniform float uPulse;
 
 shared float s_p[)" << localSize << R"(];
 shared float s_ux[)" << localSize << R"(];
@@ -328,7 +367,7 @@ void main() {
 
         int srcElem = int(srcData[cNp]);
         if (k == srcElem) {
-            float pulse = srcData[cNp + 1];
+            float pulse = uPulse;
             rhs[outIdx] += pulse * srcData[tid];
         }
     }
@@ -370,12 +409,14 @@ layout(local_size_x = 1) in;
 
 // SSBO 0: fields (p is at offset 0)
 layout(std430, binding = 0) readonly buffer Fields { float fields[]; };
-// SSBO 6: source/listener data (listener weights at offset Np+2, result at offset 2*Np+2)
-layout(std430, binding = 7) buffer SrcData { float srcData[]; };
+// SSBO 7: source/listener data (listener weights at offset Np+2)
+layout(std430, binding = 7) readonly buffer SrcData { float srcData[]; };
+// SSBO 2 (free during readback): impulse response, one float per time step
+layout(std430, binding = 2) writeonly buffer IR { float ir[]; };
 
 uniform int uListenerElem;
 uniform int uNp;
-uniform int uK;
+uniform int uStep;
 
 void main() {
     float sum = 0.0;
@@ -383,8 +424,7 @@ void main() {
     for (int i = 0; i < uNp; ++i) {
         sum += srcData[weightsOffset + i] * fields[uListenerElem * uNp + i];
     }
-    // Write result at offset (2*Np + 2)
-    srcData[2 * uNp + 2] = sum;
+    ir[uStep] = sum;
 }
 )";
 }
@@ -516,6 +556,8 @@ bool DGGpuCompute::init2D(const Basis2D& basis, const Mesh2D& mesh) {
     //                         listenerWeights(Np), result(1) = 2*Np+3 floats
     s2d_.srcBuf = createBuffer(GL_DYNAMIC_DRAW, (2 * Np + 3) * sizeof(float));
 
+    initUniforms(s2d_.rhsProgram, Np, K, 3, s2d_.locPulse);
+
     qInfo() << "DG GPU 2D: initialized" << K << "elements, Np=" << Np
             << ", local_size=" << s2d_.localSize
             << ", field memory:" << (3 * Np * K * sizeof(float) / 1024) << "KB";
@@ -555,28 +597,16 @@ void DGGpuCompute::setListener2D(int elem, const VecXd& weights) {
     gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 2) * sizeof(float),
                          Np * sizeof(float), wt.data());
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    gl_->glUseProgram(readbackProgram_);
+    gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uListenerElem"), elem);
 }
 
 void DGGpuCompute::computeRHS2D(float sourcePulse) {
-    int Np = s2d_.Np;
     int K = s2d_.K;
 
-    // Update source pulse in srcBuf
-    gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, s2d_.srcBuf);
-    gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 1) * sizeof(float),
-                         sizeof(float), &sourcePulse);
-    gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
     gl_->glUseProgram(s2d_.rhsProgram);
+    gl_->glUniform1f(s2d_.locPulse, sourcePulse);
 
-    // Set uniforms
-    gl_->glUniform1i(gl_->glGetUniformLocation(s2d_.rhsProgram, "uK"), K);
-    gl_->glUniform1f(gl_->glGetUniformLocation(s2d_.rhsProgram, "uRho"),
-                     static_cast<float>(AIR_DENSITY));
-    gl_->glUniform1f(gl_->glGetUniformLocation(s2d_.rhsProgram, "uC"),
-                     static_cast<float>(SOUND_SPEED));
-
-    // Bind SSBOs
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, s2d_.fieldBuf);
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, s2d_.rhsBuf);
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, s2d_.opBuf);
@@ -593,11 +623,9 @@ void DGGpuCompute::rkStageUpdate2D(float rk_a, float rk_b, float dt) {
     int totalNodes = 3 * s2d_.Np * s2d_.K;
 
     gl_->glUseProgram(rkProgram_);
-
-    gl_->glUniform1f(gl_->glGetUniformLocation(rkProgram_, "uRkA"), rk_a);
-    gl_->glUniform1f(gl_->glGetUniformLocation(rkProgram_, "uRkB"), rk_b);
-    gl_->glUniform1f(gl_->glGetUniformLocation(rkProgram_, "uDt"), dt);
-    gl_->glUniform1i(gl_->glGetUniformLocation(rkProgram_, "uTotalNodes"), totalNodes);
+    gl_->glUniform1f(locRkA_, rk_a);
+    gl_->glUniform1f(locRkB_, rk_b);
+    gl_->glUniform1f(locDt_, dt);
 
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, s2d_.fieldBuf);
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, s2d_.rhsBuf);
@@ -608,31 +636,16 @@ void DGGpuCompute::rkStageUpdate2D(float rk_a, float rk_b, float dt) {
     gl_->glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
-float DGGpuCompute::readListenerPressure2D() {
-    int Np = s2d_.Np;
-
+void DGGpuCompute::recordListenerPressure2D(int step) {
     gl_->glUseProgram(readbackProgram_);
-
-    gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uListenerElem"),
-                     s2d_.listenerElem);
-    gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uNp"), Np);
-    gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uK"), s2d_.K);
+    gl_->glUniform1i(locStep_, step);
 
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, s2d_.fieldBuf);
+    gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, irBuf_);
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, s2d_.srcBuf);
 
     gl_->glDispatchCompute(1, 1, 1);
-    gl_->glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT);
-
-    // Read result from srcBuf at offset (2*Np+2)
-    float result = 0.0f;
-    gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, s2d_.srcBuf);
-    gl_->glGetBufferSubData(GL_SHADER_STORAGE_BUFFER,
-                            (2 * Np + 2) * sizeof(float),
-                            sizeof(float), &result);
-    gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    return result;
+    gl_->glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
 // ==================== 3D SHADER & INIT ====================
@@ -666,6 +679,7 @@ const int cTFN = )" << totalFaceNodes << R"(;
 uniform int uK;
 uniform float uRho;
 uniform float uC;
+uniform float uPulse;
 
 shared float s_p[)" << localSize << R"(];
 shared float s_ux[)" << localSize << R"(];
@@ -827,7 +841,7 @@ void main() {
 
         int srcElem = int(srcData[cNp]);
         if (k == srcElem) {
-            float pulse = srcData[cNp + 1];
+            float pulse = uPulse;
             rhs[outIdx] += pulse * srcData[tid];
         }
     }
@@ -927,6 +941,8 @@ bool DGGpuCompute::init3D(const Basis3D& basis, const Mesh3D& mesh) {
 
     s3d_.srcBuf = createBuffer(GL_DYNAMIC_DRAW, (2 * Np + 3) * sizeof(float));
 
+    initUniforms(s3d_.rhsProgram, Np, K, 4, s3d_.locPulse);
+
     qInfo() << "DG GPU 3D: initialized" << K << "elements, Np=" << Np
             << ", local_size=" << s3d_.localSize;
     return true;
@@ -959,21 +975,15 @@ void DGGpuCompute::setListener3D(int elem, const VecXd& weights) {
     gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 2) * sizeof(float),
                          Np * sizeof(float), wt.data());
     gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    gl_->glUseProgram(readbackProgram_);
+    gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uListenerElem"), elem);
 }
 
 void DGGpuCompute::computeRHS3D(float sourcePulse) {
-    int Np = s3d_.Np;
     int K = s3d_.K;
 
-    gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, s3d_.srcBuf);
-    gl_->glBufferSubData(GL_SHADER_STORAGE_BUFFER, (Np + 1) * sizeof(float),
-                         sizeof(float), &sourcePulse);
-    gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
     gl_->glUseProgram(s3d_.rhsProgram);
-    gl_->glUniform1i(gl_->glGetUniformLocation(s3d_.rhsProgram, "uK"), K);
-    gl_->glUniform1f(gl_->glGetUniformLocation(s3d_.rhsProgram, "uRho"), static_cast<float>(AIR_DENSITY));
-    gl_->glUniform1f(gl_->glGetUniformLocation(s3d_.rhsProgram, "uC"), static_cast<float>(SOUND_SPEED));
+    gl_->glUniform1f(s3d_.locPulse, sourcePulse);
 
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, s3d_.fieldBuf);
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, s3d_.rhsBuf);
@@ -991,10 +1001,9 @@ void DGGpuCompute::rkStageUpdate3D(float rk_a, float rk_b, float dt) {
     int totalNodes = 4 * s3d_.Np * s3d_.K;
 
     gl_->glUseProgram(rkProgram_);
-    gl_->glUniform1f(gl_->glGetUniformLocation(rkProgram_, "uRkA"), rk_a);
-    gl_->glUniform1f(gl_->glGetUniformLocation(rkProgram_, "uRkB"), rk_b);
-    gl_->glUniform1f(gl_->glGetUniformLocation(rkProgram_, "uDt"), dt);
-    gl_->glUniform1i(gl_->glGetUniformLocation(rkProgram_, "uTotalNodes"), totalNodes);
+    gl_->glUniform1f(locRkA_, rk_a);
+    gl_->glUniform1f(locRkB_, rk_b);
+    gl_->glUniform1f(locDt_, dt);
 
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, s3d_.fieldBuf);
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, s3d_.rhsBuf);
@@ -1005,27 +1014,16 @@ void DGGpuCompute::rkStageUpdate3D(float rk_a, float rk_b, float dt) {
     gl_->glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
-float DGGpuCompute::readListenerPressure3D() {
-    int Np = s3d_.Np;
-
+void DGGpuCompute::recordListenerPressure3D(int step) {
     gl_->glUseProgram(readbackProgram_);
-    gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uListenerElem"), s3d_.listenerElem);
-    gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uNp"), Np);
-    gl_->glUniform1i(gl_->glGetUniformLocation(readbackProgram_, "uK"), s3d_.K);
+    gl_->glUniform1i(locStep_, step);
 
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, s3d_.fieldBuf);
+    gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, irBuf_);
     gl_->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, s3d_.srcBuf);
 
     gl_->glDispatchCompute(1, 1, 1);
-    gl_->glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT);
-
-    float result = 0.0f;
-    gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, s3d_.srcBuf);
-    gl_->glGetBufferSubData(GL_SHADER_STORAGE_BUFFER,
-                            (2 * Np + 2) * sizeof(float),
-                            sizeof(float), &result);
-    gl_->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    return result;
+    gl_->glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
 } // namespace dg

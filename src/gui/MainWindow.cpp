@@ -29,6 +29,7 @@
 #include <QStatusBar>
 #include <QApplication>
 #include <QCloseEvent>
+#include <QPixmapCache>
 #include <QSettings>
 #include <QThread>
 #include <QProgressDialog>
@@ -57,10 +58,17 @@ QPixmap loadSurfaceTextureThumbnail(prs::Viewport3D* vp, int surfIdx) {
     if (!mat || !vp->isSurfaceTextureActive(surfIdx) || mat->texturePath.empty())
         return {};
     QString resolved = prs::resolveMaterialTexturePath(QString::fromStdString(mat->texturePath));
-    QImage img(resolved);
-    if (img.isNull())
-        return {};
-    return QPixmap::fromImage(img);
+    // Decode each texture once; swatches are small, so cache a downscaled copy.
+    QPixmap thumb;
+    if (!QPixmapCache::find(resolved, &thumb)) {
+        QImage img(resolved);
+        if (img.isNull())
+            return {};
+        thumb = QPixmap::fromImage(img.width() > 256 || img.height() > 256
+            ? img.scaled(256, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation) : img);
+        QPixmapCache::insert(resolved, thumb);
+    }
+    return thumb;
 }
 
 } // namespace
