@@ -34,22 +34,10 @@ GLuint TextureManager::getOrLoad(const QString& path) {
     return texId;
 }
 
-void TextureManager::release(const QString& path) {
-    auto it = cache_.find(path);
-    if (it != cache_.end()) {
-        glDeleteTextures(1, &it->second);
-        cache_.erase(it);
-    }
-}
-
 void TextureManager::releaseAll() {
     for (auto& [path, texId] : cache_)
         glDeleteTextures(1, &texId);
     cache_.clear();
-}
-
-bool TextureManager::has(const QString& path) const {
-    return cache_.find(path) != cache_.end();
 }
 
 } // namespace prs

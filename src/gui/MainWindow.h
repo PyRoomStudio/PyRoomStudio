@@ -47,7 +47,6 @@ private slots:
 
     // Bottom toolbar
     void onImportRoom();
-    void onImportSound();
     void onAddSourcePlacement();
     void onAddListenerPlacement();
     void onRender();
@@ -71,6 +70,8 @@ private:
     void setupCentralWidget();
     void connectSignals();
     void updateTitle();
+    bool openProjectFile(const QString& path);
+    void togglePlacement(const char* pointType);
     void populateAssetsFromRenderer(const QString& filepath);
     void syncAssetsSurface(int surfaceIndex);
     void saveProjectToFile(const QString& filepath);

@@ -89,13 +89,11 @@ void DGGpuCompute::cleanup() {
     deleteBuf(s2d_.fieldBuf); deleteBuf(s2d_.rhsBuf); deleteBuf(s2d_.resBuf);
     deleteBuf(s2d_.opBuf); deleteBuf(s2d_.geoBuf); deleteBuf(s2d_.surfBuf);
     deleteBuf(s2d_.connBuf); deleteBuf(s2d_.srcBuf);
-    deleteBuf(s2d_.physicsBuf); deleteBuf(s2d_.rkParamsBuf);
 
     deleteProgram(s3d_.rhsProgram);
     deleteBuf(s3d_.fieldBuf); deleteBuf(s3d_.rhsBuf); deleteBuf(s3d_.resBuf);
     deleteBuf(s3d_.opBuf); deleteBuf(s3d_.geoBuf); deleteBuf(s3d_.surfBuf);
     deleteBuf(s3d_.connBuf); deleteBuf(s3d_.srcBuf);
-    deleteBuf(s3d_.physicsBuf); deleteBuf(s3d_.rkParamsBuf);
 
     if (context_) context_->doneCurrent();
     available_ = false;

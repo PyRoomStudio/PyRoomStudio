@@ -80,7 +80,6 @@ set(CORE_SOURCES
     src/rendering/RayPicking.cpp
     src/rendering/MeshSimplifier.cpp
     src/rendering/TextureManager.cpp
-    src/acoustics/AcousticSimulator.cpp
     src/acoustics/Bvh.cpp
     src/acoustics/ImageSourceMethod.cpp
     src/acoustics/RayTracer.cpp
@@ -137,7 +136,6 @@ set(HEADERS
     src/rendering/RayPicking.h
     src/rendering/MeshSimplifier.h
     src/rendering/TextureManager.h
-    src/acoustics/AcousticSimulator.h
     src/acoustics/Bvh.h
     src/acoustics/ImageSourceMethod.h
     src/acoustics/RayTracer.h

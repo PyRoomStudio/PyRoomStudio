@@ -33,13 +33,11 @@ public:
     int listenerCount()    const { return static_cast<int>(listeners_.size()); }
     bool hasMinimumObjects() const;
 
-    std::pair<std::vector<Vec3f>, std::vector<Vec3f>> getAllPositions() const;
 
     void selectSource(int index);
     void selectListener(int index);
     void clearSelection();
     std::optional<std::pair<std::string, int>> getSelectedObject() const;
-    bool deleteSelected();
 
     void saveToFile(const QString& filepath) const;
     void loadFromFile(const QString& filepath);

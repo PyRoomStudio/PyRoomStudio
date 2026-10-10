@@ -215,10 +215,6 @@ void SimulationWorker::process() {
         dg::DGSolver dgSolver;
         int totalPairsDG = scene.soundSourceCount() * numListeners;
         int pairsDoneDG = 0;
-        int mixedFsDG = params_.sampleRate;
-
-        struct MixedStereoDG { std::vector<float> left; std::vector<float> right; };
-        std::map<int, MixedStereoDG> mixedPerListenerDG;
 
         for (int si = 0; si < scene.soundSourceCount(); ++si) {
             auto* source = scene.getSoundSource(si);
@@ -233,7 +229,6 @@ void SimulationWorker::process() {
             }
             audioFile.applyVolume(source->volume);
             int fs = audioFile.sampleRate();
-            mixedFsDG = fs;
             const std::vector<float>& inputSamples = audioFile.samples();
             if (inputSamples.empty()) { pairsDoneDG += numListeners; continue; }
 

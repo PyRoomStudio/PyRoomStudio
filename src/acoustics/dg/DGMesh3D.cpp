@@ -106,21 +106,10 @@ Mesh3D buildMesh3D(
                     minZ + iz * dz);
             }
 
-    // Step 3: Split each cube into 6 tetrahedra and test inside/outside
-    // Standard decomposition of a cube into 6 tetrahedra:
+    // Step 3: Split each cube into 6 tetrahedra (all share diagonal 3-5) and test inside/outside
     // Cube vertices labeled 0-7:
     // 0=(0,0,0), 1=(1,0,0), 2=(1,1,0), 3=(0,1,0),
     // 4=(0,0,1), 5=(1,0,1), 6=(1,1,1), 7=(0,1,1)
-    static const int tetDecomp[6][4] = {
-        {0, 1, 3, 4}, {1, 2, 3, 6}, {1, 4, 5, 6},
-        {3, 4, 6, 7}, {1, 3, 4, 6}, {0, 0, 0, 0} // 5 tets actually used
-    };
-    // Actually the standard 5-tet decomposition:
-    static const int tet5[5][4] = {
-        {0, 1, 3, 5}, {1, 2, 3, 5}, {2, 3, 5, 6},
-        {0, 3, 4, 5}, {3, 4, 5, 7}
-    };
-    // Or the more symmetric 6-tet decomposition using diagonal:
     static const int tet6[6][4] = {
         {0, 5, 1, 3}, {5, 1, 3, 2}, {5, 2, 3, 6},
         {0, 5, 3, 4}, {5, 3, 4, 7}, {5, 6, 3, 7}
@@ -401,8 +390,8 @@ Mesh3D buildMesh3D(
         }
     }
 
-    // Step 10: Boundary detection and material assignment
-    std::vector<int> boundaryIndices;
+    // Step 10: Boundary detection and material assignment (interior surface nodes = 0)
+    mesh.boundaryImpedance = VecXd::Zero(totalSurfNodes);
     for (int k = 0; k < mesh.K; ++k) {
         for (int f = 0; f < Nfaces; ++f) {
             if (mesh.EToE(k, f) == k && mesh.EToF(k, f) == f) {
@@ -424,35 +413,11 @@ Mesh3D buildMesh3D(
                 double alpha = static_cast<double>(avgAbs);
                 double Z = absorptionToImpedance(alpha);
 
-                BoundaryFace3D bf;
-                bf.element = k;
-                bf.localFace = f;
-                bf.impedance = Z;
-                mesh.boundaryFaces.push_back(bf);
-
-                for (int i = 0; i < Nfp; ++i) {
-                    int surfIdx = k * totalFaceNodes + f * Nfp + i;
-                    boundaryIndices.push_back(surfIdx);
-                }
+                for (int i = 0; i < Nfp; ++i)
+                    mesh.boundaryImpedance(k * totalFaceNodes + f * Nfp + i) = Z;
             }
         }
     }
-
-    mesh.mapB.resize(static_cast<int>(boundaryIndices.size()));
-    for (int i = 0; i < static_cast<int>(boundaryIndices.size()); ++i)
-        mesh.mapB(i) = boundaryIndices[i];
-
-    mesh.boundaryImpedance = VecXd::Zero(totalSurfNodes);
-    for (const auto& bf : mesh.boundaryFaces) {
-        for (int i = 0; i < Nfp; ++i) {
-            int surfIdx = bf.element * totalFaceNodes + bf.localFace * Nfp + i;
-            mesh.boundaryImpedance(surfIdx) = bf.impedance;
-        }
-    }
-
-    mesh.bcType = VecXi::Zero(totalSurfNodes);
-    for (int i = 0; i < mesh.mapB.size(); ++i)
-        mesh.bcType(mesh.mapB(i)) = 1;
 
     return mesh;
 }

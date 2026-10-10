@@ -38,7 +38,6 @@ public:
     // Scale
     void setScaleFactor(float factor);
     float scaleFactor() const { return scaleFactor_; }
-    float originalSize() const { return mesh_.diagonalSize(); }
     Vec3f getRealWorldDimensions() const;
     float getRealWorldSize() const;
 
@@ -49,9 +48,7 @@ public:
     const std::string& placementPointTypeForNew() const { return placementPointTypeForNew_; }
     void updateActivePointDistance(float distance);
     void adjustActivePointDistance(float delta);
-    float getActivePointDistance() const;
     void setActivePointType(const std::string& type);
-    std::string getActivePointType() const;
     void removeActivePoint();
     void deselectPoint();
     void clearFullSelection();
@@ -65,7 +62,6 @@ public:
 
     // Measure mode
     void setMeasureMode(bool enabled);
-    bool measureMode() const { return measureMode_; }
 
     // Surface selection
     int  selectedSurfaceIndex() const { return selectedSurfaceIndex_; }
@@ -74,11 +70,9 @@ public:
     void setSurfaceColor(int surfIdx, const Color3f& color);
     void assignMaterial(int surfIdx, const Material& material);
     std::optional<Material> getSurfaceMaterial(int surfIdx) const;
-    const std::vector<std::optional<Material>>& surfaceMaterials() const { return surfaceMaterials_; }
     void toggleSurfaceTexture(int surfIdx);
     bool isSurfaceTextureActive(int surfIdx) const;
     bool loadTexture(const QString& filepath);
-    bool hasTexture() const { return textureId_ != 0; }
 
     // Acoustic simulation helpers
     std::pair<int, int> countSourcesAndListeners() const;
@@ -173,7 +167,6 @@ private:
     MeshData mesh_;
     Camera camera_;
     float scaleFactor_ = 1.0f;
-    float originalSize_ = 0.0f;
     Vec3f modelCenter_ = Vec3f::Zero();
 
     // Surface grouping

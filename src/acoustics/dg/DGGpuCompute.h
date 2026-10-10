@@ -81,8 +81,6 @@ private:
         GLuint surfBuf = 0;
         GLuint connBuf = 0;
         GLuint srcBuf = 0;
-        GLuint physicsBuf = 0;
-        GLuint rkParamsBuf = 0;
         int Np = 0, K = 0, Nfp = 0, Nfaces = 0, totalFaceNodes = 0;
         int localSize = 0;
         int sourceElem = 0;
@@ -99,8 +97,6 @@ private:
         GLuint surfBuf = 0;
         GLuint connBuf = 0;
         GLuint srcBuf = 0;
-        GLuint physicsBuf = 0;
-        GLuint rkParamsBuf = 0;
         int Np = 0, K = 0, Nfp = 0, Nfaces = 0, totalFaceNodes = 0;
         int localSize = 0;
         int sourceElem = 0;

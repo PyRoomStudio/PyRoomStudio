@@ -209,12 +209,6 @@ SimulationSettingsDialog::SimulationSettingsDialog(QWidget* parent)
     layout->addWidget(buttons);
 }
 
-int SimulationSettingsDialog::maxOrder() const { return maxOrder_->value(); }
-int SimulationSettingsDialog::numRays() const { return numRays_->value(); }
-float SimulationSettingsDialog::energyAbsorption() const { return static_cast<float>(absorption_->value()); }
-float SimulationSettingsDialog::scattering() const { return static_cast<float>(scattering_->value()); }
-bool SimulationSettingsDialog::airAbsorption() const { return airAbsorption_->isChecked(); }
-
 void SimulationSettingsDialog::accept() {
     QSettings s("PyRoomStudio", "PyRoomStudio");
     s.setValue("sim/maxOrder", maxOrder_->value());

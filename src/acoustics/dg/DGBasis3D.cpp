@@ -150,23 +150,8 @@ void warpAndBlendNodes3D(int N, VecXd& r, VecXd& s, VecXd& t) {
         t(i) = -1.0 + 2.0 * L4(i);
     }
 
-    // For low order (N <= 2), equidistant nodes are adequate
-    if (N <= 2) return;
-
-    // For higher order, apply warp & blend.
-    // The 3D version is more complex (4 faces, 6 edges).
-    // For a simpler but adequate approach, we use the 2D warp on each face
-    // and blend into the interior using barycentric weights.
-
-    // Get 2D warped nodes for reference triangle
-    VecXd r2d, s2d;
-    warpAndBlendNodes2D(N, r2d, s2d);
-
-    // For each of the 4 faces, compute 2D warp and blend into the tet.
-    // This is a simplified version; for production, the full Hesthaven/Warburton
-    // algorithm should be used. The equidistant nodes are reasonable for N <= 5.
-    // We keep the equidistant nodes as-is for now -- the Vandermonde will still
-    // be well-conditioned for moderate N thanks to the orthonormal basis.
+    // shortcut: equidistant nodes for all N (no 3D warp & blend); fine for N <= 5, port
+    // Hesthaven/Warburton Nodes3D if higher orders become ill-conditioned.
 }
 
 // ---------- Build complete 3D basis ----------

@@ -10,31 +10,6 @@
 namespace prs {
 namespace dg {
 
-// LSRK4 coefficients (same as 2D solver)
-static const double rk4a[5] = {
-    0.0,
-    -567301805773.0  / 1357537059087.0,
-    -2404267990393.0 / 2016746695238.0,
-    -3550918686646.0 / 2091501179385.0,
-    -1275806237668.0 / 842570457699.0
-};
-
-static const double rk4b[5] = {
-    1432997174477.0 / 9575080441755.0,
-    5161836677717.0 / 13612068292357.0,
-    1720146321549.0 / 2090206949498.0,
-    3134564353537.0 / 4481467310338.0,
-    2277821191437.0 / 14882151754819.0
-};
-
-static const double rk4c[5] = {
-    0.0,
-    1432997174477.0 / 9575080441755.0,
-    2526269341429.0 / 6820363962896.0,
-    2006345519317.0 / 3224571057899.0,
-    2802321613138.0 / 2924317926251.0
-};
-
 DGAcoustics3D::DGAcoustics3D(const Basis3D& basis, const Mesh3D& mesh, const DGParams& params)
     : basis_(basis), mesh_(mesh), params_(params),
       rho_(AIR_DENSITY), c_(SOUND_SPEED)
@@ -82,19 +57,6 @@ int DGAcoustics3D::findElement(const Vec3d& pos) const {
         if (d < bestDist) { bestDist = d; bestElem = k; }
     }
     return bestElem;
-}
-
-double DGAcoustics3D::interpolatePressure(const MatXd& p, int elem, const Vec3d& pos) const {
-    double totalW = 0.0, val = 0.0;
-    for (int i = 0; i < basis_.Np; ++i) {
-        double dx = mesh_.x(i, elem) - pos.x();
-        double dy = mesh_.y(i, elem) - pos.y();
-        double dz = mesh_.z(i, elem) - pos.z();
-        double w = 1.0 / (dx*dx + dy*dy + dz*dz + 1e-20);
-        totalW += w;
-        val += w * p(i, elem);
-    }
-    return val / totalW;
 }
 
 double DGAcoustics3D::computeTimeStep() const {
@@ -341,18 +303,18 @@ AcousticsResult3D DGAcoustics3D::solve(
         double time = step * dt;
 
         for (int stage = 0; stage < 5; ++stage) {
-            double stageTime = time + rk4c[stage] * dt;
+            double stageTime = time + LSRK4_C[stage] * dt;
             computeRHS(p, ux, uy, uz, rhsP, rhsUx, rhsUy, rhsUz, stageTime);
 
-            resP  = rk4a[stage] * resP  + dt * rhsP;
-            resUx = rk4a[stage] * resUx + dt * rhsUx;
-            resUy = rk4a[stage] * resUy + dt * rhsUy;
-            resUz = rk4a[stage] * resUz + dt * rhsUz;
+            resP  = LSRK4_A[stage] * resP  + dt * rhsP;
+            resUx = LSRK4_A[stage] * resUx + dt * rhsUx;
+            resUy = LSRK4_A[stage] * resUy + dt * rhsUy;
+            resUz = LSRK4_A[stage] * resUz + dt * rhsUz;
 
-            p  += rk4b[stage] * resP;
-            ux += rk4b[stage] * resUx;
-            uy += rk4b[stage] * resUy;
-            uz += rk4b[stage] * resUz;
+            p  += LSRK4_B[stage] * resP;
+            ux += LSRK4_B[stage] * resUx;
+            uy += LSRK4_B[stage] * resUy;
+            uz += LSRK4_B[stage] * resUz;
         }
 
         double pListener = 0.0;

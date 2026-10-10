@@ -19,8 +19,6 @@ struct Basis2D {
     MatXd Dr, Ds;       // differentiation matrices
     MatXd LIFT;         // surface-to-volume lift operator
     MatXi Fmask;        // (Nfp x Nfaces) face node indices
-
-    VecXd Fscale;       // not used on reference; filled per-element later
 };
 
 Basis2D buildBasis2D(int N);

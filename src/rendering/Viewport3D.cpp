@@ -46,7 +46,6 @@ bool Viewport3D::loadModel(const QString& filepath) {
     if (!mesh_.load(filepath)) return false;
 
     modelCenter_  = mesh_.center();
-    originalSize_ = mesh_.diagonalSize();
 
     featureEdges_ = SurfaceGrouper::computeFeatureEdges(mesh_, 10.0f);
     surfaces_     = SurfaceGrouper::groupTrianglesIntoSurfaces(mesh_, featureEdges_);
@@ -156,23 +155,11 @@ void Viewport3D::adjustActivePointDistance(float delta) {
     }
 }
 
-float Viewport3D::getActivePointDistance() const {
-    if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size()))
-        return placedPoints_[activePointIndex_].distance;
-    return 0.0f;
-}
-
 void Viewport3D::setActivePointType(const std::string& type) {
     if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size())) {
         placedPoints_[activePointIndex_].pointType = type;
         update();
     }
-}
-
-std::string Viewport3D::getActivePointType() const {
-    if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size()))
-        return placedPoints_[activePointIndex_].pointType;
-    return POINT_TYPE_NONE;
 }
 
 void Viewport3D::removeActivePoint() {

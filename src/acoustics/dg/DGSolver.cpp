@@ -17,28 +17,36 @@
 namespace prs {
 namespace dg {
 
-// LSRK4 coefficients (needed for GPU path)
-static const float gpu_rk4a[5] = {
-    0.0f,
-    -567301805773.0f  / 1357537059087.0f,
-    -2404267990393.0f / 2016746695238.0f,
-    -3550918686646.0f / 2091501179385.0f,
-    -1275806237668.0f / 842570457699.0f
-};
-static const float gpu_rk4b[5] = {
-    1432997174477.0f / 9575080441755.0f,
-    5161836677717.0f / 13612068292357.0f,
-    1720146321549.0f / 2090206949498.0f,
-    3134564353537.0f / 4481467310338.0f,
-    2277821191437.0f / 14882151754819.0f
-};
-static const float gpu_rk4c[5] = {
-    0.0f,
-    1432997174477.0f / 9575080441755.0f,
-    2526269341429.0f / 6820363962896.0f,
-    2006345519317.0f / 3224571057899.0f,
-    2802321613138.0f / 2924317926251.0f
-};
+// Resample the DG-rate IR to DEFAULT_SAMPLE_RATE (linear interpolation), then peak-normalize.
+static void finalizeImpulseResponse(DGSolver::Result& r) {
+    if (r.sampleRate > 0 && std::abs(r.sampleRate - DEFAULT_SAMPLE_RATE) > 1.0) {
+        double ratio = static_cast<double>(DEFAULT_SAMPLE_RATE) / r.sampleRate;
+        int outLen = static_cast<int>(r.impulseResponse.size() * ratio);
+        std::vector<float> resampled(outLen);
+        for (int i = 0; i < outLen; ++i) {
+            double srcIdx = i / ratio;
+            int lo = static_cast<int>(srcIdx);
+            int hi = lo + 1;
+            double frac = srcIdx - lo;
+            if (hi >= static_cast<int>(r.impulseResponse.size())) hi = lo;
+            resampled[i] = static_cast<float>(
+                (1.0 - frac) * r.impulseResponse[lo]
+                + frac * r.impulseResponse[hi]);
+        }
+        r.impulseResponse = std::move(resampled);
+        r.sampleRate = static_cast<float>(DEFAULT_SAMPLE_RATE);
+    }
+
+    // Normalize
+    float maxVal = 0.0f;
+    for (float v : r.impulseResponse)
+        maxVal = std::max(maxVal, std::abs(v));
+    if (maxVal > 1e-10f) {
+        float scale = 1.0f / maxVal;
+        for (float& v : r.impulseResponse)
+            v *= scale;
+    }
+}
 
 DGSolver::Result DGSolver::solve(
     const Vec3f& sourcePos,
@@ -202,12 +210,12 @@ DGSolver::Result DGSolver::solve2D(
             double time = step * dt;
 
             for (int stage = 0; stage < 5; ++stage) {
-                double stageTime = time + static_cast<double>(gpu_rk4c[stage]) * dt;
+                double stageTime = time + LSRK4_C[stage] * dt;
                 double arg = (stageTime - sourceT0) / sourceSigma;
                 float pulse = static_cast<float>(std::exp(-0.5 * arg * arg));
 
                 gpu.computeRHS2D(pulse);
-                gpu.rkStageUpdate2D(gpu_rk4a[stage], gpu_rk4b[stage], dtF);
+                gpu.rkStageUpdate2D(float(LSRK4_A[stage]), float(LSRK4_B[stage]), dtF);
             }
 
             irData[step] = gpu.readListenerPressure2D();
@@ -256,56 +264,11 @@ DGSolver::Result DGSolver::solve2D(
 
         result.duration = static_cast<float>(acousticResult.duration);
 
-        int targetSampleRate = DEFAULT_SAMPLE_RATE;
-        if (std::abs(acousticResult.sampleRate - targetSampleRate) < 1.0) {
-            result.impulseResponse = std::move(acousticResult.impulseResponse);
-            result.sampleRate = static_cast<float>(acousticResult.sampleRate);
-        } else {
-            double ratio = static_cast<double>(targetSampleRate) / acousticResult.sampleRate;
-            int outLen = static_cast<int>(acousticResult.impulseResponse.size() * ratio);
-            result.impulseResponse.resize(outLen);
-            for (int i = 0; i < outLen; ++i) {
-                double srcIdx = i / ratio;
-                int lo = static_cast<int>(srcIdx);
-                int hi = lo + 1;
-                double frac = srcIdx - lo;
-                if (hi >= static_cast<int>(acousticResult.impulseResponse.size())) hi = lo;
-                result.impulseResponse[i] = static_cast<float>(
-                    (1.0 - frac) * acousticResult.impulseResponse[lo]
-                    + frac * acousticResult.impulseResponse[hi]);
-            }
-            result.sampleRate = static_cast<float>(targetSampleRate);
-        }
+        result.impulseResponse = std::move(acousticResult.impulseResponse);
+        result.sampleRate = static_cast<float>(acousticResult.sampleRate);
     }
 
-    // Normalize
-    float maxVal = 0.0f;
-    for (float v : result.impulseResponse)
-        maxVal = std::max(maxVal, std::abs(v));
-    if (maxVal > 1e-10f) {
-        float scale = 1.0f / maxVal;
-        for (float& v : result.impulseResponse)
-            v *= scale;
-    }
-
-    // Resample from DG sample rate to audio rate if needed
-    if (result.sampleRate > 0 && std::abs(result.sampleRate - DEFAULT_SAMPLE_RATE) > 1.0) {
-        double ratio = static_cast<double>(DEFAULT_SAMPLE_RATE) / result.sampleRate;
-        int outLen = static_cast<int>(result.impulseResponse.size() * ratio);
-        std::vector<float> resampled(outLen);
-        for (int i = 0; i < outLen; ++i) {
-            double srcIdx = i / ratio;
-            int lo = static_cast<int>(srcIdx);
-            int hi = lo + 1;
-            double frac = srcIdx - lo;
-            if (hi >= static_cast<int>(result.impulseResponse.size())) hi = lo;
-            resampled[i] = static_cast<float>(
-                (1.0 - frac) * result.impulseResponse[lo]
-                + frac * result.impulseResponse[hi]);
-        }
-        result.impulseResponse = std::move(resampled);
-        result.sampleRate = static_cast<float>(DEFAULT_SAMPLE_RATE);
-    }
+    finalizeImpulseResponse(result);
 
     if (progressCallback)
         progressCallback(100, "DG 2D: Complete");
@@ -449,11 +412,11 @@ DGSolver::Result DGSolver::solve3D(
             double time = step * dt;
 
             for (int stage = 0; stage < 5; ++stage) {
-                double stageTime = time + static_cast<double>(gpu_rk4c[stage]) * dt;
+                double stageTime = time + LSRK4_C[stage] * dt;
                 double arg = (stageTime - sourceT0) / sourceSigma;
                 float pulse = static_cast<float>(std::exp(-0.5 * arg * arg));
                 gpu.computeRHS3D(pulse);
-                gpu.rkStageUpdate3D(gpu_rk4a[stage], gpu_rk4b[stage], dtF);
+                gpu.rkStageUpdate3D(float(LSRK4_A[stage]), float(LSRK4_B[stage]), dtF);
             }
 
             irData[step] = gpu.readListenerPressure3D();
@@ -494,56 +457,11 @@ DGSolver::Result DGSolver::solve3D(
 
         result.duration = static_cast<float>(acousticResult.duration);
 
-        int targetSampleRate = DEFAULT_SAMPLE_RATE;
-        if (std::abs(acousticResult.sampleRate - targetSampleRate) < 1.0) {
-            result.impulseResponse = std::move(acousticResult.impulseResponse);
-            result.sampleRate = static_cast<float>(acousticResult.sampleRate);
-        } else {
-            double ratio = static_cast<double>(targetSampleRate) / acousticResult.sampleRate;
-            int outLen = static_cast<int>(acousticResult.impulseResponse.size() * ratio);
-            result.impulseResponse.resize(outLen);
-            for (int i = 0; i < outLen; ++i) {
-                double srcIdx = i / ratio;
-                int lo = static_cast<int>(srcIdx);
-                int hi = lo + 1;
-                double frac = srcIdx - lo;
-                if (hi >= static_cast<int>(acousticResult.impulseResponse.size())) hi = lo;
-                result.impulseResponse[i] = static_cast<float>(
-                    (1.0 - frac) * acousticResult.impulseResponse[lo]
-                    + frac * acousticResult.impulseResponse[hi]);
-            }
-            result.sampleRate = static_cast<float>(targetSampleRate);
-        }
+        result.impulseResponse = std::move(acousticResult.impulseResponse);
+        result.sampleRate = static_cast<float>(acousticResult.sampleRate);
     }
 
-    // Normalize
-    float maxVal = 0.0f;
-    for (float v : result.impulseResponse)
-        maxVal = std::max(maxVal, std::abs(v));
-    if (maxVal > 1e-10f) {
-        float scale = 1.0f / maxVal;
-        for (float& v : result.impulseResponse)
-            v *= scale;
-    }
-
-    // Resample if needed
-    if (result.sampleRate > 0 && std::abs(result.sampleRate - DEFAULT_SAMPLE_RATE) > 1.0) {
-        double ratio = static_cast<double>(DEFAULT_SAMPLE_RATE) / result.sampleRate;
-        int outLen = static_cast<int>(result.impulseResponse.size() * ratio);
-        std::vector<float> resampled(outLen);
-        for (int i = 0; i < outLen; ++i) {
-            double srcIdx = i / ratio;
-            int lo = static_cast<int>(srcIdx);
-            int hi = lo + 1;
-            double frac = srcIdx - lo;
-            if (hi >= static_cast<int>(result.impulseResponse.size())) hi = lo;
-            resampled[i] = static_cast<float>(
-                (1.0 - frac) * result.impulseResponse[lo]
-                + frac * result.impulseResponse[hi]);
-        }
-        result.impulseResponse = std::move(resampled);
-        result.sampleRate = static_cast<float>(DEFAULT_SAMPLE_RATE);
-    }
+    finalizeImpulseResponse(result);
 
     if (progressCallback)
         progressCallback(100, "DG 3D: Complete");
