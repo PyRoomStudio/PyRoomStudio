@@ -25,6 +25,8 @@ public:
     void updateColor(int surfaceIndex, const Color3i& color);
     void updateSurfaceAppearance(int surfaceIndex, const Color3i& color, const QPixmap& textureThumbnail);
 
+    void setFilter(const QString& filter);
+
 signals:
     void surfaceClicked(int surfaceIndex, const QString& name);
 
@@ -34,6 +36,7 @@ private:
         ColorSwatch* swatch;
     };
     std::vector<SwatchEntry> entries_;
+    std::vector<ColorSwatch*> swatches_;
 };
 
 } // namespace prs

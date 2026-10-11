@@ -29,6 +29,9 @@ if(NOT Eigen3_FOUND)
         if(POLICY CMP0168)
             cmake_policy(SET CMP0168 OLD) # suppress FetchContent_Populate deprecation (CMake 3.30+)
         endif()
+        if(POLICY CMP0169)
+            cmake_policy(SET CMP0169 OLD) # allow FetchContent_Populate with declared details (CMake 3.30+)
+        endif()
         FetchContent_Populate(eigen)
     endif()
     add_library(Eigen3::Eigen INTERFACE IMPORTED GLOBAL)
@@ -215,6 +218,8 @@ if(WIN32)
 else()
     find_package(OpenGL REQUIRED)
     target_link_libraries(seiche_core PUBLIC OpenGL::GL OpenGL::GLU)
+    # Apple deprecated GL/GLU in 10.14; it still works, so mute the per-call warnings.
+    target_compile_definitions(seiche_core PUBLIC $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>)
 endif()
 
 target_compile_definitions(seiche_core PUBLIC
@@ -226,6 +231,13 @@ qt6_add_resources(RESOURCES resources/resources.qrc)
 
 # WIN32 / MACOSX_BUNDLE are ignored on other platforms; the bundle lets macdeployqt package it.
 add_executable(${PROJECT_NAME} WIN32 MACOSX_BUNDLE src/main.cpp ${RESOURCES})
+# macOS needs a non-empty bundle ID or the out-of-process NSOpenPanel silently never appears.
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    MACOSX_BUNDLE_GUI_IDENTIFIER org.seiche.Seiche
+    MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}
+    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
+)
 if(WIN32)
     target_sources(${PROJECT_NAME} PRIVATE resources/app.rc)
 endif()

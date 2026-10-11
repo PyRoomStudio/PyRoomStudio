@@ -270,7 +270,7 @@ void MainWindow::setupCentralWidget() {
 
     // Left: Library panel
     libraryPanel_ = new LibraryPanel;
-    libraryPanel_->setFixedWidth(200);
+    libraryPanel_->setMinimumWidth(160);
     splitter->addWidget(libraryPanel_);
 
     // Center: 3D viewport
@@ -314,6 +314,9 @@ void MainWindow::setupCentralWidget() {
     splitter->setStretchFactor(0, 0);
     splitter->setStretchFactor(1, 1);
     splitter->setStretchFactor(2, 0);
+    splitter->setCollapsible(0, false);
+    // Viewport absorbs the rest; library starts at 220 px and is user-resizable.
+    splitter->setSizes({220, 1000, 300});
 
     mainLayout->addWidget(splitter, 1);
 
@@ -623,7 +626,7 @@ void MainWindow::saveProjectToFile(const QString& filepath) {
 }
 
 void MainWindow::addRecentProject(const QString& filepath) {
-    QSettings settings("PyRoomStudio", "PyRoomStudio");
+    QSettings settings("Seiche", "Seiche");
     QStringList recent = settings.value("recentProjects").toStringList();
     recent.removeAll(filepath);
     recent.prepend(filepath);
@@ -635,7 +638,7 @@ void MainWindow::addRecentProject(const QString& filepath) {
 
 void MainWindow::updateRecentProjectsMenu() {
     recentProjectsMenu_->clear();
-    QSettings settings("PyRoomStudio", "PyRoomStudio");
+    QSettings settings("Seiche", "Seiche");
     QStringList recent = settings.value("recentProjects").toStringList();
 
     if (recent.isEmpty()) {
@@ -649,7 +652,7 @@ void MainWindow::updateRecentProjectsMenu() {
     }
     recentProjectsMenu_->addSeparator();
     recentProjectsMenu_->addAction("Clear Recent", [this]() {
-        QSettings s("PyRoomStudio", "PyRoomStudio");
+        QSettings s("Seiche", "Seiche");
         s.remove("recentProjects");
         updateRecentProjectsMenu();
     });
@@ -760,7 +763,7 @@ void MainWindow::onRender() {
     for (auto& l : listeners)
         simScene.addListener(l.position, l.name, l.orientation);
 
-    QSettings settings("PyRoomStudio", "PyRoomStudio");
+    QSettings settings("Seiche", "Seiche");
 
     SimulationWorker::Params params;
     params.scene = simScene;
@@ -847,7 +850,7 @@ void MainWindow::onScaleChanged(float factor) {
 }
 
 void MainWindow::updateTitle() {
-    QString title = "PyRoomStudio";
+    QString title = "Seiche";
     if (!currentProjectFile_.isEmpty()) {
         QFileInfo fi(currentProjectFile_);
         title += " - " + fi.fileName();
@@ -861,12 +864,12 @@ void MainWindow::updateTitle() {
 }
 
 QString MainWindow::defaultProjectDir() const {
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     return s.value("defaultProjectDir", "").toString();
 }
 
 void MainWindow::configureAutoSaveTimer() {
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     int minutes = s.value("autoSaveInterval", 0).toInt();
     if (minutes > 0) {
         autoSaveTimer_->start(minutes * 60 * 1000);

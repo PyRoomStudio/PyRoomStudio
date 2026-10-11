@@ -11,6 +11,7 @@
 #include <QSettings>
 #include <QCoreApplication>
 #include <QFontMetrics>
+#include <QLineEdit>
 
 namespace prs {
 
@@ -30,6 +31,12 @@ void LibraryPanel::setupUI() {
     header->setFixedHeight(QFontMetrics(header->font()).height() + 8);
     header->setStyleSheet("background: #e0e0e0; font-weight: bold; padding: 0 4px;");
     layout->addWidget(header);
+
+    search_ = new QLineEdit;
+    search_->setPlaceholderText("Search sounds and materials...");
+    search_->setClearButtonEnabled(true);
+    connect(search_, &QLineEdit::textChanged, this, &LibraryPanel::applyFilter);
+    layout->addWidget(search_);
 
     tabWidget_ = new QTabWidget;
     tabWidget_->setTabPosition(QTabWidget::North);
@@ -61,7 +68,7 @@ void LibraryPanel::createSoundTab(QWidget* tab) {
         QString dir = QFileDialog::getExistingDirectory(this, "Select Sound Folder");
         if (!dir.isEmpty()) {
             scanSoundDirectory(dir);
-            QSettings s("PyRoomStudio", "PyRoomStudio");
+            QSettings s("Seiche", "Seiche");
             s.setValue("soundDirectory", dir);
         }
     });
@@ -69,6 +76,8 @@ void LibraryPanel::createSoundTab(QWidget* tab) {
 
     soundList_ = new QListWidget;
     soundList_->setAlternatingRowColors(true);
+    soundList_->setWordWrap(true);
+    soundList_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     connect(soundList_, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item) {
         QString filepath = item->data(Qt::UserRole).toString();
         emit soundFileSelected(filepath);
@@ -78,9 +87,10 @@ void LibraryPanel::createSoundTab(QWidget* tab) {
     auto* hintLabel = new QLabel("Double-click to select a sound file");
     hintLabel->setStyleSheet("font-size: 9px;");
     hintLabel->setAlignment(Qt::AlignCenter);
+    hintLabel->setWordWrap(true);
     layout->addWidget(hintLabel);
 
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     QString savedDir = s.value("soundDirectory", "sounds/sources").toString();
     if (QDir(savedDir).exists())
         scanSoundDirectory(savedDir);
@@ -103,11 +113,23 @@ void LibraryPanel::scanSoundDirectory(const QString& dir) {
         item->setToolTip(fi.absoluteFilePath());
         soundList_->addItem(item);
     }
+    applyFilter();
+}
+
+void LibraryPanel::applyFilter() {
+    const QString text = search_->text();
+    for (int i = 0; i < soundList_->count(); ++i) {
+        auto* item = soundList_->item(i);
+        item->setHidden(!item->text().contains(text, Qt::CaseInsensitive));
+    }
+    for (auto* gallery : materialGalleries_)
+        gallery->setFilter(text);
 }
 
 void LibraryPanel::createMaterialTab(QWidget* tab) {
     auto* scrollArea = new QScrollArea;
     scrollArea->setWidgetResizable(true);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     auto* content       = new QWidget;
     auto* contentLayout = new QVBoxLayout(content);

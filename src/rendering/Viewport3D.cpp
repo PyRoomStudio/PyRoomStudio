@@ -31,7 +31,7 @@ Viewport3D::Viewport3D(QWidget* parent)
 }
 
 void Viewport3D::applyDisplaySettings() {
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     gridVisible_       = s.value("display/gridVisible", true).toBool();
     gridSpacing_       = static_cast<float>(s.value("display/gridSpacing", 1.0).toDouble());
     transparencyAlpha_ = static_cast<float>(s.value("display/transparencyAlpha", 0.55).toDouble());
@@ -804,8 +804,9 @@ std::pair<Vec3f, Vec3f> Viewport3D::getRayFromMouse(const QPoint& pos) {
     glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
     glGetDoublev(GL_PROJECTION_MATRIX, projection);
 
-    double mx = pos.x();
-    double my = viewport[3] - pos.y();
+    const double dpr = devicePixelRatioF();  // GL_VIEWPORT is in device pixels, Qt events are logical
+    double mx = pos.x() * dpr;
+    double my = viewport[3] - pos.y() * dpr;
 
     GLdouble nx, ny, nz, fx, fy, fz;
     gluUnProject(mx, my, 0.0, modelview, projection, viewport, &nx, &ny, &nz);
@@ -976,12 +977,17 @@ void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
 
         if (dragDist < 5 && hasModel()) {
             if (measureMode_) {
-                auto hit = getIntersectionPoint(event->pos());
-                if (hit) {
+                // Snap to a placed point's position when one is under the cursor, else the surface hit.
+                std::optional<Vec3f> target;
+                if (auto idx = getPointAtMouse(event->pos()))
+                    target = placedPoints_[*idx].getPosition();
+                else if (auto hit = getIntersectionPoint(event->pos()))
+                    target = hit->point;
+                if (target) {
                     if (!measurePoint1_) {
-                        measurePoint1_ = hit->point;
+                        measurePoint1_ = target;
                     } else {
-                        measurePoint2_ = hit->point;
+                        measurePoint2_ = target;
                         float dist = (*measurePoint2_ - *measurePoint1_).norm() * scaleFactor_;
                         emit measurementResult(dist);
                     }

@@ -23,7 +23,7 @@
             "volume": 1
         },
         {
-            "audioFile": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio/sounds/sources/test_sound.wav",
+            "audioFile": "",
             "color": [
                 0.800000011920929,
                 0.20000000298023224,
@@ -91,7 +91,7 @@
     ],
     "scaleFactor": 3.299999952316284,
     "soundSourceFile": "",
-    "stlFilePath": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/resources/Room3.STL",
+    "stlFilePath": "Room3.STL",
     "surfaceColors": [
         [
             0.4065370559692383,

@@ -5,13 +5,14 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QApplication>
+#include <QGridLayout>
 
 namespace prs {
 
 ColorSwatch::ColorSwatch(const QString& label, const Color3i& color, QWidget* parent)
     : QWidget(parent), label_(label), color_(color)
 {
-    setMinimumSize(60, 60);
+    setMinimumSize(60, 70);
     setCursor(Qt::PointingHandCursor);
 }
 
@@ -46,7 +47,7 @@ void ColorSwatch::paintEvent(QPaintEvent*) {
     p.setRenderHint(QPainter::Antialiasing);
 
     QRect r = rect().adjusted(1, 1, -1, -1);
-    int colorHeight = r.height() - 20;
+    int colorHeight = r.height() - 30;
 
     QRect colorRect(r.x(), r.y(), r.width(), colorHeight);
     QColor qcolor(color_[0], color_[1], color_[2]);
@@ -68,8 +69,8 @@ void ColorSwatch::paintEvent(QPaintEvent*) {
     font.setPointSize(8);
     p.setFont(font);
     p.setPen(Qt::black);
-    QRect textRect(r.x(), r.bottom() - 18, r.width(), 18);
-    p.drawText(textRect, Qt::AlignCenter, label_);
+    QRect textRect(r.x(), r.bottom() - 28, r.width(), 28);
+    p.drawText(textRect, Qt::AlignCenter | Qt::TextWordWrap, label_);
 }
 
 void ColorSwatch::mousePressEvent(QMouseEvent* event) {
@@ -112,6 +113,21 @@ void ColorSwatch::enterEvent(QEnterEvent*) {
 void ColorSwatch::leaveEvent(QEvent*) {
     hovered_ = false;
     update();
+}
+
+int filterSwatchGrid(QGridLayout* grid, const std::vector<ColorSwatch*>& swatches,
+                     const QString& filter, int cols) {
+    int shown = 0;
+    for (auto* s : swatches) {
+        bool match = s->label().contains(filter, Qt::CaseInsensitive);
+        grid->removeWidget(s);
+        s->setVisible(match);
+        if (match) {
+            grid->addWidget(s, shown / cols, shown % cols);
+            ++shown;
+        }
+    }
+    return shown;
 }
 
 } // namespace prs
