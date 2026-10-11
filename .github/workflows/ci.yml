@@ -3,8 +3,17 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
     branches: [main]
+  # Releases made in the GitHub UI for an existing tag push nothing, so listen for them too
+  release:
+    types: [published]
+
+# A UI release with a new tag fires both push and release; keep only the latest run per tag
+concurrency:
+  group: ${{ startsWith(github.ref, 'refs/tags/') && github.ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -23,6 +32,8 @@ jobs:
           - name: macOS
             os: macos-latest
             qt-arch: clang_64
+            # Universal app; PkgConfig off so an arm64-only brew sndfile/fftw can't break the x86_64 slice
+            release-args: '"-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON'
 
     steps:
       - uses: actions/checkout@v4
@@ -64,3 +75,65 @@ jobs:
 
       - name: Test
         run: ctest --preset test
+
+      - name: Build release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          cmake --preset release ${{ matrix.release-args }}
+          cmake --build --preset release
+
+      - name: Package (Linux)
+        if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Linux'
+        run: |
+          mkdir -p stage/Seiche
+          cp build/release/Seiche stage/Seiche/
+          cp -R materials stage/Seiche/
+          tar -czf Seiche-${{ github.ref_name }}-linux.tar.gz -C stage Seiche
+
+      - name: Package (macOS)
+        if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'macOS'
+        run: |
+          cp -R materials build/release/Seiche.app/Contents/MacOS/
+          macdeployqt build/release/Seiche.app
+          ditto -c -k --keepParent build/release/Seiche.app Seiche-${{ github.ref_name }}-macos.zip
+
+      - name: Package (Windows)
+        if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'
+        run: |
+          New-Item -ItemType Directory stage/Seiche | Out-Null
+          Copy-Item build/release/Seiche.exe stage/Seiche/
+          Copy-Item -Recurse materials stage/Seiche/
+          windeployqt --release --no-compiler-runtime stage/Seiche/Seiche.exe
+          # App-local MSVC + OpenMP runtime so users don't need vc_redist installed
+          Copy-Item "$env:VCToolsRedistDir\x64\Microsoft.VC*.CRT\*.dll", "$env:VCToolsRedistDir\x64\Microsoft.VC*.OpenMP\*.dll" stage/Seiche/
+          Compress-Archive stage/Seiche Seiche-${{ github.ref_name }}-windows.zip
+
+      - name: Upload package
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: Seiche-${{ github.ref_name }}-*
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create release and attach builds
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          # Release may already exist if it was created in the GitHub UI (which pushes the tag)
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$TAG" -R "$GITHUB_REPOSITORY" --generate-notes --verify-tag
+          gh release upload "$TAG" Seiche-* -R "$GITHUB_REPOSITORY" --clobber
