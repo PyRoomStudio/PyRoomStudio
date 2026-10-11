@@ -28,8 +28,13 @@ SurfaceGallery::SurfaceGallery(const QString& title,
         });
 
         entries_.push_back({si.index, swatch});
+        swatches_.push_back(swatch);
         grid->addWidget(swatch, i / cols, i % cols);
     }
+}
+
+void SurfaceGallery::setFilter(const QString& filter) {
+    setVisible(filterSwatchGrid(static_cast<QGridLayout*>(layout()), swatches_, filter) > 0);
 }
 
 void SurfaceGallery::updateColor(int surfaceIndex, const Color3i& color) {

@@ -37,7 +37,6 @@ private:
 
     void addSourceTerm(MatXd& rhsP, double time);
 
-    double interpolatePressure(const MatXd& p, int elem, const Vec3d& pos) const;
 
     const Basis3D& basis_;
     const Mesh3D& mesh_;

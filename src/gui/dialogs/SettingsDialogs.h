@@ -53,12 +53,6 @@ class SimulationSettingsDialog : public QDialog {
 public:
     explicit SimulationSettingsDialog(QWidget* parent = nullptr);
 
-    int maxOrder() const;
-    int numRays() const;
-    float energyAbsorption() const;
-    float scattering() const;
-    bool airAbsorption() const;
-
 private:
     void accept() override;
     QSpinBox*       maxOrder_ = nullptr;

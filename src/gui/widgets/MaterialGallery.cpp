@@ -51,7 +51,7 @@ MaterialGallery::MaterialGallery(const QString& title,
     mainLayout->addWidget(header_);
 
     contentWidget_ = new QWidget(this);
-    auto* grid = new QGridLayout(contentWidget_);
+    auto* grid = grid_ = new QGridLayout(contentWidget_);
     grid->setSpacing(4);
     grid->setContentsMargins(4, 4, 4, 4);
 
@@ -78,6 +78,12 @@ MaterialGallery::MaterialGallery(const QString& title,
     connect(header_, &QPushButton::clicked, [this]() {
         setCollapsed(!collapsed_);
     });
+}
+
+void MaterialGallery::setFilter(const QString& filter) {
+    int shown = filterSwatchGrid(grid_, swatches_, filter);
+    setVisible(shown > 0);
+    contentWidget_->setVisible(!collapsed_ || !filter.isEmpty());
 }
 
 void MaterialGallery::setCollapsed(bool collapsed) {

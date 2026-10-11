@@ -30,7 +30,7 @@ class Viewport3D : public QOpenGLWidget, protected QOpenGLFunctions {
 
 public:
     explicit Viewport3D(QWidget* parent = nullptr);
-    ~Viewport3D() override = default;
+    ~Viewport3D() override;
 
     bool loadModel(const QString& filepath);
     bool hasModel() const { return mesh_.triangleCount() > 0; }
@@ -38,7 +38,6 @@ public:
     // Scale
     void setScaleFactor(float factor);
     float scaleFactor() const { return scaleFactor_; }
-    float originalSize() const { return mesh_.diagonalSize(); }
     Vec3f getRealWorldDimensions() const;
     float getRealWorldSize() const;
 
@@ -49,9 +48,7 @@ public:
     const std::string& placementPointTypeForNew() const { return placementPointTypeForNew_; }
     void updateActivePointDistance(float distance);
     void adjustActivePointDistance(float delta);
-    float getActivePointDistance() const;
     void setActivePointType(const std::string& type);
-    std::string getActivePointType() const;
     void removeActivePoint();
     void deselectPoint();
     void clearFullSelection();
@@ -65,7 +62,6 @@ public:
 
     // Measure mode
     void setMeasureMode(bool enabled);
-    bool measureMode() const { return measureMode_; }
 
     // Surface selection
     int  selectedSurfaceIndex() const { return selectedSurfaceIndex_; }
@@ -74,11 +70,9 @@ public:
     void setSurfaceColor(int surfIdx, const Color3f& color);
     void assignMaterial(int surfIdx, const Material& material);
     std::optional<Material> getSurfaceMaterial(int surfIdx) const;
-    const std::vector<std::optional<Material>>& surfaceMaterials() const { return surfaceMaterials_; }
     void toggleSurfaceTexture(int surfIdx);
     bool isSurfaceTextureActive(int surfIdx) const;
     bool loadTexture(const QString& filepath);
-    bool hasTexture() const { return textureId_ != 0; }
 
     // Acoustic simulation helpers
     std::pair<int, int> countSourcesAndListeners() const;
@@ -173,7 +167,6 @@ private:
     MeshData mesh_;
     Camera camera_;
     float scaleFactor_ = 1.0f;
-    float originalSize_ = 0.0f;
     Vec3f modelCenter_ = Vec3f::Zero();
 
     // Surface grouping
@@ -182,7 +175,7 @@ private:
     std::vector<Color3f> surfaceColors_;
     std::vector<std::optional<Material>> surfaceMaterials_;
     std::vector<bool> surfaceTextured_;
-    std::map<int, int> triangleToSurface_;
+    std::vector<int> triangleToSurface_; // -1 = triangle not in any surface
 
     // Points
     std::vector<PlacedPoint> placedPoints_;
@@ -194,6 +187,8 @@ private:
 
     // Surface selection
     int selectedSurfaceIndex_ = -1;
+    int outlineSurface_ = -1;         // surface whose boundary is cached in outlineVerts_
+    std::vector<Vec3f> outlineVerts_; // GL_LINES vertex pairs
 
     // Multi-selection
     std::set<int> selectedPointIndices_;
@@ -221,7 +216,6 @@ private:
 
     Color3f defaultSurfaceColor_ = {0.6f, 0.8f, 1.0f};
     unsigned int textureId_ = 0;
-    QImage textureImage_;
     TextureManager textureManager_;
     std::vector<GLuint> surfaceTextureIds_;
 };

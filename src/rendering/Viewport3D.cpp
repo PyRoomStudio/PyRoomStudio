@@ -31,7 +31,7 @@ Viewport3D::Viewport3D(QWidget* parent)
 }
 
 void Viewport3D::applyDisplaySettings() {
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     gridVisible_       = s.value("display/gridVisible", true).toBool();
     gridSpacing_       = static_cast<float>(s.value("display/gridSpacing", 1.0).toDouble());
     transparencyAlpha_ = static_cast<float>(s.value("display/transparencyAlpha", 0.55).toDouble());
@@ -42,11 +42,18 @@ void Viewport3D::applyDisplaySettings() {
     update();
 }
 
+Viewport3D::~Viewport3D() {
+    // Free GL objects while our context is current; members (TextureManager) destruct after doneCurrent().
+    makeCurrent();
+    if (textureId_ != 0) glDeleteTextures(1, &textureId_);
+    textureManager_.releaseAll();
+    doneCurrent();
+}
+
 bool Viewport3D::loadModel(const QString& filepath) {
     if (!mesh_.load(filepath)) return false;
 
     modelCenter_  = mesh_.center();
-    originalSize_ = mesh_.diagonalSize();
 
     featureEdges_ = SurfaceGrouper::computeFeatureEdges(mesh_, 10.0f);
     surfaces_     = SurfaceGrouper::groupTrianglesIntoSurfaces(mesh_, featureEdges_);
@@ -56,10 +63,11 @@ bool Viewport3D::loadModel(const QString& filepath) {
     surfaceTextured_.assign(surfaces_.size(), false);
     surfaceTextureIds_.assign(surfaces_.size(), 0);
 
-    triangleToSurface_.clear();
+    triangleToSurface_.assign(mesh_.triangles().size(), -1);
     for (int si = 0; si < static_cast<int>(surfaces_.size()); ++si)
         for (int ti : surfaces_[si])
             triangleToSurface_[ti] = si;
+    outlineSurface_ = -1;
 
     placedPoints_.clear();
     activePointIndex_ = -1;
@@ -156,23 +164,11 @@ void Viewport3D::adjustActivePointDistance(float delta) {
     }
 }
 
-float Viewport3D::getActivePointDistance() const {
-    if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size()))
-        return placedPoints_[activePointIndex_].distance;
-    return 0.0f;
-}
-
 void Viewport3D::setActivePointType(const std::string& type) {
     if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size())) {
         placedPoints_[activePointIndex_].pointType = type;
         update();
     }
-}
-
-std::string Viewport3D::getActivePointType() const {
-    if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size()))
-        return placedPoints_[activePointIndex_].pointType;
-    return POINT_TYPE_NONE;
 }
 
 void Viewport3D::removeActivePoint() {
@@ -372,13 +368,13 @@ bool Viewport3D::loadTexture(const QString& filepath) {
     QImage img(filepath);
     if (img.isNull()) return false;
 
-    textureImage_ = img.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
+    const QImage texImage = img.convertToFormat(QImage::Format_RGBA8888).flipped(Qt::Vertical);
     makeCurrent();
     if (textureId_ != 0) glDeleteTextures(1, &textureId_);
     glGenTextures(1, &textureId_);
     glBindTexture(GL_TEXTURE_2D, textureId_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureImage_.width(), textureImage_.height(),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, textureImage_.constBits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texImage.width(), texImage.height(),
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, texImage.constBits());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -569,21 +565,20 @@ void Viewport3D::drawMeasurementGrid() {
     glDisable(GL_LIGHTING);
     glDisable(GL_TEXTURE_2D);
 
-    for (int i = -numLines; i <= numLines; ++i) {
-        float offset = i * minorSpacing;
-        bool isMajor = (i % 5 == 0);
-
-        if (isMajor) { glColor4f(0.4f, 0.4f, 0.4f, 0.8f); glLineWidth(2); }
-        else         { glColor4f(0.7f, 0.7f, 0.7f, 0.5f); glLineWidth(1); }
+    // One batch for minor lines, then one for major (every 5th) lines on top.
+    for (bool major : {false, true}) {
+        if (major) { glColor4f(0.4f, 0.4f, 0.4f, 0.8f); glLineWidth(2); }
+        else       { glColor4f(0.7f, 0.7f, 0.7f, 0.5f); glLineWidth(1); }
 
         glBegin(GL_LINES);
-        glVertex3f(cx - extent, cy + offset, gridZ);
-        glVertex3f(cx + extent, cy + offset, gridZ);
-        glEnd();
-
-        glBegin(GL_LINES);
-        glVertex3f(cx + offset, cy - extent, gridZ);
-        glVertex3f(cx + offset, cy + extent, gridZ);
+        for (int i = -numLines; i <= numLines; ++i) {
+            if ((i % 5 == 0) != major) continue;
+            float offset = i * minorSpacing;
+            glVertex3f(cx - extent, cy + offset, gridZ);
+            glVertex3f(cx + extent, cy + offset, gridZ);
+            glVertex3f(cx + offset, cy - extent, gridZ);
+            glVertex3f(cx + offset, cy + extent, gridZ);
+        }
         glEnd();
     }
 
@@ -605,47 +600,38 @@ void Viewport3D::drawModel() {
     if (transparentMode_)
         glEnable(GL_BLEND);
 
-    // Draw textured surfaces (per-surface or global texture)
-    for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
-        auto it = triangleToSurface_.find(i);
-        if (it == triangleToSurface_.end()) continue;
-        int si = it->second;
-        if (!texturesEnabled_ || !surfaceTextured_[si]) continue;
+    // One batch per surface; textured surfaces use their own texture or the global one.
+    for (int si = 0; si < static_cast<int>(surfaces_.size()); ++si) {
+        const bool textured = texturesEnabled_ && surfaceTextured_[si];
+        if (textured) {
+            GLuint texId = (si < static_cast<int>(surfaceTextureIds_.size()) && surfaceTextureIds_[si] != 0)
+                           ? surfaceTextureIds_[si] : textureId_;
+            if (texId == 0) continue;
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, texId);
+            glColor4f(1.0f, 1.0f, 1.0f, alpha);
+        } else {
+            auto& c = surfaceColors_[si];
+            glColor4f(c[0], c[1], c[2], alpha);
+        }
 
-        GLuint texId = (si < static_cast<int>(surfaceTextureIds_.size()) && surfaceTextureIds_[si] != 0)
-                       ? surfaceTextureIds_[si] : textureId_;
-        if (texId == 0) continue;
-
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, texId);
-        glColor4f(1.0f, 1.0f, 1.0f, alpha);
         glBegin(GL_TRIANGLES);
-        for (const Vec3f* v : {&tris[i].v0, &tris[i].v1, &tris[i].v2}) {
-            Vec2f uv = getTexCoordsFromNormal(*v, tris[i].normal, mn, mx);
-            glTexCoord2f(uv.x(), uv.y());
-            glVertex3f(v->x(), v->y(), v->z());
+        for (int ti : surfaces_[si]) {
+            const auto& tri = tris[ti];
+            for (const Vec3f* v : {&tri.v0, &tri.v1, &tri.v2}) {
+                if (textured) {
+                    Vec2f uv = getTexCoordsFromNormal(*v, tri.normal, mn, mx);
+                    glTexCoord2f(uv.x(), uv.y());
+                }
+                glVertex3f(v->x(), v->y(), v->z());
+            }
         }
         glEnd();
-        glDisable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
 
-    // Draw non-textured surfaces (includes textured surfaces when textures disabled)
-    glDisable(GL_TEXTURE_2D);
-    for (int i = 0; i < static_cast<int>(tris.size()); ++i) {
-        auto it = triangleToSurface_.find(i);
-        if (it == triangleToSurface_.end()) continue;
-        int si = it->second;
-        if (texturesEnabled_ && surfaceTextured_[si]) continue;
-
-        auto& c = surfaceColors_[si];
-        glColor4f(c[0], c[1], c[2], alpha);
-
-        glBegin(GL_TRIANGLES);
-        glVertex3f(tris[i].v0.x(), tris[i].v0.y(), tris[i].v0.z());
-        glVertex3f(tris[i].v1.x(), tris[i].v1.y(), tris[i].v1.z());
-        glVertex3f(tris[i].v2.x(), tris[i].v2.y(), tris[i].v2.z());
-        glEnd();
+        if (textured) {
+            glDisable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
     }
 
     if (transparentMode_)
@@ -781,25 +767,28 @@ void Viewport3D::drawSelectedSurfaceOutline() {
     glColor4f(1, 1, 1, 1);
     glLineWidth(3);
 
-    const auto& tris = mesh_.triangles();
-    auto& surface = surfaces_[selectedSurfaceIndex_];
-
-    std::map<Edge, int> edgeCount;
-    for (int ti : surface) {
-        const Vec3f* verts[3] = {&tris[ti].v0, &tris[ti].v1, &tris[ti].v2};
-        for (int j = 0; j < 3; ++j) {
-            Edge e = makeEdge(*verts[j], *verts[(j + 1) % 3]);
-            edgeCount[e]++;
+    if (outlineSurface_ != selectedSurfaceIndex_) {
+        // Boundary = edges used by one triangle of the surface, plus feature edges.
+        const auto& tris = mesh_.triangles();
+        std::map<Edge, int> edgeCount;
+        for (int ti : surfaces_[selectedSurfaceIndex_]) {
+            const Vec3f* verts[3] = {&tris[ti].v0, &tris[ti].v1, &tris[ti].v2};
+            for (int j = 0; j < 3; ++j)
+                edgeCount[makeEdge(*verts[j], *verts[(j + 1) % 3])]++;
         }
+        outlineVerts_.clear();
+        for (auto& [edge, count] : edgeCount) {
+            if (count == 1 || featureEdges_.count(edge)) {
+                outlineVerts_.emplace_back(std::get<0>(edge.first), std::get<1>(edge.first), std::get<2>(edge.first));
+                outlineVerts_.emplace_back(std::get<0>(edge.second), std::get<1>(edge.second), std::get<2>(edge.second));
+            }
+        }
+        outlineSurface_ = selectedSurfaceIndex_;
     }
 
     glBegin(GL_LINES);
-    for (auto& [edge, count] : edgeCount) {
-        if (count == 1 || featureEdges_.count(edge)) {
-            glVertex3f(std::get<0>(edge.first), std::get<1>(edge.first), std::get<2>(edge.first));
-            glVertex3f(std::get<0>(edge.second), std::get<1>(edge.second), std::get<2>(edge.second));
-        }
-    }
+    for (const Vec3f& v : outlineVerts_)
+        glVertex3f(v.x(), v.y(), v.z());
     glEnd();
 
     glEnable(GL_DEPTH_TEST);
@@ -815,8 +804,9 @@ std::pair<Vec3f, Vec3f> Viewport3D::getRayFromMouse(const QPoint& pos) {
     glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
     glGetDoublev(GL_PROJECTION_MATRIX, projection);
 
-    double mx = pos.x();
-    double my = viewport[3] - pos.y();
+    const double dpr = devicePixelRatioF();  // GL_VIEWPORT is in device pixels, Qt events are logical
+    double mx = pos.x() * dpr;
+    double my = viewport[3] - pos.y() * dpr;
 
     GLdouble nx, ny, nz, fx, fy, fz;
     gluUnProject(mx, my, 0.0, modelview, projection, viewport, &nx, &ny, &nz);
@@ -914,9 +904,8 @@ bool Viewport3D::trySelectSurfaceAtMouse(const QPoint& pos) {
     }
 
     if (hitTri >= 0) {
-        auto it = triangleToSurface_.find(hitTri);
-        if (it != triangleToSurface_.end()) {
-            selectedSurfaceIndex_ = it->second;
+        if (triangleToSurface_[hitTri] >= 0) {
+            selectedSurfaceIndex_ = triangleToSurface_[hitTri];
             activePointIndex_ = -1;
             emit surfaceSelected(selectedSurfaceIndex_);
             return true;
@@ -988,12 +977,17 @@ void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
 
         if (dragDist < 5 && hasModel()) {
             if (measureMode_) {
-                auto hit = getIntersectionPoint(event->pos());
-                if (hit) {
+                // Snap to a placed point's position when one is under the cursor, else the surface hit.
+                std::optional<Vec3f> target;
+                if (auto idx = getPointAtMouse(event->pos()))
+                    target = placedPoints_[*idx].getPosition();
+                else if (auto hit = getIntersectionPoint(event->pos()))
+                    target = hit->point;
+                if (target) {
                     if (!measurePoint1_) {
-                        measurePoint1_ = hit->point;
+                        measurePoint1_ = target;
                     } else {
-                        measurePoint2_ = hit->point;
+                        measurePoint2_ = target;
                         float dist = (*measurePoint2_ - *measurePoint1_).norm() * scaleFactor_;
                         emit measurementResult(dist);
                     }
@@ -1124,9 +1118,8 @@ void Viewport3D::dropEvent(QDropEvent* event) {
     QPoint dropPos = event->position().toPoint();
     auto hit = getIntersectionPoint(dropPos);
     if (hit) {
-        auto it = triangleToSurface_.find(hit->triIndex);
-        if (it != triangleToSurface_.end()) {
-            assignMaterial(it->second, mat);
+        if (triangleToSurface_[hit->triIndex] >= 0) {
+            assignMaterial(triangleToSurface_[hit->triIndex], mat);
             event->acceptProposedAction();
         }
     }

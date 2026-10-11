@@ -3,6 +3,8 @@
 #include <QMenuBar>
 #include <QSettings>
 #include <QTimer>
+#include <QLineEdit>
+#include <QListWidget>
 
 #include "gui/MainWindow.h"
 #include "gui/PropertyPanel.h"
@@ -77,6 +79,38 @@ private slots:
         QVERIFY(true);
     }
 
+    void testAssetsPanelSearch() {
+        AssetsPanel panel;
+        QVector<AssetsPanel::SurfaceInfo> surfaces;
+        surfaces.append({"Floor", {200, 100, 50}, 0});
+        surfaces.append({"Wall", {50, 100, 200}, 1});
+        panel.addStlSurfaces("TestModel", surfaces);
+
+        PlacedPoint a, b;
+        a.pointType = POINT_TYPE_SOURCE; a.name = "Piano";
+        b.pointType = POINT_TYPE_SOURCE; b.name = "Voice";
+        panel.updatePointLists({a, b}, -1);
+
+        panel.findChild<QLineEdit*>()->setText("wAl");
+        auto swatches = panel.findChildren<ColorSwatch*>();
+        QCOMPARE(swatches.size(), 2);
+        for (auto* s : swatches) QCOMPARE(s->isHidden(), s->label() != "Wall");
+        QListWidget* sources = nullptr;
+        for (auto* l : panel.findChildren<QListWidget*>())
+            if (l->count() == 2) sources = l;
+        QVERIFY(sources);
+        QVERIFY(sources->item(0)->isHidden());
+        QVERIFY(sources->item(1)->isHidden());
+
+        panel.findChild<QLineEdit*>()->setText("pia");
+        QVERIFY(!sources->item(0)->isHidden());
+        QVERIFY(sources->item(1)->isHidden());
+
+        panel.findChild<QLineEdit*>()->clear();
+        for (auto* s : swatches) QVERIFY(!s->isHidden());
+        QVERIFY(!sources->item(1)->isHidden());
+    }
+
     void testBottomToolbarButtons() {
         BottomToolbar toolbar;
         QSignalSpy importRoomSpy(&toolbar, &BottomToolbar::importRoomClicked);
@@ -114,7 +148,7 @@ private slots:
     // ==================== New Feature Tests ====================
 
     void testDisplaySettingsApplied() {
-        QSettings s("PyRoomStudio", "PyRoomStudio");
+        QSettings s("Seiche", "Seiche");
         s.setValue("display/gridVisible", false);
         s.setValue("display/gridSpacing", 2.5);
         s.setValue("display/transparencyAlpha", 0.3);
@@ -144,7 +178,7 @@ private slots:
     }
 
     void testDefaultProjectDirPreference() {
-        QSettings s("PyRoomStudio", "PyRoomStudio");
+        QSettings s("Seiche", "Seiche");
         s.setValue("defaultProjectDir", "/tmp/test_projects");
 
         MainWindow w;
@@ -152,7 +186,7 @@ private slots:
     }
 
     void testAutoSaveTimerSetup() {
-        QSettings s("PyRoomStudio", "PyRoomStudio");
+        QSettings s("Seiche", "Seiche");
         s.setValue("autoSaveInterval", 5);
 
         MainWindow w;
@@ -165,7 +199,7 @@ private slots:
     }
 
     void testAutoSaveTimerDisabled() {
-        QSettings s("PyRoomStudio", "PyRoomStudio");
+        QSettings s("Seiche", "Seiche");
         s.setValue("autoSaveInterval", 0);
 
         MainWindow w;

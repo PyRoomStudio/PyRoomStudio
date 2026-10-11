@@ -1,6 +1,10 @@
 #pragma once
 
 #include "DGTypes.h"
+#include "DGBasis2D.h"
+#include "DGBasis3D.h"
+#include "DGMesh2D.h"
+#include "DGMesh3D.h"
 #include "core/Types.h"
 #include "rendering/Viewport3D.h"
 #include "acoustics/Bvh.h"
@@ -12,6 +16,7 @@
 namespace prs {
 namespace dg {
 
+// Reuse one DGSolver per room: the basis and mesh are cached across solve() calls.
 class DGSolver {
 public:
     struct Result {
@@ -51,6 +56,13 @@ private:
         const DGParams& params,
         std::function<void(int, const QString&)> progressCallback,
         std::function<bool()> cancelCheck);
+
+    // The basis and mesh depend only on the room, order and h (2D: also the slice height),
+    // not on source/listener positions, so consecutive pairs skip rebuilding them.
+    struct Cache2D { int N = -1; double h = 0.0; float sliceZ = 0.0f; Basis2D basis; Mesh2D mesh; };
+    struct Cache3D { int N = -1; double h = 0.0; Basis3D basis; Mesh3D mesh; };
+    Cache2D cache2D_;
+    Cache3D cache3D_;
 };
 
 } // namespace dg

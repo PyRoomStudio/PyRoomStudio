@@ -1,6 +1,6 @@
 <!-- <p align="center">
-  <img width="180" src="assets/logo_v2.png" alt="PyRoomStudio">
-  <p align="center"><b><font size=32px>PyRoomStudio</font></b></p>
+  <img width="180" src="assets/logo_v2.png" alt="Seiche">
+  <p align="center"><b><font size=32px>Seiche</font></b></p>
 </p> -->
 
 <p align="center">
@@ -72,6 +72,40 @@ $ ./build/Seiche # windows
 
 $ ./build/Contents/MacOS/Seiche # MacOS
 ```
+
+## Command-Line Rendering
+
+The build also produces `SeicheCLI`, a headless renderer for `.room` project files saved from the app. It renders every source/listener pair and writes the results without opening a window.
+
+```bash
+$ ./build/SeicheCLI --project my_room.room --output renders/my_room
+```
+
+Relative paths inside a `.room` file (mesh, audio) are resolved against the folder containing that file. Every source needs an audio file, either its own or the project's default sound; the CLI exits with an error otherwise.
+
+| Option | Default | Description |
+|---|---|---|
+| `-p, --project <file>` | *(required)* | Project file to render. |
+| `-o, --output <dir>` | `outputs/simulation_<timestamp>` next to the executable | Output directory. |
+| `--method <method>` | `ray` | `ray` (ray tracing + image sources), `dg2d`, or `dg3d` (wave-based discontinuous Galerkin). |
+| `--max-order <order>` | `3` | Maximum image-source reflection order (`ray`). |
+| `--n-rays <count>` | `10000` | Number of rays (`ray`). |
+| `--scattering <value>` | `0.1` | Scattering coefficient, 0–1 (`ray`). |
+| `--air-absorption <state>` | `on` | `on` or `off`. |
+| `--dg-poly-order <order>` | `3` | DG polynomial order (`dg2d`/`dg3d`). |
+| `--dg-max-frequency <hz>` | `1000` | Highest frequency resolved by DG (`dg2d`/`dg3d`). |
+| `--sample-rate <hz>` | `44100` | Output sample rate. |
+
+Progress is printed to stdout, followed by `Output: <dir>` on success. Errors go to stderr with exit code `1`.
+
+Output files:
+
+- `<listener>_from_<source>.wav`: each source as heard at each listener (stereo for `ray`, mono for DG).
+- `<listener>_mixed.wav`: all sources mixed at each listener (`ray` only).
+- `metrics.json`, `metrics.csv`, `summary.json`: per-pair acoustic metrics such as T20, T30 and SPL (`ray` only).
+- `scene.json`: the source and listener layout that was rendered.
+
+DG methods are much slower than `ray` and their cost grows quickly with `--dg-max-frequency` and `--dg-poly-order`. Start low (for example `--dg-poly-order 2 --dg-max-frequency 200`) and use a Release build.
 
 ## Releasing
 

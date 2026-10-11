@@ -15,6 +15,7 @@
 #include <QTabWidget>
 #include <QTimer>
 #include <QWidget>
+#include <utility>
 
 #include <QHash>
 
@@ -146,7 +147,7 @@ QString TranslationManager::translate(const QString& source) const {
     if (exact != dictionary.cend()) return *exact;
 
     QString result = source;
-    const QList<QPair<QString, QString>> prefixes = {
+    static const QList<QPair<QString, QString>> prefixes = {
         {"Size: ", "尺寸："}, {"Material: ", "材质："}, {"Source ", "声源 "},
         {"Listener ", "接收点 "}, {"Surface ", "表面 "}, {"Distance: ", "距离："},
         {"Loaded: ", "已加载："}, {"Saved: ", "已保存："}, {"Project opened: ", "已打开项目："},
@@ -222,11 +223,17 @@ void TranslationManager::translateApplication() {
 }
 
 bool TranslationManager::eventFilter(QObject* watched, QEvent* event) {
-    if (event->type() == QEvent::Show || event->type() == QEvent::ChildAdded) {
-        const QPointer<QObject> safeObject(watched);
-        QTimer::singleShot(0, this, [this, safeObject]() {
-            if (safeObject) translateObject(safeObject);
-        });
+    // English needs no work here: setLanguage() captures the originals when switching.
+    if (isChinese() && (event->type() == QEvent::Show || event->type() == QEvent::ChildAdded)) {
+        // Batch every object touched in this event-loop pass into one deferred retranslation.
+        if (pending_.isEmpty()) {
+            QTimer::singleShot(0, this, [this]() {
+                const auto objects = std::exchange(pending_, {});
+                for (const QPointer<QObject>& object : objects)
+                    if (object) translateObject(object);
+            });
+        }
+        pending_.insert(watched, watched);
     }
     return QObject::eventFilter(watched, event);
 }

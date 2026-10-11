@@ -81,13 +81,6 @@ bool SceneManager::hasMinimumObjects() const {
     return !soundSources_.empty() && !listeners_.empty();
 }
 
-std::pair<std::vector<Vec3f>, std::vector<Vec3f>> SceneManager::getAllPositions() const {
-    std::vector<Vec3f> srcPos, lstPos;
-    for (auto& s : soundSources_) srcPos.push_back(s.position);
-    for (auto& l : listeners_)    lstPos.push_back(l.position);
-    return {srcPos, lstPos};
-}
-
 void SceneManager::selectSource(int index) {
     if (index >= 0 && index < static_cast<int>(soundSources_.size())) {
         selectedSourceIndex_   = index;
@@ -113,12 +106,6 @@ std::optional<std::pair<std::string, int>> SceneManager::getSelectedObject() con
     if (selectedListenerIndex_ >= 0)
         return std::make_pair(std::string("listener"), selectedListenerIndex_);
     return std::nullopt;
-}
-
-bool SceneManager::deleteSelected() {
-    if (selectedSourceIndex_ >= 0) return removeSoundSource(selectedSourceIndex_);
-    if (selectedListenerIndex_ >= 0) return removeListener(selectedListenerIndex_);
-    return false;
 }
 
 static QJsonArray vec3ToJson(const Vec3f& v) {

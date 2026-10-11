@@ -131,7 +131,16 @@ int main(int argc, char* argv[]) {
 
     prs::SimulationWorker worker(params);
     QString workerError;
+    QString finishedDir;
+    int lastPercent = -1;
+    QTextStream out(stdout);
     QObject::connect(&worker, &prs::SimulationWorker::error, [&](const QString& message) { workerError = message; });
+    QObject::connect(&worker, &prs::SimulationWorker::finished, [&](const QString& dir) { finishedDir = dir; });
+    QObject::connect(&worker, &prs::SimulationWorker::progressChanged, [&](int percent, const QString& message) {
+        if (percent == lastPercent) return;  // DG emits many sub-steps per percent
+        lastPercent = percent;
+        out << '[' << percent << "%] " << message << Qt::endl;
+    });
     worker.process();
 
     if (!workerError.isEmpty()) {
@@ -139,5 +148,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    out << "Output: " << finishedDir << Qt::endl;
     return 0;
 }

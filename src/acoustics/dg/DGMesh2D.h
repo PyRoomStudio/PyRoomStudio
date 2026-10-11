@@ -36,11 +36,8 @@ struct Mesh2D {
     MatXi EToE;        // (K x 3) element-to-element neighbor (-1 = boundary)
     MatXi EToF;        // (K x 3) element-to-face of neighbor
     VecXi vmapM, vmapP; // interior/exterior node maps for flux computation
-    VecXi mapB;         // boundary node indices (into vmapM)
-    VecXi bcType;       // boundary condition type per boundary face (material index)
 
     // Boundary data
-    std::vector<BoundaryEdge2D> boundaryEdges;
     VecXd boundaryImpedance; // impedance at each boundary surface node
 };
 

@@ -193,16 +193,6 @@ struct BWTriangle {
     bool bad = false;
 };
 
-static double circumRadius2(const Vec2d& a, const Vec2d& b, const Vec2d& c) {
-    double ax = a.x() - c.x(), ay = a.y() - c.y();
-    double bx = b.x() - c.x(), by = b.y() - c.y();
-    double D = 2.0 * (ax * by - ay * bx);
-    if (std::abs(D) < 1e-30) return 1e30;
-    double ux = (by * (ax * ax + ay * ay) - ay * (bx * bx + by * by)) / D;
-    double uy = (ax * (bx * bx + by * by) - bx * (ax * ax + ay * ay)) / D;
-    return ux * ux + uy * uy;
-}
-
 static Vec2d circumCenter(const Vec2d& a, const Vec2d& b, const Vec2d& c) {
     double ax = a.x() - c.x(), ay = a.y() - c.y();
     double bx = b.x() - c.x(), by = b.y() - c.y();
@@ -420,11 +410,11 @@ Mesh2D buildMesh2D(
     }
 
     // Step 6: Build vertex array (only used vertices)
-    std::map<int, int> vertexRemap;
+    std::vector<int> vertexRemap(allPoints.size(), -1);
     std::vector<Vec2d> usedVertices;
     for (const auto& tri : validTriangles) {
         for (int v : tri.v) {
-            if (vertexRemap.find(v) == vertexRemap.end()) {
+            if (vertexRemap[v] < 0) {
                 vertexRemap[v] = static_cast<int>(usedVertices.size());
                 usedVertices.push_back(allPoints[v]);
             }
@@ -624,8 +614,8 @@ Mesh2D buildMesh2D(
         }
     }
 
-    // Step 13: Identify boundary nodes and assign impedance
-    std::vector<int> boundaryIndices;
+    // Step 13: Identify boundary nodes and assign impedance (interior surface nodes = 0)
+    mesh.boundaryImpedance = VecXd::Zero(totalSurfNodes);
     for (int k = 0; k < mesh.K; ++k) {
         for (int f = 0; f < Nfaces; ++f) {
             if (mesh.EToE(k, f) == k && mesh.EToF(k, f) == f) {
@@ -644,36 +634,11 @@ Mesh2D buildMesh2D(
                 double alpha = polygon.edgeAbsorption[edgeIdx];
                 double Z = absorptionToImpedance(alpha);
 
-                BoundaryEdge2D be;
-                be.element = k;
-                be.localFace = f;
-                be.impedance = Z;
-                mesh.boundaryEdges.push_back(be);
-
-                for (int i = 0; i < Nfp; ++i) {
-                    int surfIdx = k * totalFaceNodes + f * Nfp + i;
-                    boundaryIndices.push_back(surfIdx);
-                }
+                for (int i = 0; i < Nfp; ++i)
+                    mesh.boundaryImpedance(k * totalFaceNodes + f * Nfp + i) = Z;
             }
         }
     }
-
-    mesh.mapB.resize(static_cast<int>(boundaryIndices.size()));
-    for (int i = 0; i < static_cast<int>(boundaryIndices.size()); ++i)
-        mesh.mapB(i) = boundaryIndices[i];
-
-    // Build per-surface-node impedance array (for all surface nodes, interior = 0)
-    mesh.boundaryImpedance = VecXd::Zero(totalSurfNodes);
-    for (const auto& be : mesh.boundaryEdges) {
-        for (int i = 0; i < Nfp; ++i) {
-            int surfIdx = be.element * totalFaceNodes + be.localFace * Nfp + i;
-            mesh.boundaryImpedance(surfIdx) = be.impedance;
-        }
-    }
-
-    mesh.bcType = VecXi::Zero(totalSurfNodes);
-    for (int i = 0; i < mesh.mapB.size(); ++i)
-        mesh.bcType(mesh.mapB(i)) = 1; // 1 = impedance BC
 
     return mesh;
 }

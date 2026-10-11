@@ -180,11 +180,6 @@ void SimulationWorker::process() {
     bvh.build(walls);
     qInfo() << "BVH built in" << phaseTimer.elapsed() << "ms";
 
-    // Build acoustic surfaces for ISM
-    phaseTimer.restart();
-    auto acousticSurfaces = buildAcousticSurfaces(params_.walls, params_.modelVertices);
-    qInfo() << "Built" << acousticSurfaces.size() << "acoustic surfaces for ISM in" << phaseTimer.elapsed() << "ms";
-
     if (isCancelled()) { emit error("Cancelled"); return; }
 
     QString outputDir = params_.outputDir;
@@ -215,10 +210,6 @@ void SimulationWorker::process() {
         dg::DGSolver dgSolver;
         int totalPairsDG = scene.soundSourceCount() * numListeners;
         int pairsDoneDG = 0;
-        int mixedFsDG = params_.sampleRate;
-
-        struct MixedStereoDG { std::vector<float> left; std::vector<float> right; };
-        std::map<int, MixedStereoDG> mixedPerListenerDG;
 
         for (int si = 0; si < scene.soundSourceCount(); ++si) {
             auto* source = scene.getSoundSource(si);
@@ -233,7 +224,6 @@ void SimulationWorker::process() {
             }
             audioFile.applyVolume(source->volume);
             int fs = audioFile.sampleRate();
-            mixedFsDG = fs;
             const std::vector<float>& inputSamples = audioFile.samples();
             if (inputSamples.empty()) { pairsDoneDG += numListeners; continue; }
 
@@ -247,8 +237,8 @@ void SimulationWorker::process() {
                     .arg(QString::fromStdString(source->name),
                          QString::fromStdString(listener->name)));
 
-                auto dgProgress = [this, pct](int subPct, const QString& msg) {
-                    emit progressChanged(pct + subPct * 80 / (100 * std::max(1, 1)), msg);
+                auto dgProgress = [this, pct, totalPairsDG](int subPct, const QString& msg) {
+                    emit progressChanged(pct + subPct * 80 / (100 * std::max(totalPairsDG, 1)), msg);
                 };
                 auto dgCancel = [this]() -> bool { return isCancelled(); };
 
@@ -284,6 +274,10 @@ void SimulationWorker::process() {
     }
 
     // ========== Ray-tracing path (existing) ==========
+    // Acoustic surfaces are only used by the ISM (the DG path returned above)
+    phaseTimer.restart();
+    auto acousticSurfaces = buildAcousticSurfaces(params_.walls, params_.modelVertices);
+    qInfo() << "Built" << acousticSurfaces.size() << "acoustic surfaces for ISM in" << phaseTimer.elapsed() << "ms";
 
     int totalPairs = scene.soundSourceCount() * numListeners;
     int pairsDone = 0;

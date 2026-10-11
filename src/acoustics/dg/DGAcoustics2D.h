@@ -38,7 +38,6 @@ private:
 
     void addSourceTerm(MatXd& rhsP, double time);
 
-    double interpolatePressure(const MatXd& p, int elem, const Vec2d& pos) const;
 
     const Basis2D& basis_;
     const Mesh2D& mesh_;

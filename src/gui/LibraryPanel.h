@@ -9,6 +9,7 @@
 #include <QListWidget>
 #include <QPushButton>
 #include <QLabel>
+#include <QLineEdit>
 #include <QString>
 #include <vector>
 
@@ -31,8 +32,10 @@ private:
     void createSoundTab(QWidget* tab);
     void createMaterialTab(QWidget* tab);
     void scanSoundDirectory(const QString& dir);
+    void applyFilter();
 
     QTabWidget* tabWidget_ = nullptr;
+    QLineEdit* search_ = nullptr;
     std::vector<MaterialGallery*> materialGalleries_;
     QListWidget* soundList_ = nullptr;
     QLabel* soundDirLabel_ = nullptr;

@@ -6,6 +6,9 @@
 #include <QString>
 #include <QPoint>
 #include <QPixmap>
+#include <vector>
+
+class QGridLayout;
 
 namespace prs {
 
@@ -21,6 +24,7 @@ public:
     void setPreviewPixmap(const QPixmap& pixmap);
     void clearPreviewPixmap();
     void setDragData(const QByteArray& data);
+    const QString& label() const { return label_; }
     QSize sizeHint() const override { return {70, 70}; }
 
 signals:
@@ -41,5 +45,10 @@ private:
     QPoint dragStartPos_;
     QByteArray dragData_;
 };
+
+// Shows swatches whose label contains `filter` (case-insensitive), packed into
+// `grid` without gaps. Returns the number shown.
+int filterSwatchGrid(QGridLayout* grid, const std::vector<ColorSwatch*>& swatches,
+                     const QString& filter, int cols = 2);
 
 } // namespace prs

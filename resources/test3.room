@@ -1,7 +1,7 @@
 {
     "placedPoints": [
         {
-            "audioFile": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/sounds/sources/93KHJ.wav",
+            "audioFile": "",
             "color": [
                 0.20000000298023224,
                 0.800000011920929,
@@ -24,7 +24,7 @@
             "volume": 1
         },
         {
-            "audioFile": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/sounds/sources/93KHJ.wav",
+            "audioFile": "",
             "color": [
                 0.800000011920929,
                 0.20000000298023224,
@@ -53,19 +53,19 @@
                 0.20000000298023224,
                 0.800000011920929
             ],
-            "distance": -0.6000000238418579,
+            "distance": -0.5,
             "name": "side",
             "normal": {
-                "x": 0,
-                "y": 0,
-                "z": -1
+                "x": -0.015736542642116547,
+                "y": 0.9998762011528015,
+                "z": 0
             },
             "orientationYaw": 264,
             "pointType": "listener",
             "surfacePoint": {
-                "x": 4.62094259262085,
-                "y": 6.270637035369873,
-                "z": -4.76837158203125e-07
+                "x": 4.892584800720215,
+                "y": 6.3419189453125,
+                "z": 0.8218774795532227
             },
             "volume": 1
         },
@@ -93,9 +93,10 @@
             "volume": 1
         }
     ],
+    "sampleRate": 44100,
     "scaleFactor": 4.199999809265137,
-    "soundSourceFile": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/sounds/sources/93KHJ.wav",
-    "stlFilePath": "C:/Users/Ematt/Documents/PyRoomStudio/pyroomstudio-cpp/resources/Room1.STL",
+    "soundSourceFile": "",
+    "stlFilePath": "/Users/ematth/Documents/Seiche/resources/Room1.STL",
     "surfaceColors": [
         [
             0.45345649123191833,

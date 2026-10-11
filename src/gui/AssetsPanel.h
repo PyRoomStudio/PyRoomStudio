@@ -11,6 +11,7 @@
 
 class QTabWidget;
 class QListWidget;
+class QLineEdit;
 
 namespace prs {
 
@@ -42,10 +43,12 @@ signals:
 
 private:
     void setupUI();
+    void applyFilter();
 
     QVBoxLayout*    contentLayout_ = nullptr;
     SurfaceGallery* gallery_       = nullptr;
     QTabWidget*     tabWidget_     = nullptr;
+    QLineEdit*      search_        = nullptr;
     QWidget*        surfacesTab_   = nullptr;
     QListWidget*    sourcesList_   = nullptr;
     QListWidget*    listenersList_ = nullptr;

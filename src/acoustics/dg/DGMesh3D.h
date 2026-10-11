@@ -38,11 +38,8 @@ struct Mesh3D {
     MatXi EToE;          // (K x 4) element-to-element neighbor
     MatXi EToF;          // (K x 4) element-to-face of neighbor
     VecXi vmapM, vmapP;  // interior/exterior node maps
-    VecXi mapB;          // boundary node indices
-    VecXi bcType;        // BC type per surface node
 
     // Boundary data
-    std::vector<BoundaryFace3D> boundaryFaces;
     VecXd boundaryImpedance;
 };
 

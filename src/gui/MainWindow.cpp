@@ -6,7 +6,6 @@
 #include "BottomToolbar.h"
 #include "IconUtils.h"
 #include "TranslationManager.h"
-#include "acoustics/AcousticSimulator.h"
 #include "acoustics/SimulationWorker.h"
 #include "acoustics/SimulationQueue.h"
 #include "SimulationQueuePanel.h"
@@ -30,6 +29,7 @@
 #include <QStatusBar>
 #include <QApplication>
 #include <QCloseEvent>
+#include <QPixmapCache>
 #include <QSettings>
 #include <QThread>
 #include <QProgressDialog>
@@ -58,10 +58,17 @@ QPixmap loadSurfaceTextureThumbnail(prs::Viewport3D* vp, int surfIdx) {
     if (!mat || !vp->isSurfaceTextureActive(surfIdx) || mat->texturePath.empty())
         return {};
     QString resolved = prs::resolveMaterialTexturePath(QString::fromStdString(mat->texturePath));
-    QImage img(resolved);
-    if (img.isNull())
-        return {};
-    return QPixmap::fromImage(img);
+    // Decode each texture once; swatches are small, so cache a downscaled copy.
+    QPixmap thumb;
+    if (!QPixmapCache::find(resolved, &thumb)) {
+        QImage img(resolved);
+        if (img.isNull())
+            return {};
+        thumb = QPixmap::fromImage(img.width() > 256 || img.height() > 256
+            ? img.scaled(256, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation) : img);
+        QPixmapCache::insert(resolved, thumb);
+    }
+    return thumb;
 }
 
 } // namespace
@@ -263,7 +270,7 @@ void MainWindow::setupCentralWidget() {
 
     // Left: Library panel
     libraryPanel_ = new LibraryPanel;
-    libraryPanel_->setFixedWidth(200);
+    libraryPanel_->setMinimumWidth(160);
     splitter->addWidget(libraryPanel_);
 
     // Center: 3D viewport
@@ -307,6 +314,9 @@ void MainWindow::setupCentralWidget() {
     splitter->setStretchFactor(0, 0);
     splitter->setStretchFactor(1, 1);
     splitter->setStretchFactor(2, 0);
+    splitter->setCollapsible(0, false);
+    // Viewport absorbs the rest; library starts at 220 px and is user-resizable.
+    splitter->setSizes({220, 1000, 300});
 
     mainLayout->addWidget(splitter, 1);
 
@@ -541,10 +551,15 @@ void MainWindow::onOpenProject() {
         return;
     }
 
+    if (openProjectFile(path))
+        addRecentProject(path);
+}
+
+bool MainWindow::openProjectFile(const QString& path) {
     auto data = ProjectFile::load(path);
     if (!data) {
         QMessageBox::warning(this, "Error", "Failed to load project: " + path);
-        return;
+        return false;
     }
 
     if (!data->stlFilePath.isEmpty()) {
@@ -554,7 +569,7 @@ void MainWindow::onOpenProject() {
 
         if (!viewport_->loadModel(stlPath)) {
             QMessageBox::warning(this, "Error", "Failed to load 3D model: " + stlPath);
-            return;
+            return false;
         }
     }
 
@@ -569,9 +584,9 @@ void MainWindow::onOpenProject() {
     soundSourceFile_ = data->soundSourceFile;
     currentProjectFile_ = path;
     projectDirty_ = false;
-    addRecentProject(path);
     updateTitle();
     statusBar()->showMessage("Project opened: " + path);
+    return true;
 }
 
 void MainWindow::onSaveProject() {
@@ -611,7 +626,7 @@ void MainWindow::saveProjectToFile(const QString& filepath) {
 }
 
 void MainWindow::addRecentProject(const QString& filepath) {
-    QSettings settings("PyRoomStudio", "PyRoomStudio");
+    QSettings settings("Seiche", "Seiche");
     QStringList recent = settings.value("recentProjects").toStringList();
     recent.removeAll(filepath);
     recent.prepend(filepath);
@@ -623,7 +638,7 @@ void MainWindow::addRecentProject(const QString& filepath) {
 
 void MainWindow::updateRecentProjectsMenu() {
     recentProjectsMenu_->clear();
-    QSettings settings("PyRoomStudio", "PyRoomStudio");
+    QSettings settings("Seiche", "Seiche");
     QStringList recent = settings.value("recentProjects").toStringList();
 
     if (recent.isEmpty()) {
@@ -633,36 +648,11 @@ void MainWindow::updateRecentProjectsMenu() {
 
     for (auto& path : recent) {
         QFileInfo fi(path);
-        recentProjectsMenu_->addAction(fi.fileName(), [this, path]() {
-            auto data = ProjectFile::load(path);
-            if (!data) {
-                QMessageBox::warning(this, "Error", "Failed to load project: " + path);
-                return;
-            }
-            if (!data->stlFilePath.isEmpty()) {
-                QString stlPath = data->stlFilePath;
-                if (QFileInfo(stlPath).isRelative())
-                    stlPath = QFileInfo(path).dir().filePath(stlPath);
-                if (!viewport_->loadModel(stlPath)) {
-                    QMessageBox::warning(this, "Error", "Failed to load 3D model: " + stlPath);
-                    return;
-                }
-            }
-            viewport_->setScaleFactor(data->scaleFactor);
-            for (int i = 0; i < static_cast<int>(data->surfaceColors.size()); ++i)
-                viewport_->setSurfaceColor(i, data->surfaceColors[i]);
-            viewport_->clearPlacedPoints();
-            viewport_->restorePlacedPoints(data->placedPoints);
-            soundSourceFile_ = data->soundSourceFile;
-            currentProjectFile_ = path;
-            projectDirty_ = false;
-            updateTitle();
-            statusBar()->showMessage("Project opened: " + path);
-        });
+        recentProjectsMenu_->addAction(fi.fileName(), [this, path]() { openProjectFile(path); });
     }
     recentProjectsMenu_->addSeparator();
     recentProjectsMenu_->addAction("Clear Recent", [this]() {
-        QSettings s("PyRoomStudio", "PyRoomStudio");
+        QSettings s("Seiche", "Seiche");
         s.remove("recentProjects");
         updateRecentProjectsMenu();
     });
@@ -696,40 +686,19 @@ void MainWindow::onImportRoom() {
     }
 }
 
-void MainWindow::onImportSound() {
-    QString path = QFileDialog::getOpenFileName(this,
-        "Select Sound Source",
-        defaultProjectDir(),
-        "Audio files (*.wav *.mp3 *.flac *.ogg);;WAV files (*.wav);;All files (*.*)");
-    if (path.isEmpty()) return;
-    soundSourceFile_ = path;
-    updateTitle();
-    statusBar()->showMessage("Sound loaded: " + path);
-}
+void MainWindow::onAddSourcePlacement() { togglePlacement(POINT_TYPE_SOURCE); }
 
-void MainWindow::onAddSourcePlacement() {
+void MainWindow::onAddListenerPlacement() { togglePlacement(POINT_TYPE_LISTENER); }
+
+void MainWindow::togglePlacement(const char* pointType) {
     if (!viewport_->hasModel()) {
         statusBar()->showMessage("Load a 3D model first");
         return;
     }
-    if (viewport_->placementMode() && viewport_->placementPointTypeForNew() == POINT_TYPE_SOURCE)
+    if (viewport_->placementMode() && viewport_->placementPointTypeForNew() == pointType)
         viewport_->setPlacementMode(false);
     else {
-        viewport_->setPlacementPointTypeForNew(POINT_TYPE_SOURCE);
-        viewport_->setPlacementMode(true);
-    }
-    updatePlacementToolbar();
-}
-
-void MainWindow::onAddListenerPlacement() {
-    if (!viewport_->hasModel()) {
-        statusBar()->showMessage("Load a 3D model first");
-        return;
-    }
-    if (viewport_->placementMode() && viewport_->placementPointTypeForNew() == POINT_TYPE_LISTENER)
-        viewport_->setPlacementMode(false);
-    else {
-        viewport_->setPlacementPointTypeForNew(POINT_TYPE_LISTENER);
+        viewport_->setPlacementPointTypeForNew(pointType);
         viewport_->setPlacementMode(true);
     }
     updatePlacementToolbar();
@@ -794,7 +763,7 @@ void MainWindow::onRender() {
     for (auto& l : listeners)
         simScene.addListener(l.position, l.name, l.orientation);
 
-    QSettings settings("PyRoomStudio", "PyRoomStudio");
+    QSettings settings("Seiche", "Seiche");
 
     SimulationWorker::Params params;
     params.scene = simScene;
@@ -881,7 +850,7 @@ void MainWindow::onScaleChanged(float factor) {
 }
 
 void MainWindow::updateTitle() {
-    QString title = "PyRoomStudio";
+    QString title = "Seiche";
     if (!currentProjectFile_.isEmpty()) {
         QFileInfo fi(currentProjectFile_);
         title += " - " + fi.fileName();
@@ -895,12 +864,12 @@ void MainWindow::updateTitle() {
 }
 
 QString MainWindow::defaultProjectDir() const {
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     return s.value("defaultProjectDir", "").toString();
 }
 
 void MainWindow::configureAutoSaveTimer() {
-    QSettings s("PyRoomStudio", "PyRoomStudio");
+    QSettings s("Seiche", "Seiche");
     int minutes = s.value("autoSaveInterval", 0).toInt();
     if (minutes > 0) {
         autoSaveTimer_->start(minutes * 60 * 1000);

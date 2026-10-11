@@ -99,6 +99,16 @@ bool buildSimulationParams(const QString& projectPath, const ProjectData& projec
     }
 
     params->scene = buildScene(project, projectPath, project.soundSourceFile);
+    QStringList missingAudio;
+    for (const auto& s : params->scene.soundSources()) {
+        if (!QFileInfo::exists(QString::fromStdString(s.audioFile)))
+            missingAudio << QString::fromStdString(s.name);
+    }
+    if (!missingAudio.isEmpty()) {
+        if (error)
+            *error = QString("source(s) with missing audio file: %1").arg(missingAudio.join(", "));
+        return false;
+    }
     params->walls = buildWalls(mesh, project);
     params->roomCenter = mesh.center() * project.scaleFactor;
     params->modelVertices = mesh.scaledFlatVertices(project.scaleFactor);

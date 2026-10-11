@@ -1,6 +1,8 @@
 #pragma once
 
+#include <QHash>
 #include <QObject>
+#include <QPointer>
 #include <QString>
 
 class QAction;
@@ -31,6 +33,7 @@ private:
     void translateObject(QObject* object);
     void translateAction(QAction* action);
     QString language_ = QStringLiteral("en");
+    QHash<QObject*, QPointer<QObject>> pending_; // objects awaiting deferred retranslation
 };
 
 } // namespace prs

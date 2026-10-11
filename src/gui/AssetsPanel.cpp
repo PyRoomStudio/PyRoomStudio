@@ -10,6 +10,7 @@
 #include <QListWidget>
 #include <QVBoxLayout>
 #include <QFontMetrics>
+#include <QLineEdit>
 
 namespace prs {
 
@@ -29,6 +30,12 @@ void AssetsPanel::setupUI() {
     header->setFixedHeight(QFontMetrics(header->font()).height() + 8);
     header->setStyleSheet("background: #e0e0e0; font-weight: bold; padding: 0 4px;");
     mainLayout->addWidget(header);
+
+    search_ = new QLineEdit;
+    search_->setPlaceholderText("Search assets...");
+    search_->setClearButtonEnabled(true);
+    connect(search_, &QLineEdit::textChanged, this, &AssetsPanel::applyFilter);
+    mainLayout->addWidget(search_);
 
     tabWidget_ = new QTabWidget;
     tabWidget_->setTabPosition(QTabWidget::North);
@@ -95,6 +102,18 @@ void AssetsPanel::addStlSurfaces(const QString& stlName, const QVector<SurfaceIn
     connect(gallery_, &SurfaceGallery::surfaceClicked, this, &AssetsPanel::surfaceClicked);
 
     contentLayout_->insertWidget(0, gallery_);
+    applyFilter();
+}
+
+void AssetsPanel::applyFilter() {
+    const QString text = search_->text();
+    for (auto* list : {sourcesList_, listenersList_}) {
+        for (int i = 0; i < list->count(); ++i) {
+            auto* item = list->item(i);
+            item->setHidden(!item->text().contains(text, Qt::CaseInsensitive));
+        }
+    }
+    if (gallery_) gallery_->setFilter(text);
 }
 
 void AssetsPanel::updateSurfaceColor(int surfaceIndex, const Color3i& color) {
@@ -141,6 +160,7 @@ void AssetsPanel::updatePointLists(const std::vector<PlacedPoint>& points, int a
             if (i == activePointIndex) listenersList_->setCurrentItem(item);
         }
     }
+    applyFilter();
 }
 
 } // namespace prs

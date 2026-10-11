@@ -52,7 +52,7 @@ private slots:
         std::vector<float> signal = {0.2f, -0.5f, 0.3f};
         SignalProcessing::normalize(signal, 0.95f);
         float maxAbs = 0;
-        for (float s : signal) maxAbs = std::max(maxAbs, std::abs(s));
+        for (float s : signal) maxAbs = (std::max)(maxAbs, std::abs(s));
         QVERIFY(std::abs(maxAbs - 0.95f) < 1e-5f);
     }
 

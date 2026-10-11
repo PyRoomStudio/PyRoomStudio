@@ -15,9 +15,7 @@ public:
     TextureManager& operator=(const TextureManager&) = delete;
 
     GLuint getOrLoad(const QString& path);
-    void release(const QString& path);
     void releaseAll();
-    bool has(const QString& path) const;
 
 private:
     std::map<QString, GLuint> cache_;
