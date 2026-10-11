@@ -264,7 +264,7 @@ private slots:
         float peak = 0.0f;
         for (float v : result.impulseResponse) {
             QVERIFY(std::isfinite(v));
-            peak = std::max(peak, std::abs(v));
+            peak = (std::max)(peak, std::abs(v));
         }
         QVERIFY(peak > 0.0f);
     }
