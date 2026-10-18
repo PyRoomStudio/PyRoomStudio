@@ -66,10 +66,6 @@ void AssetsPanel::setupUI() {
         if (ok) emit pointListClicked(idx);
     });
     srcLay->addWidget(sourcesList_);
-    auto* srcHint = new QLabel("Click to select a source");
-    srcHint->setAlignment(Qt::AlignCenter);
-    srcHint->setStyleSheet("font-size: 9px;");
-    srcLay->addWidget(srcHint);
 
     auto* listenersTab = new QWidget;
     auto* lstLay       = new QVBoxLayout(listenersTab);
@@ -82,10 +78,6 @@ void AssetsPanel::setupUI() {
         if (ok) emit pointListClicked(idx);
     });
     lstLay->addWidget(listenersList_);
-    auto* lstHint = new QLabel("Click to select a listener");
-    lstHint->setAlignment(Qt::AlignCenter);
-    lstHint->setStyleSheet("font-size: 9px;");
-    lstLay->addWidget(lstHint);
 
     tabWidget_->addTab(surfacesTab_, "SURFACES");
     tabWidget_->addTab(sourcesTab, "SOURCES");
