@@ -212,6 +212,21 @@ void MainWindow::setupMenus() {
     connect(chineseAction, &QAction::triggered, this, []() {
         TranslationManager::instance().setLanguage(QStringLiteral("zh_CN"));
     });
+
+    auto* helpMenu = menuBar()->addMenu("&Help");
+    helpMenu->addAction("&About Seiche Acoustics", this, [this]() {
+        QMessageBox box(this);
+        box.setWindowTitle("About Seiche Acoustics");
+        box.setIconPixmap(iconFromSvgResource(":/logo.svg", 64).pixmap(64, 64));
+        box.setTextFormat(Qt::RichText);
+        box.setTextInteractionFlags(Qt::TextBrowserInteraction); // opens the link
+        box.setText(QString("<h3>Seiche</h3><p>Version %1</p>"
+                            "<p>Created by Evan Matthews and William Chen.</p>"
+                            "<p><a href=\"https://github.com/SeicheAcoustics/Seiche/graphs/contributors\">"
+                            "All contributors on GitHub</a></p>")
+                        .arg(QCoreApplication::applicationVersion()));
+        box.exec();
+    });
 }
 
 void MainWindow::setupToolbars() {

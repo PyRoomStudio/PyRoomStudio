@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     app.setPalette(light);
 
     app.setApplicationName("Seiche");
-    app.setApplicationVersion("1.0.0");
+    app.setApplicationVersion(SEICHE_VERSION);
     app.setOrganizationName("Seiche");
     app.setWindowIcon(prs::iconFromSvgResource(":/logo.svg", 48));
 

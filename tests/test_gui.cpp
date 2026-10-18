@@ -42,6 +42,7 @@ private slots:
         QVERIFY(menuTitles.contains("&Edit"));
         QVERIFY(menuTitles.contains("&View"));
         QVERIFY(menuTitles.contains("&Settings"));
+        QVERIFY(menuTitles.contains("&Help"));
     }
 
     void testPropertyPanelSignals() {

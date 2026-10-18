@@ -224,6 +224,7 @@ endif()
 
 target_compile_definitions(seiche_core PUBLIC
     _USE_MATH_DEFINES
+    SEICHE_VERSION="${PROJECT_VERSION}"
     SEICHE_ENABLE_GL_COMPUTE=$<BOOL:${SEICHE_ENABLE_GL_COMPUTE}>
 )
 
