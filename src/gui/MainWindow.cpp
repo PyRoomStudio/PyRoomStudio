@@ -497,6 +497,7 @@ void MainWindow::connectSignals() {
                 propertyPanel_->setMaterialName(materialName);
         });
     connect(viewport_, &Viewport3D::surfaceAppearanceChanged, this, &MainWindow::syncAssetsSurface);
+    connect(viewport_, &Viewport3D::surfaceAppearanceChanged, this, &MainWindow::updateMaterialPreview);
 
     // Library panel -> sound file selection
     connect(libraryPanel_, &LibraryPanel::soundFileSelected, [this](const QString& path) {
@@ -857,6 +858,7 @@ void MainWindow::onSurfaceSelected(int index) {
     propertyPanel_->setSurfaceControlsEnabled(true);
     auto mat = viewport_->getSurfaceMaterial(index);
     propertyPanel_->setMaterialName(mat ? QString::fromStdString(mat->name) : "");
+    updateMaterialPreview(index);
 }
 
 void MainWindow::onSurfaceDeselected() {
@@ -942,6 +944,18 @@ void MainWindow::populateAssetsFromRenderer(const QString& filepath) {
     QFileInfo fi(filepath);
     assetsPanel_->addStlSurfaces(fi.baseName(), surfaces);
     refreshAssetsPointLists();
+}
+
+void MainWindow::updateMaterialPreview(int surfIdx) {
+    if (surfIdx != viewport_->selectedSurfaceIndex())
+        return;
+    if (!viewport_->getSurfaceMaterial(surfIdx)) {
+        propertyPanel_->setMaterialPreview(QColor());
+        return;
+    }
+    Color3i c = linearSurfaceColorToDisplay(viewport_->surfaceColors()[surfIdx]);
+    propertyPanel_->setMaterialPreview(QColor(c[0], c[1], c[2]),
+                                       loadSurfaceTextureThumbnail(viewport_, surfIdx));
 }
 
 void MainWindow::syncAssetsSurface(int surfIdx) {

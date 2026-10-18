@@ -287,6 +287,20 @@ private slots:
         QCOMPARE(static_cast<int>(vp.selectedPointIndices().size()), 0);
     }
 
+    void testPropertyPanelMaterialPreview() {
+        PropertyPanel panel;
+        panel.setSurfaceControlsEnabled(true);
+        panel.setMaterialPreview(QColor(200, 100, 50));
+        QLabel* shown = nullptr;
+        for (auto* l : panel.findChildren<QLabel*>())
+            if (!l->pixmap().isNull()) shown = l;
+        QVERIFY(shown);
+        QVERIFY(!shown->isHidden());
+        QCOMPARE(shown->pixmap().toImage().pixelColor(4, 4), QColor(200, 100, 50));
+        panel.setSurfaceControlsEnabled(false);
+        QVERIFY(shown->isHidden());
+    }
+
     void testRemoveActivePointDeselects() {
         Viewport3D vp;
         PlacedPoint p1, p2;

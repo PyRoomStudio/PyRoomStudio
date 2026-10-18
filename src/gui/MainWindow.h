@@ -74,6 +74,7 @@ private:
     void togglePlacement(const char* pointType);
     void populateAssetsFromRenderer(const QString& filepath);
     void syncAssetsSurface(int surfaceIndex);
+    void updateMaterialPreview(int surfaceIndex);
     void saveProjectToFile(const QString& filepath);
     void addRecentProject(const QString& filepath);
     void updateRecentProjectsMenu();

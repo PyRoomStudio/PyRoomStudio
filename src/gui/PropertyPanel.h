@@ -29,6 +29,8 @@ public:
     void setPointControlsEnabled(bool enabled);
     void setSurfaceControlsEnabled(bool enabled);
     void setMaterialName(const QString& name);
+    // Invalid color hides the preview; a non-null texture is drawn over the color.
+    void setMaterialPreview(const QColor& color, const QPixmap& texture = {});
     void setPointName(const QString& name);
     void setPointVolume(float volume);
     void setPointAudioFile(const QString& filename);
@@ -78,6 +80,7 @@ private:
     QPushButton* loadTextureBtn_      = nullptr;
     QPushButton* deselectSurfBtn_     = nullptr;
     QLabel*      materialLabel_       = nullptr;
+    QLabel*      materialPreview_     = nullptr;
     QWidget*     orientationWidget_   = nullptr;
     QDial*       orientationDial_     = nullptr;
     QLabel*      orientationLabel_    = nullptr;
