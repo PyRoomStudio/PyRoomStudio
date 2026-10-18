@@ -480,6 +480,7 @@ void Viewport3D::resizeGL(int w, int h) {
 }
 
 void Viewport3D::paintGL() {
+    glUseProgram(0); // the grid legend's QPainter may leave a shader bound; fixed-function below
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glDepthMask(GL_TRUE);
@@ -516,6 +517,16 @@ void Viewport3D::paintGL() {
         glEnable(GL_DEPTH_TEST);
         glPopMatrix();
         glDisable(GL_BLEND);
+    }
+
+    if (gridVisible_) {
+        // Scale legend; major lines are every 5th (see drawMeasurementGrid).
+        QPainter painter(this);
+        painter.setPen(QColor(64, 64, 64));
+        painter.drawText(rect().adjusted(8, 8, -8, -8), Qt::AlignLeft | Qt::AlignBottom,
+            QString("Grid: %1 m \u00B7 major %2 m")
+                .arg(gridSpacing_, 0, 'g', 3).arg(gridSpacing_ * 5, 0, 'g', 3));
+        painter.end();
     }
 }
 
