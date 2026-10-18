@@ -492,8 +492,9 @@ void MainWindow::connectSignals() {
 
     // Surface material change -> PropertyPanel update
     connect(viewport_, &Viewport3D::surfaceMaterialChanged,
-        [this](int, const QString& materialName) {
-            propertyPanel_->setMaterialName(materialName);
+        [this](int index, const QString& materialName) {
+            if (index == viewport_->selectedSurfaceIndex())
+                propertyPanel_->setMaterialName(materialName);
         });
     connect(viewport_, &Viewport3D::surfaceAppearanceChanged, this, &MainWindow::syncAssetsSurface);
 

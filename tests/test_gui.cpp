@@ -252,6 +252,37 @@ private slots:
         QCOMPARE(static_cast<int>(vp.selectedPointIndices().size()), 0);
     }
 
+    void testRemoveActivePointDeselects() {
+        Viewport3D vp;
+        PlacedPoint p1, p2;
+        vp.placedPoints() = {p1, p2};
+        vp.selectPoint(0);
+        QSignalSpy spy(&vp, &Viewport3D::pointDeselected);
+        vp.removeActivePoint();
+        QCOMPARE(vp.activePointIndex(), -1);
+        QCOMPARE(spy.count(), 1);
+    }
+
+    void testRestorePointsDeselects() {
+        Viewport3D vp;
+        PlacedPoint p1;
+        vp.placedPoints() = {p1};
+        vp.selectPoint(0);
+        QSignalSpy spy(&vp, &Viewport3D::pointDeselected);
+        vp.restorePlacedPoints({p1});
+        QCOMPARE(vp.activePointIndex(), -1);
+        QCOMPARE(spy.count(), 1);
+    }
+
+    void testPropertyPanelFollowsPointRemoval() {
+        MainWindow w;
+        PlacedPoint p1, p2;
+        w.viewport()->placedPoints() = {p1, p2};
+        w.viewport()->selectPoint(1);
+        w.viewport()->removeActivePoint();
+        QCOMPARE(w.propertyPanel()->propertyContext(), PropertyPanel::Context::Room);
+    }
+
     void testMoveMode() {
         Viewport3D vp;
         QCOMPARE(vp.moveMode(), false);

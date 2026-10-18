@@ -69,11 +69,9 @@ bool Viewport3D::loadModel(const QString& filepath) {
             triangleToSurface_[ti] = si;
     outlineSurface_ = -1;
 
+    clearFullSelection();
     placedPoints_.clear();
-    activePointIndex_ = -1;
-    selectedSurfaceIndex_ = -1;
     nextPointColorIndex_ = 0;
-    selectedPointIndices_.clear();
 
     autoNormalizeScale();
 
@@ -174,10 +172,7 @@ void Viewport3D::setActivePointType(const std::string& type) {
 void Viewport3D::removeActivePoint() {
     if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size())) {
         placedPoints_.erase(placedPoints_.begin() + activePointIndex_);
-        if (placedPoints_.empty())
-            activePointIndex_ = -1;
-        else if (activePointIndex_ >= static_cast<int>(placedPoints_.size()))
-            activePointIndex_ = static_cast<int>(placedPoints_.size()) - 1;
+        activePointIndex_ = -1;
         notifyPlacedPointsChanged();
         emit pointDeselected();
         update();
@@ -230,8 +225,7 @@ void Viewport3D::clearPlacedPoints() {
 void Viewport3D::restorePlacedPoints(const std::vector<PlacedPoint>& points) {
     placedPoints_ = points;
     nextPointColorIndex_ = static_cast<int>(points.size());
-    activePointIndex_ = -1;
-    selectedPointIndices_.clear();
+    clearFullSelection();
     notifyPlacedPointsChanged();
     update();
 }
@@ -903,16 +897,10 @@ bool Viewport3D::trySelectSurfaceAtMouse(const QPoint& pos) {
         if (t && *t < minT) { minT = *t; hitTri = i; }
     }
 
-    if (hitTri >= 0) {
-        if (triangleToSurface_[hitTri] >= 0) {
-            selectedSurfaceIndex_ = triangleToSurface_[hitTri];
-            activePointIndex_ = -1;
-            emit surfaceSelected(selectedSurfaceIndex_);
-            return true;
-        }
+    if (hitTri >= 0 && triangleToSurface_[hitTri] >= 0) {
+        selectSurface(triangleToSurface_[hitTri]);
+        return true;
     }
-
-    selectedSurfaceIndex_ = -1;
     return false;
 }
 
@@ -931,9 +919,9 @@ void Viewport3D::addPointAtMouse(const QPoint& pos) {
     pt.color        = color;
 
     pt.pointType = placementPointTypeForNew_;
+    deselectSurface();
     placedPoints_.push_back(pt);
     activePointIndex_ = static_cast<int>(placedPoints_.size()) - 1;
-    selectedSurfaceIndex_ = -1;
     notifyPlacedPointsChanged();
     emit pointPlaced(activePointIndex_);
 }
@@ -995,7 +983,6 @@ void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
             } else if (trySelectPointAtMouse(event->pos())) {
             } else if (placementMode_) {
                 addPointAtMouse(event->pos());
-                selectedSurfaceIndex_ = -1;
             } else {
                 if (!trySelectSurfaceAtMouse(event->pos())) {
                     clearFullSelection();
