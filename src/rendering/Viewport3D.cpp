@@ -73,6 +73,7 @@ bool Viewport3D::loadModel(const QString& filepath) {
     placedPoints_.clear();
     nextPointColorIndex_ = 0;
 
+    camera_.setTarget(Vec3f::Zero());
     autoNormalizeScale();
 
     notifyPlacedPointsChanged();
@@ -1039,14 +1040,28 @@ void Viewport3D::wheelEvent(QWheelEvent* event) {
     if (placementMode_ && activePointIndex_ >= 0) {
         adjustActivePointDistance(delta > 0 ? 0.1f : -0.1f);
     } else {
+        // Zoom toward the surface under the cursor: shift the target by the same
+        // fraction the distance changed, so that point stays put on screen.
+        auto hit = getIntersectionPoint(event->position().toPoint());
+        float oldDist = camera_.distance();
         camera_.zoom(delta, getRealWorldSize());
+        if (hit && oldDist > 0.0f) {
+            Vec3f p = (hit->point - modelCenter_) * scaleFactor_;
+            Vec3f t = camera_.target();
+            camera_.setTarget(t + (p - t) * (1.0f - camera_.distance() / oldDist));
+        }
     }
     update();
     QOpenGLWidget::wheelEvent(event);
 }
 
 void Viewport3D::keyPressEvent(QKeyEvent* event) {
+    const float panStep = 0.05f * camera_.distance();
     switch (event->key()) {
+    case Qt::Key_W: case Qt::Key_Up:    camera_.pan(0, panStep);  update(); break;
+    case Qt::Key_S: case Qt::Key_Down:  camera_.pan(0, -panStep); update(); break;
+    case Qt::Key_A: case Qt::Key_Left:  camera_.pan(-panStep, 0); update(); break;
+    case Qt::Key_D: case Qt::Key_Right: camera_.pan(panStep, 0);  update(); break;
     case Qt::Key_T:
         transparentMode_ = !transparentMode_;
         update();

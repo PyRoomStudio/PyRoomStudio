@@ -252,6 +252,8 @@ KeyboardShortcutsDialog::KeyboardShortcutsDialog(QWidget* parent)
         {"Toggle Transparency",  "T"},
         {"Reset Surface Colors", "R"},
         {"Clear All Points",     "C"},
+        {"Move View",            "W/A/S/D, Arrows"},
+        {"Zoom Toward Cursor",   "Mouse Wheel"},
         {"Exit",                 "Ctrl+Q"},
     };
 

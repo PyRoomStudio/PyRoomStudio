@@ -95,6 +95,7 @@ const QHash<QString, QString>& chineseDictionary() {
         {"Undo", "撤销"}, {"Redo", "重做"}, {"Copy Point", "复制点"},
         {"Cut Point", "剪切点"}, {"Paste Point", "粘贴点"}, {"Delete Point", "删除点"},
         {"Clear All Points", "清除所有点"}, {"Toggle Transparency", "切换透明显示"},
+        {"Move View", "移动视图"}, {"Zoom Toward Cursor", "朝光标缩放"}, {"Mouse Wheel", "鼠标滚轮"},
         {"Render Options", "仿真选项"}, {"Select listeners to render:", "选择需要仿真的接收点："},
         {"Select All", "全选"}, {"Deselect All", "全不选"}, {"Cancel", "取消"},
         {"Simulation Method", "仿真方法"}, {"Method:", "方法："},
