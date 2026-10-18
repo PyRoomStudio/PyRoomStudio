@@ -492,8 +492,8 @@ void Viewport3D::paintGL() {
         return;
     }
 
-    drawMeasurementGrid();
     drawModel();
+    drawMeasurementGrid();
     drawSelectedSurfaceOutline();
     drawPointMarkers();
 
@@ -547,7 +547,9 @@ void Viewport3D::drawMeasurementGrid() {
 
     Vec3f mn = mesh_.minBound();
     Vec3f mx = mesh_.maxBound();
-    float gridZ = mn.z();
+    // Drawn after the model, a hair above the floor and without depth writes, so it
+    // sits on top of the floor instead of z-fighting with it.
+    float gridZ = mn.z() + 1e-4f * mesh_.diagonalSize();
     float cx = (mn.x() + mx.x()) * 0.5f;
     float cy = (mn.y() + mx.y()) * 0.5f;
     float extent = std::max(mx.x() - mn.x(), mx.y() - mn.y()) * 0.75f;
@@ -558,11 +560,16 @@ void Viewport3D::drawMeasurementGrid() {
 
     glDisable(GL_LIGHTING);
     glDisable(GL_TEXTURE_2D);
+    glDepthMask(GL_FALSE);
+    glDepthFunc(GL_LEQUAL);
+
+    // Line widths are in device pixels; scale so lines don't thin out on HiDPI screens.
+    const float dpr = static_cast<float>(devicePixelRatioF());
 
     // One batch for minor lines, then one for major (every 5th) lines on top.
     for (bool major : {false, true}) {
-        if (major) { glColor4f(0.4f, 0.4f, 0.4f, 0.8f); glLineWidth(2); }
-        else       { glColor4f(0.7f, 0.7f, 0.7f, 0.5f); glLineWidth(1); }
+        if (major) { glColor4f(0.3f, 0.3f, 0.3f, 0.9f); glLineWidth(2 * dpr); }
+        else       { glColor4f(0.55f, 0.55f, 0.55f, 0.7f); glLineWidth(dpr); }
 
         glBegin(GL_LINES);
         for (int i = -numLines; i <= numLines; ++i) {
@@ -576,6 +583,8 @@ void Viewport3D::drawMeasurementGrid() {
         glEnd();
     }
 
+    glDepthFunc(GL_LESS);
+    glDepthMask(GL_TRUE);
     glPopMatrix();
     glDisable(GL_BLEND);
 }
