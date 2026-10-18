@@ -220,6 +220,14 @@ void MainWindow::setupToolbars() {
     topToolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     topToolbar_->setIconSize(QSize(32, 32));
 
+    // Expanding spacers on both ends center the tool buttons.
+    auto addSpacer = [this]() {
+        auto* spacer = new QWidget;
+        spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        topToolbar_->addWidget(spacer);
+    };
+    addSpacer();
+
     actToolMove_ = topToolbar_->addAction(iconFromSvgResource(":/toolbar/move.svg"), "Move");
     actToolMove_->setCheckable(true);
     actToolMove_->setToolTip("Drag placed points to new positions");
@@ -258,6 +266,8 @@ void MainWindow::setupToolbars() {
     connect(actToolMeasure_, &QAction::toggled, [this](bool checked) {
         viewport_->setMeasureMode(checked);
     });
+
+    addSpacer();
 }
 
 void MainWindow::setupCentralWidget() {
