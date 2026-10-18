@@ -18,6 +18,7 @@ private slots:
         mat.name = "Concrete";
         mat.absorption = {0.02f, 0.03f, 0.03f, 0.03f, 0.04f, 0.07f};
         mat.scattering = 0.15f;
+        mat.thickness = "100mm";
         data.surfaceMaterials = {mat, std::nullopt};
 
         PlacedPoint pt;
@@ -51,6 +52,7 @@ private slots:
         QCOMPARE(static_cast<int>(loaded->surfaceMaterials.size()), 2);
         QVERIFY(loaded->surfaceMaterials[0].has_value());
         QCOMPARE(loaded->surfaceMaterials[0]->name, std::string("Concrete"));
+        QCOMPARE(loaded->surfaceMaterials[0]->thickness, std::string("100mm"));
         QVERIFY(!loaded->surfaceMaterials[1].has_value());
 
         QCOMPARE(static_cast<int>(loaded->placedPoints.size()), 1);

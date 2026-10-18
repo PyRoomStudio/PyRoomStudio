@@ -611,6 +611,10 @@ bool MainWindow::openProjectFile(const QString& path) {
 
     for (int i = 0; i < static_cast<int>(data->surfaceColors.size()); ++i)
         viewport_->setSurfaceColor(i, data->surfaceColors[i]);
+    // After colors: a material sets its own color and texture.
+    for (int i = 0; i < static_cast<int>(data->surfaceMaterials.size()); ++i)
+        if (data->surfaceMaterials[i])
+            viewport_->assignMaterial(i, *data->surfaceMaterials[i]);
 
     viewport_->clearPlacedPoints();
     viewport_->restorePlacedPoints(data->placedPoints);
@@ -645,6 +649,8 @@ void MainWindow::saveProjectToFile(const QString& filepath) {
     data.stlFilePath = viewport_->hasModel() ? viewport_->meshData().filePath() : QString();
     data.scaleFactor = viewport_->scaleFactor();
     data.surfaceColors = viewport_->surfaceColors();
+    for (int i = 0; i < static_cast<int>(viewport_->surfaces().size()); ++i)
+        data.surfaceMaterials.push_back(viewport_->getSurfaceMaterial(i));
     data.placedPoints = viewport_->placedPoints();
     data.soundSourceFile = soundSourceFile_;
 
