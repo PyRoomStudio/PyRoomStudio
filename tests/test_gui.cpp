@@ -13,6 +13,9 @@
 #include "gui/BottomToolbar.h"
 #include "gui/UndoCommands.h"
 #include "gui/widgets/ColorSwatch.h"
+#include <QTreeWidget>
+#include <QMimeData>
+#include <memory>
 #include "gui/dialogs/SettingsDialogs.h"
 #include "rendering/Viewport3D.h"
 
@@ -139,6 +142,38 @@ private slots:
         QSignalSpy sndSpy(&panel, &LibraryPanel::soundFileSelected);
         QVERIFY(matSpy.isValid());
         QVERIFY(sndSpy.isValid());
+    }
+
+    void testLibraryMaterialTree() {
+        LibraryPanel panel;
+        auto* tree = panel.findChild<QTreeWidget*>();
+        QVERIFY(tree);
+
+        // Nested group from materials/wall_treatments/curtains_fabrics
+        auto hits = tree->findItems("Curtains Fabrics", Qt::MatchExactly | Qt::MatchRecursive);
+        QCOMPARE(hits.size(), 1);
+        QVERIFY(hits[0]->parent());
+        QCOMPARE(hits[0]->parent()->text(0), QString("Wall Treatments"));
+
+        // Leaves drag as materials the viewport accepts
+        QTreeWidgetItem* leaf = hits[0]->child(0);
+        auto index = tree->model()->match(tree->model()->index(0, 0), Qt::DisplayRole, leaf->text(0), 1,
+                                          Qt::MatchExactly | Qt::MatchRecursive).value(0);
+        QVERIFY(index.isValid());
+        std::unique_ptr<QMimeData> mime(tree->model()->mimeData({index}));
+        QVERIFY(mime && mime->hasFormat("application/x-prs-material"));
+
+        QSignalSpy matSpy(&panel, &LibraryPanel::materialSelected);
+        emit tree->itemClicked(leaf, 0);
+        QCOMPARE(matSpy.count(), 1);
+
+        panel.findChild<QLineEdit*>()->setText("velour");
+        int shown = 0;
+        for (auto* item : tree->findItems("", Qt::MatchContains | Qt::MatchRecursive))
+            if (item->childCount() == 0 && !item->isHidden()) ++shown;
+        QCOMPARE(shown, 1);
+        QVERIFY(!hits[0]->isHidden());
+        QVERIFY(tree->findItems("Ceilings", Qt::MatchExactly)[0]->isHidden());
     }
 
     void testWindowTitleUpdates() {

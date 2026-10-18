@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QFileInfo>
+#include <QDirIterator>
 
 namespace prs {
 
@@ -14,26 +15,37 @@ std::vector<MaterialCategory> MaterialLoader::loadFromDirectory(const QString& d
     QDir root(dirPath);
     if (!root.exists()) return categories;
 
-    QStringList subDirs = root.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+    // Walk nested folders; a category name is its path, e.g. "Wall Treatments/Curtains Fabrics".
+    QStringList subDirs;
+    QDirIterator it(dirPath, QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        it.next();
+        subDirs << root.relativeFilePath(it.fileInfo().absoluteFilePath());
+    }
+    subDirs.sort();
+
     for (const QString& sub : subDirs) {
         QDir catDir(root.filePath(sub));
         QStringList matFiles = catDir.entryList({"*.mat"}, QDir::Files, QDir::Name);
         if (matFiles.isEmpty()) continue;
 
         MaterialCategory category;
-        // Convert directory name to display name (e.g. "masonry_walls" -> "Masonry Walls")
-        QString displayName = sub;
-        displayName.replace('_', ' ');
-        QStringList words = displayName.split(' ', Qt::SkipEmptyParts);
-        for (auto& w : words)
-            if (!w.isEmpty()) w[0] = w[0].toUpper();
-        category.name = words.join(' ').toStdString();
+        // Convert each folder name to display name (e.g. "masonry_walls" -> "Masonry Walls")
+        QStringList segments;
+        for (QString displayName : sub.split('/')) {
+            displayName.replace('_', ' ');
+            QStringList words = displayName.split(' ', Qt::SkipEmptyParts);
+            for (auto& w : words)
+                if (!w.isEmpty()) w[0] = w[0].toUpper();
+            segments << words.join(' ');
+        }
+        category.name = segments.join('/').toStdString();
 
         for (const QString& file : matFiles) {
             auto mat = loadFromFile(catDir.filePath(file));
             if (mat) {
                 if (mat->category.empty())
-                    mat->category = category.name;
+                    mat->category = segments.first().toStdString();
                 category.materials.push_back(std::move(*mat));
             }
         }
