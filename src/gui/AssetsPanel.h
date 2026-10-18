@@ -3,19 +3,23 @@
 #include "core/PlacedPoint.h"
 
 #include <QWidget>
-#include <QVBoxLayout>
 #include <QString>
 #include <QVector>
-#include <QPixmap>
+#include <QJsonArray>
 #include <vector>
 
 class QTabWidget;
 class QListWidget;
 class QLineEdit;
+class QTreeWidget;
+class QTreeWidgetItem;
 
 namespace prs {
 
-class SurfaceGallery;
+// Surface groups live in the user's profile file, keyed by absolute model path,
+// so every project that opens the same model shares them.
+QJsonArray loadSurfaceGroups(const QString& modelPath);
+bool saveSurfaceGroups(const QString& modelPath, const QJsonArray& tree);
 
 class AssetsPanel : public QWidget {
     Q_OBJECT
@@ -25,33 +29,36 @@ public:
 
     struct SurfaceInfo {
         QString name;
-        Color3i color;
         int index;
-        QString texturePath;
-        QPixmap textureThumbnail;
     };
 
     void addStlSurfaces(const QString& stlName, const QVector<SurfaceInfo>& surfaces);
-    void updateSurfaceColor(int surfaceIndex, const Color3i& color);
-    void updateSurfaceAppearance(int surfaceIndex, const Color3i& color, const QPixmap& textureThumbnail);
     void clearSurfaces();
     void updatePointLists(const std::vector<PlacedPoint>& points, int activePointIndex);
+
+    // Children of the model item: surface index (int) or {"name": str, "children": [...]}.
+    QJsonArray surfaceTree() const;
+    // Rebuilds groups from untrusted JSON; bad entries are skipped and
+    // surfaces it does not place are appended to the model item.
+    void restoreSurfaceTree(const QJsonArray& tree);
 
 signals:
     void surfaceClicked(int surfaceIndex, const QString& name);
     void pointListClicked(int pointIndex);
+    void surfaceTreeChanged(); // user created, renamed, deleted or moved a group
 
 private:
     void setupUI();
     void applyFilter();
+    void showSurfaceMenu(const QPoint& pos);
+    QTreeWidgetItem* addGroup(QTreeWidgetItem* parent, const QString& name);
 
-    QVBoxLayout*    contentLayout_ = nullptr;
-    SurfaceGallery* gallery_       = nullptr;
-    QTabWidget*     tabWidget_     = nullptr;
-    QLineEdit*      search_        = nullptr;
-    QWidget*        surfacesTab_   = nullptr;
-    QListWidget*    sourcesList_   = nullptr;
-    QListWidget*    listenersList_ = nullptr;
+    QTreeWidget*     surfaceTree_   = nullptr;
+    QTreeWidgetItem* modelItem_     = nullptr;
+    QTabWidget*      tabWidget_     = nullptr;
+    QLineEdit*       search_        = nullptr;
+    QListWidget*     sourcesList_   = nullptr;
+    QListWidget*     listenersList_ = nullptr;
 };
 
 } // namespace prs

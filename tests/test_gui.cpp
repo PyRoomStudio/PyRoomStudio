@@ -12,8 +12,11 @@
 #include "gui/AssetsPanel.h"
 #include "gui/BottomToolbar.h"
 #include "gui/UndoCommands.h"
-#include "gui/widgets/ColorSwatch.h"
 #include <QTreeWidget>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QStandardPaths>
 #include <QMimeData>
 #include <memory>
 #include "gui/dialogs/SettingsDialogs.h"
@@ -73,32 +76,37 @@ private slots:
 
     void testAssetsPanelSurfaces() {
         AssetsPanel panel;
-        QVector<AssetsPanel::SurfaceInfo> surfaces;
-        surfaces.append({"Surface 1", {200, 100, 50}, 0});
-        surfaces.append({"Surface 2", {50, 100, 200}, 1});
+        panel.addStlSurfaces("TestModel", {{"Surface 1", 0}, {"Surface 2", 1}});
+        auto* tree = panel.findChild<QTreeWidget*>();
+        QVERIFY(tree);
+        auto leaves = tree->findItems("Surface 2", Qt::MatchExactly | Qt::MatchRecursive);
+        QCOMPARE(leaves.size(), 1);
 
         QSignalSpy clickSpy(&panel, &AssetsPanel::surfaceClicked);
-        panel.addStlSurfaces("TestModel", surfaces);
+        emit tree->itemClicked(leaves[0], 0);
+        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy[0][0].toInt(), 1);
+
         panel.clearSurfaces();
-        QVERIFY(true);
+        QCOMPARE(tree->topLevelItemCount(), 0);
     }
 
     void testAssetsPanelSearch() {
         AssetsPanel panel;
-        QVector<AssetsPanel::SurfaceInfo> surfaces;
-        surfaces.append({"Floor", {200, 100, 50}, 0});
-        surfaces.append({"Wall", {50, 100, 200}, 1});
-        panel.addStlSurfaces("TestModel", surfaces);
+        panel.addStlSurfaces("TestModel", {{"Floor", 0}, {"Wall", 1}});
 
         PlacedPoint a, b;
         a.pointType = POINT_TYPE_SOURCE; a.name = "Piano";
         b.pointType = POINT_TYPE_SOURCE; b.name = "Voice";
         panel.updatePointLists({a, b}, -1);
 
+        auto* tree = panel.findChild<QTreeWidget*>();
+        auto* floor = tree->findItems("Floor", Qt::MatchExactly | Qt::MatchRecursive)[0];
+        auto* wall  = tree->findItems("Wall", Qt::MatchExactly | Qt::MatchRecursive)[0];
+
         panel.findChild<QLineEdit*>()->setText("wAl");
-        auto swatches = panel.findChildren<ColorSwatch*>();
-        QCOMPARE(swatches.size(), 2);
-        for (auto* s : swatches) QCOMPARE(s->isHidden(), s->label() != "Wall");
+        QVERIFY(floor->isHidden());
+        QVERIFY(!wall->isHidden());
         QListWidget* sources = nullptr;
         for (auto* l : panel.findChildren<QListWidget*>())
             if (l->count() == 2) sources = l;
@@ -111,8 +119,56 @@ private slots:
         QVERIFY(sources->item(1)->isHidden());
 
         panel.findChild<QLineEdit*>()->clear();
-        for (auto* s : swatches) QVERIFY(!s->isHidden());
+        QVERIFY(!floor->isHidden());
+        QVERIFY(!wall->isHidden());
         QVERIFY(!sources->item(1)->isHidden());
+    }
+
+    void testSurfaceTreeRestoreValidates() {
+        AssetsPanel panel;
+        panel.addStlSurfaces("TestModel", {{"Surface 1", 0}, {"Surface 2", 1}, {"Surface 3", 2}});
+
+        // Out-of-range (99), duplicate (1) and junk entries are dropped; surface 0 is appended.
+        auto in = QJsonDocument::fromJson(R"([
+            {"name": "Walls", "children": [1, {"name": "North", "children": [2]}, {"name": "Empty", "children": []}]},
+            99, 1, "junk", {"children": [0]}
+        ])").array();
+        panel.restoreSurfaceTree(in);
+
+        auto expected = QJsonDocument::fromJson(R"([
+            {"name": "Walls", "children": [1, {"name": "North", "children": [2]}, {"name": "Empty", "children": []}]},
+            0
+        ])").array();
+        QCOMPARE(panel.surfaceTree(), expected);
+
+        // Empty groups stay visible with no filter.
+        auto* tree = panel.findChild<QTreeWidget*>();
+        QVERIFY(!tree->findItems("Empty", Qt::MatchExactly | Qt::MatchRecursive)[0]->isHidden());
+    }
+
+    void testSurfaceGroupsProfile() {
+        QStandardPaths::setTestModeEnabled(true);
+        const QString profile =
+            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/profile.json";
+        QFile::remove(profile);
+
+        QJsonArray a{QJsonObject{{"name", "G"}, {"children", QJsonArray{0}}}};
+        QJsonArray b{1, 0};
+        QVERIFY(saveSurfaceGroups("/models/a.stl", a));
+        QVERIFY(saveSurfaceGroups("/models/b.stl", b));
+        QCOMPARE(loadSurfaceGroups("/models/a.stl"), a);
+        QCOMPARE(loadSurfaceGroups("/models/b.stl"), b);
+        QVERIFY(loadSurfaceGroups("/models/none.stl").isEmpty());
+
+        // A corrupt profile reads as empty instead of failing.
+        QFile f(profile);
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.write("{not json");
+        f.close();
+        QVERIFY(loadSurfaceGroups("/models/a.stl").isEmpty());
+
+        QFile::remove(profile);
+        QStandardPaths::setTestModeEnabled(false);
     }
 
     void testBottomToolbarButtons() {
@@ -126,14 +182,6 @@ private slots:
         QVERIFY(addSourceSpy.isValid());
         QVERIFY(addListenerSpy.isValid());
         QVERIFY(renderSpy.isValid());
-    }
-
-    void testColorSwatchSignal() {
-        ColorSwatch swatch("Test", {200, 100, 50});
-        QSignalSpy spy(&swatch, &ColorSwatch::clicked);
-        QVERIFY(spy.isValid());
-        QTest::mouseClick(&swatch, Qt::LeftButton);
-        QCOMPARE(spy.count(), 1);
     }
 
     void testLibraryPanelSignals() {

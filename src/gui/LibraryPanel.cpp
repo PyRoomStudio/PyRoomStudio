@@ -1,5 +1,6 @@
 #include "LibraryPanel.h"
 #include "core/MaterialLoader.h"
+#include "widgets/TreeFilter.h"
 
 #include <QLabel>
 #include <QDir>
@@ -166,22 +167,8 @@ void LibraryPanel::applyFilter() {
         auto* item = soundList_->item(i);
         item->setHidden(!item->text().contains(text, Qt::CaseInsensitive));
     }
-
-    // Leaves match by name; a group stays visible while any descendant matches.
-    std::function<bool(QTreeWidgetItem*)> filterItem = [&](QTreeWidgetItem* item) {
-        bool visible = false;
-        if (item->data(0, Qt::UserRole).isValid()) {
-            visible = item->text(0).contains(text, Qt::CaseInsensitive);
-        } else {
-            for (int i = 0; i < item->childCount(); ++i)
-                visible |= filterItem(item->child(i));
-            if (visible && !text.isEmpty()) item->setExpanded(true);
-        }
-        item->setHidden(!visible);
-        return visible;
-    };
     for (int i = 0; i < materialTree_->topLevelItemCount(); ++i)
-        filterItem(materialTree_->topLevelItem(i));
+        filterTreeItem(materialTree_->topLevelItem(i), text);
 }
 
 void LibraryPanel::createMaterialTab(QWidget* tab) {

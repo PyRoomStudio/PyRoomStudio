@@ -27,7 +27,8 @@ const QHash<QString, QString>& chineseDictionary() {
     static const QHash<QString, QString> dictionary = {
         {"&File", "文件(&F)"}, {"&Edit", "编辑(&E)"}, {"&View", "视图(&V)"},
         {"&Settings", "设置(&S)"},
-        {"&Help", "帮助(&H)"}, {"&About Seiche Acoustics", "关于 Seiche Acoustics(&A)"},
+        {"&Help", "帮助(&H)"},
+        {"New Group", "新建分组"}, {"Rename Group", "重命名分组"}, {"Delete Group", "删除分组"}, {"&About Seiche Acoustics", "关于 Seiche Acoustics(&A)"},
         {"About Seiche Acoustics", "关于 Seiche Acoustics"}, {"&New Project", "新建项目(&N)"},
         {"&Open Project...", "打开项目(&O)…"}, {"&Save Project", "保存项目(&S)"},
         {"Save Project &As...", "项目另存为(&A)…"}, {"Recent Projects", "最近的项目"},

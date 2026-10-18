@@ -384,6 +384,12 @@ void MainWindow::connectSignals() {
     connect(assetsPanel_, &AssetsPanel::surfaceClicked, [this](int surfIdx, const QString&) {
         viewport_->selectSurface(surfIdx);
     });
+    connect(assetsPanel_, &AssetsPanel::surfaceTreeChanged, this, [this]() {
+        if (!viewport_->hasModel()) return;
+        QString model = QFileInfo(viewport_->meshData().filePath()).absoluteFilePath();
+        if (!saveSurfaceGroups(model, assetsPanel_->surfaceTree()))
+            statusBar()->showMessage("Could not save surface groups to user profile", 5000);
+    });
 
     // Bottom toolbar
     connect(bottomToolbar_, &BottomToolbar::importRoomClicked,   this, &MainWindow::onImportRoom);
@@ -496,7 +502,6 @@ void MainWindow::connectSignals() {
             if (index == viewport_->selectedSurfaceIndex())
                 propertyPanel_->setMaterialName(materialName);
         });
-    connect(viewport_, &Viewport3D::surfaceAppearanceChanged, this, &MainWindow::syncAssetsSurface);
     connect(viewport_, &Viewport3D::surfaceAppearanceChanged, this, &MainWindow::updateMaterialPreview);
 
     // Library panel -> sound file selection
@@ -928,21 +933,13 @@ void MainWindow::updatePlacementToolbar() {
 }
 
 void MainWindow::populateAssetsFromRenderer(const QString& filepath) {
-    assetsPanel_->clearSurfaces();
-
-    const auto& colors = viewport_->surfaceColors();
     QVector<AssetsPanel::SurfaceInfo> surfaces;
-    for (int i = 0; i < static_cast<int>(colors.size()); ++i) {
-        Color3i displayColor = linearSurfaceColorToDisplay(colors[i]);
-        QString texPath;
-        if (auto m = viewport_->getSurfaceMaterial(i))
-            texPath = QString::fromStdString(m->texturePath);
-        QPixmap thumb = loadSurfaceTextureThumbnail(viewport_, i);
-        surfaces.append({QString("Surface %1").arg(i + 1), displayColor, i, texPath, thumb});
-    }
+    for (int i = 0; i < static_cast<int>(viewport_->surfaces().size()); ++i)
+        surfaces.append({QString("Surface %1").arg(i + 1), i});
 
     QFileInfo fi(filepath);
     assetsPanel_->addStlSurfaces(fi.baseName(), surfaces);
+    assetsPanel_->restoreSurfaceTree(loadSurfaceGroups(fi.absoluteFilePath()));
     refreshAssetsPointLists();
 }
 
@@ -956,17 +953,6 @@ void MainWindow::updateMaterialPreview(int surfIdx) {
     Color3i c = linearSurfaceColorToDisplay(viewport_->surfaceColors()[surfIdx]);
     propertyPanel_->setMaterialPreview(QColor(c[0], c[1], c[2]),
                                        loadSurfaceTextureThumbnail(viewport_, surfIdx));
-}
-
-void MainWindow::syncAssetsSurface(int surfIdx) {
-    if (!viewport_->hasModel())
-        return;
-    const auto& colors = viewport_->surfaceColors();
-    if (surfIdx < 0 || surfIdx >= static_cast<int>(colors.size()))
-        return;
-    Color3i displayColor = linearSurfaceColorToDisplay(colors[surfIdx]);
-    QPixmap thumb = loadSurfaceTextureThumbnail(viewport_, surfIdx);
-    assetsPanel_->updateSurfaceAppearance(surfIdx, displayColor, thumb);
 }
 
 } // namespace prs
