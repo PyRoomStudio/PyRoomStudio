@@ -277,6 +277,7 @@ void MainWindow::setupCentralWidget() {
     mainLayout->setSpacing(0);
 
     auto* splitter = new QSplitter(Qt::Horizontal);
+    splitter->setHandleWidth(8); // default is ~1 px on macOS, too small to grab
 
     // Left: Library panel
     libraryPanel_ = new LibraryPanel;
@@ -298,6 +299,7 @@ void MainWindow::setupCentralWidget() {
     propertyScroll->setWidget(propertyPanel_);
 
     auto* rightSplitter = new QSplitter(Qt::Vertical);
+    rightSplitter->setHandleWidth(8);
     rightSplitter->addWidget(propertyScroll);
     rightSplitter->addWidget(assetsPanel_);
     // Let Assets expand; allow Property to shrink.
