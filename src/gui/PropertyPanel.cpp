@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QFont>
 #include <QFontMetrics>
+#include <QPainter>
 
 namespace prs {
 
@@ -195,6 +196,11 @@ void PropertyPanel::setupUI() {
         materialLabel_->setStyleSheet("font-size: 10px;");
         gl->addWidget(materialLabel_);
 
+        materialPreview_ = new QLabel;
+        materialPreview_->setAlignment(Qt::AlignCenter);
+        materialPreview_->setVisible(false);
+        gl->addWidget(materialPreview_);
+
         auto* row = new QHBoxLayout;
         textureBtn_     = new QPushButton("Texture");
         loadTextureBtn_ = new QPushButton("Load Texture...");
@@ -274,7 +280,26 @@ void PropertyPanel::setSurfaceControlsEnabled(bool enabled) {
     textureBtn_->setEnabled(enabled);
     loadTextureBtn_->setEnabled(enabled);
     deselectSurfBtn_->setEnabled(enabled);
-    if (!enabled) materialLabel_->setText("Material: (none)");
+    if (!enabled) {
+        materialLabel_->setText("Material: (none)");
+        setMaterialPreview(QColor());
+    }
+}
+
+void PropertyPanel::setMaterialPreview(const QColor& color, const QPixmap& texture) {
+    materialPreview_->setVisible(color.isValid());
+    if (!color.isValid()) return;
+
+    QPixmap pm(QSize(160, 64) * devicePixelRatioF());
+    pm.setDevicePixelRatio(devicePixelRatioF());
+    pm.fill(color);
+    if (!texture.isNull()) {
+        // Fill the preview, cropping the texture rather than stretching it.
+        QPainter p(&pm);
+        QPixmap scaled = texture.scaled(QSize(160, 64), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        p.drawPixmap(QPoint((160 - scaled.width()) / 2, (64 - scaled.height()) / 2), scaled);
+    }
+    materialPreview_->setPixmap(pm);
 }
 
 void PropertyPanel::setMaterialName(const QString& name) {

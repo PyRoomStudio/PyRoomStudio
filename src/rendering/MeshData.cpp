@@ -58,6 +58,7 @@ bool MeshData::loadSTL(const QString& filepath) {
 
     filePath_ = filepath;
     computeBounds();
+    weldVertices();
     return true;
 }
 
@@ -127,6 +128,7 @@ bool MeshData::loadOBJ(const QString& filepath) {
 
     filePath_ = filepath;
     computeBounds();
+    weldVertices();
     return true;
 }
 
@@ -154,6 +156,19 @@ void MeshData::computeBounds() {
 
     center_ = (min_ + max_) * 0.5f;
     size_   = (max_ - min_).norm();
+}
+
+// Exported meshes often carry float noise on shared vertices, so exact-match edge
+// lookups (boundaryEdgeCount, SurfaceGrouper) see false open edges. Snap to a grid
+// relative to the model size so coincident vertices compare equal.
+// shortcut: grid snap can split two points straddling a cell edge; upgrade to spatial-hash weld if false warnings persist
+void MeshData::weldVertices() {
+    if (size_ <= 0.0f) return;
+    const float eps = size_ * 1e-6f;
+    for (auto& tri : triangles_)
+        for (Vec3f* v : {&tri.v0, &tri.v1, &tri.v2})
+            *v = (*v / eps).array().round().matrix() * eps;
+    computeBounds();
 }
 
 int MeshData::boundaryEdgeCount() const {

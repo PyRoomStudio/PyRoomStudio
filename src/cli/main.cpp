@@ -54,7 +54,7 @@ void printError(const QString& message) {
 int main(int argc, char* argv[]) {
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("SeicheCLI");
-    QCoreApplication::setApplicationVersion("1.0.0");
+    QCoreApplication::setApplicationVersion(SEICHE_VERSION);
 
     QCommandLineParser parser;
     parser.setApplicationDescription("Headless render entry point for Seiche");

@@ -69,12 +69,11 @@ bool Viewport3D::loadModel(const QString& filepath) {
             triangleToSurface_[ti] = si;
     outlineSurface_ = -1;
 
+    clearFullSelection();
     placedPoints_.clear();
-    activePointIndex_ = -1;
-    selectedSurfaceIndex_ = -1;
     nextPointColorIndex_ = 0;
-    selectedPointIndices_.clear();
 
+    camera_.setTarget(Vec3f::Zero());
     autoNormalizeScale();
 
     notifyPlacedPointsChanged();
@@ -174,10 +173,7 @@ void Viewport3D::setActivePointType(const std::string& type) {
 void Viewport3D::removeActivePoint() {
     if (activePointIndex_ >= 0 && activePointIndex_ < static_cast<int>(placedPoints_.size())) {
         placedPoints_.erase(placedPoints_.begin() + activePointIndex_);
-        if (placedPoints_.empty())
-            activePointIndex_ = -1;
-        else if (activePointIndex_ >= static_cast<int>(placedPoints_.size()))
-            activePointIndex_ = static_cast<int>(placedPoints_.size()) - 1;
+        activePointIndex_ = -1;
         notifyPlacedPointsChanged();
         emit pointDeselected();
         update();
@@ -230,8 +226,7 @@ void Viewport3D::clearPlacedPoints() {
 void Viewport3D::restorePlacedPoints(const std::vector<PlacedPoint>& points) {
     placedPoints_ = points;
     nextPointColorIndex_ = static_cast<int>(points.size());
-    activePointIndex_ = -1;
-    selectedPointIndices_.clear();
+    clearFullSelection();
     notifyPlacedPointsChanged();
     update();
 }
@@ -486,6 +481,7 @@ void Viewport3D::resizeGL(int w, int h) {
 }
 
 void Viewport3D::paintGL() {
+    glUseProgram(0); // the grid legend's QPainter may leave a shader bound; fixed-function below
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glDepthMask(GL_TRUE);
@@ -498,8 +494,8 @@ void Viewport3D::paintGL() {
         return;
     }
 
-    drawMeasurementGrid();
     drawModel();
+    drawMeasurementGrid();
     drawSelectedSurfaceOutline();
     drawPointMarkers();
 
@@ -522,6 +518,16 @@ void Viewport3D::paintGL() {
         glEnable(GL_DEPTH_TEST);
         glPopMatrix();
         glDisable(GL_BLEND);
+    }
+
+    if (gridVisible_) {
+        // Scale legend; major lines are every 5th (see drawMeasurementGrid).
+        QPainter painter(this);
+        painter.setPen(QColor(64, 64, 64));
+        painter.drawText(rect().adjusted(8, 8, -8, -8), Qt::AlignLeft | Qt::AlignBottom,
+            QString("Grid: %1 m \u00B7 major %2 m")
+                .arg(gridSpacing_, 0, 'g', 3).arg(gridSpacing_ * 5, 0, 'g', 3));
+        painter.end();
     }
 }
 
@@ -553,7 +559,9 @@ void Viewport3D::drawMeasurementGrid() {
 
     Vec3f mn = mesh_.minBound();
     Vec3f mx = mesh_.maxBound();
-    float gridZ = mn.z();
+    // Drawn after the model, a hair above the floor and without depth writes, so it
+    // sits on top of the floor instead of z-fighting with it.
+    float gridZ = mn.z() + 1e-4f * mesh_.diagonalSize();
     float cx = (mn.x() + mx.x()) * 0.5f;
     float cy = (mn.y() + mx.y()) * 0.5f;
     float extent = std::max(mx.x() - mn.x(), mx.y() - mn.y()) * 0.75f;
@@ -564,11 +572,16 @@ void Viewport3D::drawMeasurementGrid() {
 
     glDisable(GL_LIGHTING);
     glDisable(GL_TEXTURE_2D);
+    glDepthMask(GL_FALSE);
+    glDepthFunc(GL_LEQUAL);
+
+    // Line widths are in device pixels; scale so lines don't thin out on HiDPI screens.
+    const float dpr = static_cast<float>(devicePixelRatioF());
 
     // One batch for minor lines, then one for major (every 5th) lines on top.
     for (bool major : {false, true}) {
-        if (major) { glColor4f(0.4f, 0.4f, 0.4f, 0.8f); glLineWidth(2); }
-        else       { glColor4f(0.7f, 0.7f, 0.7f, 0.5f); glLineWidth(1); }
+        if (major) { glColor4f(0.3f, 0.3f, 0.3f, 0.9f); glLineWidth(2 * dpr); }
+        else       { glColor4f(0.55f, 0.55f, 0.55f, 0.7f); glLineWidth(dpr); }
 
         glBegin(GL_LINES);
         for (int i = -numLines; i <= numLines; ++i) {
@@ -582,6 +595,8 @@ void Viewport3D::drawMeasurementGrid() {
         glEnd();
     }
 
+    glDepthFunc(GL_LESS);
+    glDepthMask(GL_TRUE);
     glPopMatrix();
     glDisable(GL_BLEND);
 }
@@ -903,16 +918,10 @@ bool Viewport3D::trySelectSurfaceAtMouse(const QPoint& pos) {
         if (t && *t < minT) { minT = *t; hitTri = i; }
     }
 
-    if (hitTri >= 0) {
-        if (triangleToSurface_[hitTri] >= 0) {
-            selectedSurfaceIndex_ = triangleToSurface_[hitTri];
-            activePointIndex_ = -1;
-            emit surfaceSelected(selectedSurfaceIndex_);
-            return true;
-        }
+    if (hitTri >= 0 && triangleToSurface_[hitTri] >= 0) {
+        selectSurface(triangleToSurface_[hitTri]);
+        return true;
     }
-
-    selectedSurfaceIndex_ = -1;
     return false;
 }
 
@@ -931,9 +940,9 @@ void Viewport3D::addPointAtMouse(const QPoint& pos) {
     pt.color        = color;
 
     pt.pointType = placementPointTypeForNew_;
+    deselectSurface();
     placedPoints_.push_back(pt);
     activePointIndex_ = static_cast<int>(placedPoints_.size()) - 1;
-    selectedSurfaceIndex_ = -1;
     notifyPlacedPointsChanged();
     emit pointPlaced(activePointIndex_);
 }
@@ -995,7 +1004,6 @@ void Viewport3D::mouseReleaseEvent(QMouseEvent* event) {
             } else if (trySelectPointAtMouse(event->pos())) {
             } else if (placementMode_) {
                 addPointAtMouse(event->pos());
-                selectedSurfaceIndex_ = -1;
             } else {
                 if (!trySelectSurfaceAtMouse(event->pos())) {
                     clearFullSelection();
@@ -1032,14 +1040,28 @@ void Viewport3D::wheelEvent(QWheelEvent* event) {
     if (placementMode_ && activePointIndex_ >= 0) {
         adjustActivePointDistance(delta > 0 ? 0.1f : -0.1f);
     } else {
+        // Zoom toward the surface under the cursor: shift the target by the same
+        // fraction the distance changed, so that point stays put on screen.
+        auto hit = getIntersectionPoint(event->position().toPoint());
+        float oldDist = camera_.distance();
         camera_.zoom(delta, getRealWorldSize());
+        if (hit && oldDist > 0.0f) {
+            Vec3f p = (hit->point - modelCenter_) * scaleFactor_;
+            Vec3f t = camera_.target();
+            camera_.setTarget(t + (p - t) * (1.0f - camera_.distance() / oldDist));
+        }
     }
     update();
     QOpenGLWidget::wheelEvent(event);
 }
 
 void Viewport3D::keyPressEvent(QKeyEvent* event) {
+    const float panStep = 0.05f * camera_.distance();
     switch (event->key()) {
+    case Qt::Key_W: case Qt::Key_Up:    camera_.pan(0, panStep);  update(); break;
+    case Qt::Key_S: case Qt::Key_Down:  camera_.pan(0, -panStep); update(); break;
+    case Qt::Key_A: case Qt::Key_Left:  camera_.pan(-panStep, 0); update(); break;
+    case Qt::Key_D: case Qt::Key_Right: camera_.pan(panStep, 0);  update(); break;
     case Qt::Key_T:
         transparentMode_ = !transparentMode_;
         update();

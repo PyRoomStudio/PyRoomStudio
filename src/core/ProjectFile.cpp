@@ -53,6 +53,7 @@ bool ProjectFile::save(const QString& filepath, const ProjectData& data) {
             QJsonObject mo;
             mo["name"] = QString::fromStdString(m->name);
             mo["category"] = QString::fromStdString(m->category);
+            mo["thickness"] = QString::fromStdString(m->thickness);
             mo["scattering"] = static_cast<double>(m->scattering);
             mo["texturePath"] = QString::fromStdString(m->texturePath);
             QJsonObject absObj;
@@ -124,6 +125,7 @@ std::optional<ProjectData> ProjectFile::load(const QString& filepath) {
             Material m;
             m.name = mo["name"].toString().toStdString();
             m.category = mo["category"].toString().toStdString();
+            m.thickness = mo["thickness"].toString().toStdString();
             m.scattering = static_cast<float>(mo["scattering"].toDouble(0.1));
             m.texturePath = mo["texturePath"].toString().toStdString();
             if (mo.contains("absorption") && mo["absorption"].isObject()) {

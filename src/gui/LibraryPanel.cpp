@@ -1,10 +1,8 @@
 #include "LibraryPanel.h"
-#include "widgets/MaterialGallery.h"
 #include "core/MaterialLoader.h"
+#include "widgets/TreeFilter.h"
 
 #include <QLabel>
-#include <QScrollArea>
-#include <QGroupBox>
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -12,8 +10,55 @@
 #include <QCoreApplication>
 #include <QFontMetrics>
 #include <QLineEdit>
+#include <QHash>
+#include <QMimeData>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <functional>
 
 namespace prs {
+
+namespace {
+
+constexpr int kDragDataRole = Qt::UserRole + 1;
+
+QByteArray serializeMaterial(const Material& mat) {
+    QJsonObject obj;
+    obj["name"] = QString::fromStdString(mat.name);
+    obj["category"] = QString::fromStdString(mat.category);
+    obj["thickness"] = QString::fromStdString(mat.thickness);
+    obj["scattering"] = static_cast<double>(mat.scattering);
+    obj["texture"] = QString::fromStdString(mat.texturePath);
+
+    QJsonObject abs;
+    for (int i = 0; i < NUM_FREQ_BANDS; ++i)
+        abs[QString::number(FREQ_BANDS[i])] = static_cast<double>(mat.absorption[i]);
+    obj["absorption"] = abs;
+
+    QJsonArray c;
+    c.append(mat.color[0]);
+    c.append(mat.color[1]);
+    c.append(mat.color[2]);
+    obj["color"] = c;
+
+    return QJsonDocument(obj).toJson(QJsonDocument::Compact);
+}
+
+// Leaves carry their serialized material so they can be dropped onto the viewport.
+class MaterialTree : public QTreeWidget {
+protected:
+    QStringList mimeTypes() const override { return {"application/x-prs-material"}; }
+    QMimeData* mimeData(const QList<QTreeWidgetItem*>& items) const override {
+        if (items.isEmpty() || !items.first()->data(0, kDragDataRole).isValid())
+            return nullptr;
+        auto* mime = new QMimeData;
+        mime->setData("application/x-prs-material", items.first()->data(0, kDragDataRole).toByteArray());
+        return mime;
+    }
+};
+
+} // namespace
 
 LibraryPanel::LibraryPanel(QWidget* parent)
     : QWidget(parent)
@@ -122,19 +167,18 @@ void LibraryPanel::applyFilter() {
         auto* item = soundList_->item(i);
         item->setHidden(!item->text().contains(text, Qt::CaseInsensitive));
     }
-    for (auto* gallery : materialGalleries_)
-        gallery->setFilter(text);
+    for (int i = 0; i < materialTree_->topLevelItemCount(); ++i)
+        filterTreeItem(materialTree_->topLevelItem(i), text);
 }
 
 void LibraryPanel::createMaterialTab(QWidget* tab) {
-    auto* scrollArea = new QScrollArea;
-    scrollArea->setWidgetResizable(true);
-    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-    auto* content       = new QWidget;
-    auto* contentLayout = new QVBoxLayout(content);
-    contentLayout->setContentsMargins(4, 4, 4, 4);
-    contentLayout->setSpacing(4);
+    materialTree_ = new MaterialTree;
+    materialTree_->setHeaderHidden(true);
+    materialTree_->setColumnCount(1);
+    materialTree_->setDragEnabled(true);
+    materialTree_->setDragDropMode(QAbstractItemView::DragOnly);
+    materialTree_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    materialTree_->setTextElideMode(Qt::ElideRight);
 
     // Load materials from the materials/ directory next to the executable
     QString materialsDir = QCoreApplication::applicationDirPath() + "/materials";
@@ -145,25 +189,47 @@ void LibraryPanel::createMaterialTab(QWidget* tab) {
 
     auto categories = MaterialLoader::loadFromDirectory(materialsDir);
 
+    // Category names are paths ("Wall Treatments/Curtains Fabrics"); build one group per segment.
+    QHash<QString, QTreeWidgetItem*> groups;
+    std::function<QTreeWidgetItem*(const QString&)> groupFor = [&](const QString& path) {
+        if (auto* g = groups.value(path)) return g;
+        int slash = path.lastIndexOf('/');
+        QTreeWidgetItem* g = slash < 0
+            ? new QTreeWidgetItem(materialTree_)
+            : new QTreeWidgetItem(groupFor(path.left(slash)));
+        g->setText(0, path.mid(slash + 1));
+        g->setFlags(Qt::ItemIsEnabled);
+        QFont bold = g->font(0);
+        bold.setBold(true);
+        g->setFont(0, bold);
+        groups.insert(path, g);
+        return g;
+    };
+
     for (auto& category : categories) {
-        auto* gallery = new MaterialGallery(
-            QString::fromStdString(category.name), category.materials, content);
-
-        connect(gallery, &MaterialGallery::materialClicked,
-            [this](const Material& mat) {
-                emit materialSelected(mat);
-            });
-
-        materialGalleries_.push_back(gallery);
-        contentLayout->addWidget(gallery);
+        auto* group = groupFor(QString::fromStdString(category.name));
+        for (auto& mat : category.materials) {
+            auto* leaf = new QTreeWidgetItem(group);
+            leaf->setText(0, QString::fromStdString(mat.name));
+            leaf->setToolTip(0, leaf->text(0));
+            leaf->setData(0, Qt::UserRole, static_cast<int>(materials_.size()));
+            leaf->setData(0, kDragDataRole, serializeMaterial(mat));
+            materials_.push_back(mat);
+        }
     }
 
-    contentLayout->addStretch();
-    scrollArea->setWidget(content);
+    connect(materialTree_, &QTreeWidget::itemClicked, this, [this](QTreeWidgetItem* item) {
+        bool ok = false;
+        int idx = item->data(0, Qt::UserRole).toInt(&ok);
+        if (ok)
+            emit materialSelected(materials_[idx]);
+        else
+            item->setExpanded(!item->isExpanded());
+    });
 
     auto* tabLayout = new QVBoxLayout(tab);
     tabLayout->setContentsMargins(0, 0, 0, 0);
-    tabLayout->addWidget(scrollArea);
+    tabLayout->addWidget(materialTree_);
 }
 
 } // namespace prs

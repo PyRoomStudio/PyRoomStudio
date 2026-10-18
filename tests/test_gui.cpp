@@ -12,7 +12,13 @@
 #include "gui/AssetsPanel.h"
 #include "gui/BottomToolbar.h"
 #include "gui/UndoCommands.h"
-#include "gui/widgets/ColorSwatch.h"
+#include <QTreeWidget>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QStandardPaths>
+#include <QMimeData>
+#include <memory>
 #include "gui/dialogs/SettingsDialogs.h"
 #include "rendering/Viewport3D.h"
 
@@ -42,6 +48,7 @@ private slots:
         QVERIFY(menuTitles.contains("&Edit"));
         QVERIFY(menuTitles.contains("&View"));
         QVERIFY(menuTitles.contains("&Settings"));
+        QVERIFY(menuTitles.contains("&Help"));
     }
 
     void testPropertyPanelSignals() {
@@ -69,32 +76,37 @@ private slots:
 
     void testAssetsPanelSurfaces() {
         AssetsPanel panel;
-        QVector<AssetsPanel::SurfaceInfo> surfaces;
-        surfaces.append({"Surface 1", {200, 100, 50}, 0});
-        surfaces.append({"Surface 2", {50, 100, 200}, 1});
+        panel.addStlSurfaces("TestModel", {{"Surface 1", 0}, {"Surface 2", 1}});
+        auto* tree = panel.findChild<QTreeWidget*>();
+        QVERIFY(tree);
+        auto leaves = tree->findItems("Surface 2", Qt::MatchExactly | Qt::MatchRecursive);
+        QCOMPARE(leaves.size(), 1);
 
         QSignalSpy clickSpy(&panel, &AssetsPanel::surfaceClicked);
-        panel.addStlSurfaces("TestModel", surfaces);
+        emit tree->itemClicked(leaves[0], 0);
+        QCOMPARE(clickSpy.count(), 1);
+        QCOMPARE(clickSpy[0][0].toInt(), 1);
+
         panel.clearSurfaces();
-        QVERIFY(true);
+        QCOMPARE(tree->topLevelItemCount(), 0);
     }
 
     void testAssetsPanelSearch() {
         AssetsPanel panel;
-        QVector<AssetsPanel::SurfaceInfo> surfaces;
-        surfaces.append({"Floor", {200, 100, 50}, 0});
-        surfaces.append({"Wall", {50, 100, 200}, 1});
-        panel.addStlSurfaces("TestModel", surfaces);
+        panel.addStlSurfaces("TestModel", {{"Floor", 0}, {"Wall", 1}});
 
         PlacedPoint a, b;
         a.pointType = POINT_TYPE_SOURCE; a.name = "Piano";
         b.pointType = POINT_TYPE_SOURCE; b.name = "Voice";
         panel.updatePointLists({a, b}, -1);
 
+        auto* tree = panel.findChild<QTreeWidget*>();
+        auto* floor = tree->findItems("Floor", Qt::MatchExactly | Qt::MatchRecursive)[0];
+        auto* wall  = tree->findItems("Wall", Qt::MatchExactly | Qt::MatchRecursive)[0];
+
         panel.findChild<QLineEdit*>()->setText("wAl");
-        auto swatches = panel.findChildren<ColorSwatch*>();
-        QCOMPARE(swatches.size(), 2);
-        for (auto* s : swatches) QCOMPARE(s->isHidden(), s->label() != "Wall");
+        QVERIFY(floor->isHidden());
+        QVERIFY(!wall->isHidden());
         QListWidget* sources = nullptr;
         for (auto* l : panel.findChildren<QListWidget*>())
             if (l->count() == 2) sources = l;
@@ -107,8 +119,56 @@ private slots:
         QVERIFY(sources->item(1)->isHidden());
 
         panel.findChild<QLineEdit*>()->clear();
-        for (auto* s : swatches) QVERIFY(!s->isHidden());
+        QVERIFY(!floor->isHidden());
+        QVERIFY(!wall->isHidden());
         QVERIFY(!sources->item(1)->isHidden());
+    }
+
+    void testSurfaceTreeRestoreValidates() {
+        AssetsPanel panel;
+        panel.addStlSurfaces("TestModel", {{"Surface 1", 0}, {"Surface 2", 1}, {"Surface 3", 2}});
+
+        // Out-of-range (99), duplicate (1) and junk entries are dropped; surface 0 is appended.
+        auto in = QJsonDocument::fromJson(R"([
+            {"name": "Walls", "children": [1, {"name": "North", "children": [2]}, {"name": "Empty", "children": []}]},
+            99, 1, "junk", {"children": [0]}
+        ])").array();
+        panel.restoreSurfaceTree(in);
+
+        auto expected = QJsonDocument::fromJson(R"([
+            {"name": "Walls", "children": [1, {"name": "North", "children": [2]}, {"name": "Empty", "children": []}]},
+            0
+        ])").array();
+        QCOMPARE(panel.surfaceTree(), expected);
+
+        // Empty groups stay visible with no filter.
+        auto* tree = panel.findChild<QTreeWidget*>();
+        QVERIFY(!tree->findItems("Empty", Qt::MatchExactly | Qt::MatchRecursive)[0]->isHidden());
+    }
+
+    void testSurfaceGroupsProfile() {
+        QStandardPaths::setTestModeEnabled(true);
+        const QString profile =
+            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/profile.json";
+        QFile::remove(profile);
+
+        QJsonArray a{QJsonObject{{"name", "G"}, {"children", QJsonArray{0}}}};
+        QJsonArray b{1, 0};
+        QVERIFY(saveSurfaceGroups("/models/a.stl", a));
+        QVERIFY(saveSurfaceGroups("/models/b.stl", b));
+        QCOMPARE(loadSurfaceGroups("/models/a.stl"), a);
+        QCOMPARE(loadSurfaceGroups("/models/b.stl"), b);
+        QVERIFY(loadSurfaceGroups("/models/none.stl").isEmpty());
+
+        // A corrupt profile reads as empty instead of failing.
+        QFile f(profile);
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.write("{not json");
+        f.close();
+        QVERIFY(loadSurfaceGroups("/models/a.stl").isEmpty());
+
+        QFile::remove(profile);
+        QStandardPaths::setTestModeEnabled(false);
     }
 
     void testBottomToolbarButtons() {
@@ -124,20 +184,44 @@ private slots:
         QVERIFY(renderSpy.isValid());
     }
 
-    void testColorSwatchSignal() {
-        ColorSwatch swatch("Test", {200, 100, 50});
-        QSignalSpy spy(&swatch, &ColorSwatch::clicked);
-        QVERIFY(spy.isValid());
-        QTest::mouseClick(&swatch, Qt::LeftButton);
-        QCOMPARE(spy.count(), 1);
-    }
-
     void testLibraryPanelSignals() {
         LibraryPanel panel;
         QSignalSpy matSpy(&panel, &LibraryPanel::materialSelected);
         QSignalSpy sndSpy(&panel, &LibraryPanel::soundFileSelected);
         QVERIFY(matSpy.isValid());
         QVERIFY(sndSpy.isValid());
+    }
+
+    void testLibraryMaterialTree() {
+        LibraryPanel panel;
+        auto* tree = panel.findChild<QTreeWidget*>();
+        QVERIFY(tree);
+
+        // Nested group from materials/wall_treatments/curtains_fabrics
+        auto hits = tree->findItems("Curtains Fabrics", Qt::MatchExactly | Qt::MatchRecursive);
+        QCOMPARE(hits.size(), 1);
+        QVERIFY(hits[0]->parent());
+        QCOMPARE(hits[0]->parent()->text(0), QString("Wall Treatments"));
+
+        // Leaves drag as materials the viewport accepts
+        QTreeWidgetItem* leaf = hits[0]->child(0);
+        auto index = tree->model()->match(tree->model()->index(0, 0), Qt::DisplayRole, leaf->text(0), 1,
+                                          Qt::MatchExactly | Qt::MatchRecursive).value(0);
+        QVERIFY(index.isValid());
+        std::unique_ptr<QMimeData> mime(tree->model()->mimeData({index}));
+        QVERIFY(mime && mime->hasFormat("application/x-prs-material"));
+
+        QSignalSpy matSpy(&panel, &LibraryPanel::materialSelected);
+        emit tree->itemClicked(leaf, 0);
+        QCOMPARE(matSpy.count(), 1);
+
+        panel.findChild<QLineEdit*>()->setText("velour");
+        int shown = 0;
+        for (auto* item : tree->findItems("", Qt::MatchContains | Qt::MatchRecursive))
+            if (item->childCount() == 0 && !item->isHidden()) ++shown;
+        QCOMPARE(shown, 1);
+        QVERIFY(!hits[0]->isHidden());
+        QVERIFY(tree->findItems("Ceilings", Qt::MatchExactly)[0]->isHidden());
     }
 
     void testWindowTitleUpdates() {
@@ -249,6 +333,51 @@ private slots:
 
         vp.clearPlacedPoints();
         QCOMPARE(static_cast<int>(vp.selectedPointIndices().size()), 0);
+    }
+
+    void testPropertyPanelMaterialPreview() {
+        PropertyPanel panel;
+        panel.setSurfaceControlsEnabled(true);
+        panel.setMaterialPreview(QColor(200, 100, 50));
+        QLabel* shown = nullptr;
+        for (auto* l : panel.findChildren<QLabel*>())
+            if (!l->pixmap().isNull()) shown = l;
+        QVERIFY(shown);
+        QVERIFY(!shown->isHidden());
+        QCOMPARE(shown->pixmap().toImage().pixelColor(4, 4), QColor(200, 100, 50));
+        panel.setSurfaceControlsEnabled(false);
+        QVERIFY(shown->isHidden());
+    }
+
+    void testRemoveActivePointDeselects() {
+        Viewport3D vp;
+        PlacedPoint p1, p2;
+        vp.placedPoints() = {p1, p2};
+        vp.selectPoint(0);
+        QSignalSpy spy(&vp, &Viewport3D::pointDeselected);
+        vp.removeActivePoint();
+        QCOMPARE(vp.activePointIndex(), -1);
+        QCOMPARE(spy.count(), 1);
+    }
+
+    void testRestorePointsDeselects() {
+        Viewport3D vp;
+        PlacedPoint p1;
+        vp.placedPoints() = {p1};
+        vp.selectPoint(0);
+        QSignalSpy spy(&vp, &Viewport3D::pointDeselected);
+        vp.restorePlacedPoints({p1});
+        QCOMPARE(vp.activePointIndex(), -1);
+        QCOMPARE(spy.count(), 1);
+    }
+
+    void testPropertyPanelFollowsPointRemoval() {
+        MainWindow w;
+        PlacedPoint p1, p2;
+        w.viewport()->placedPoints() = {p1, p2};
+        w.viewport()->selectPoint(1);
+        w.viewport()->removeActivePoint();
+        QCOMPARE(w.propertyPanel()->propertyContext(), PropertyPanel::Context::Room);
     }
 
     void testMoveMode() {

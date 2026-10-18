@@ -32,6 +32,7 @@ public:
 
 private:
     void computeBounds();
+    void weldVertices();
 
     std::vector<Triangle> triangles_;
     Vec3f center_ = Vec3f::Zero();

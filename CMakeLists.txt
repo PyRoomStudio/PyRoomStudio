@@ -116,9 +116,6 @@ set(CORE_SOURCES
     src/gui/dialogs/SettingsDialogs.cpp
     src/gui/dialogs/AudioComparisonDialog.cpp
     src/gui/dialogs/RenderOptionsDialog.cpp
-    src/gui/widgets/MaterialGallery.cpp
-    src/gui/widgets/SurfaceGallery.cpp
-    src/gui/widgets/ColorSwatch.cpp
     src/utils/ResourcePath.cpp
 )
 
@@ -174,9 +171,7 @@ set(HEADERS
     src/gui/dialogs/SettingsDialogs.h
     src/gui/dialogs/AudioComparisonDialog.h
     src/gui/dialogs/RenderOptionsDialog.h
-    src/gui/widgets/MaterialGallery.h
-    src/gui/widgets/SurfaceGallery.h
-    src/gui/widgets/ColorSwatch.h
+    src/gui/widgets/TreeFilter.h
     src/utils/ResourcePath.h
 )
 
@@ -224,6 +219,7 @@ endif()
 
 target_compile_definitions(seiche_core PUBLIC
     _USE_MATH_DEFINES
+    SEICHE_VERSION="${PROJECT_VERSION}"
     SEICHE_ENABLE_GL_COMPUTE=$<BOOL:${SEICHE_ENABLE_GL_COMPUTE}>
 )
 

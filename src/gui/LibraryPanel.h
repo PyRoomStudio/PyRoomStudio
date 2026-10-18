@@ -7,6 +7,7 @@
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QListWidget>
+#include <QTreeWidget>
 #include <QPushButton>
 #include <QLabel>
 #include <QLineEdit>
@@ -14,8 +15,6 @@
 #include <vector>
 
 namespace prs {
-
-class MaterialGallery;
 
 class LibraryPanel : public QWidget {
     Q_OBJECT
@@ -36,7 +35,8 @@ private:
 
     QTabWidget* tabWidget_ = nullptr;
     QLineEdit* search_ = nullptr;
-    std::vector<MaterialGallery*> materialGalleries_;
+    QTreeWidget* materialTree_ = nullptr;
+    std::vector<Material> materials_; // indexed by leaf item Qt::UserRole
     QListWidget* soundList_ = nullptr;
     QLabel* soundDirLabel_ = nullptr;
     QString soundDirectory_;

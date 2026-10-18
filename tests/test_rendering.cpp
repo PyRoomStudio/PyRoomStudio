@@ -37,6 +37,30 @@ private slots:
         QVERIFY(cam.distance() > 0);
     }
 
+    void testCameraPanMovesTargetAndEye() {
+        Camera cam;
+        cam.setDistance(5.0f);
+        QVERIFY(cam.target().isZero());
+        Vec3f eyeBefore = cam.eyePosition();
+
+        cam.pan(1.0f, 2.0f);
+        Vec3f moved = cam.target();
+        QVERIFY(std::abs(moved.norm() - std::sqrt(5.0f)) < 1e-5f);
+        QCOMPARE(moved.z(), 0.0f); // stays on the ground plane
+        QVERIFY((cam.eyePosition() - eyeBefore - moved).norm() < 1e-5f);
+        QCOMPARE(cam.distance(), 5.0f);
+
+        // Forward points from the eye toward the target, flattened.
+        Camera fwd;
+        Vec3f toTarget = -fwd.eyePosition();
+        toTarget.z() = 0;
+        fwd.pan(0.0f, 1.0f);
+        QVERIFY(fwd.target().dot(toTarget) > 0);
+
+        cam.reset(10.0f);
+        QVERIFY(cam.target().isZero());
+    }
+
     void testRayTriangleHit() {
         Triangle tri;
         tri.v0 = Vec3f(0, 0, 0);

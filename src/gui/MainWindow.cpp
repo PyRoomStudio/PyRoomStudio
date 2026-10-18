@@ -212,6 +212,21 @@ void MainWindow::setupMenus() {
     connect(chineseAction, &QAction::triggered, this, []() {
         TranslationManager::instance().setLanguage(QStringLiteral("zh_CN"));
     });
+
+    auto* helpMenu = menuBar()->addMenu("&Help");
+    helpMenu->addAction("&About Seiche Acoustics", this, [this]() {
+        QMessageBox box(this);
+        box.setWindowTitle("About Seiche Acoustics");
+        box.setIconPixmap(iconFromSvgResource(":/logo.svg", 64).pixmap(64, 64));
+        box.setTextFormat(Qt::RichText);
+        box.setTextInteractionFlags(Qt::TextBrowserInteraction); // opens the link
+        box.setText(QString("<h3>Seiche</h3><p>Version %1</p>"
+                            "<p>Created by Evan Matthews and William Chen.</p>"
+                            "<p><a href=\"https://github.com/SeicheAcoustics/Seiche/graphs/contributors\">"
+                            "All contributors on GitHub</a></p>")
+                        .arg(QCoreApplication::applicationVersion()));
+        box.exec();
+    });
 }
 
 void MainWindow::setupToolbars() {
@@ -219,6 +234,14 @@ void MainWindow::setupToolbars() {
     topToolbar_->setMovable(false);
     topToolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     topToolbar_->setIconSize(QSize(32, 32));
+
+    // Expanding spacers on both ends center the tool buttons.
+    auto addSpacer = [this]() {
+        auto* spacer = new QWidget;
+        spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        topToolbar_->addWidget(spacer);
+    };
+    addSpacer();
 
     actToolMove_ = topToolbar_->addAction(iconFromSvgResource(":/toolbar/move.svg"), "Move");
     actToolMove_->setCheckable(true);
@@ -258,6 +281,8 @@ void MainWindow::setupToolbars() {
     connect(actToolMeasure_, &QAction::toggled, [this](bool checked) {
         viewport_->setMeasureMode(checked);
     });
+
+    addSpacer();
 }
 
 void MainWindow::setupCentralWidget() {
@@ -267,6 +292,7 @@ void MainWindow::setupCentralWidget() {
     mainLayout->setSpacing(0);
 
     auto* splitter = new QSplitter(Qt::Horizontal);
+    splitter->setHandleWidth(8); // default is ~1 px on macOS, too small to grab
 
     // Left: Library panel
     libraryPanel_ = new LibraryPanel;
@@ -288,6 +314,7 @@ void MainWindow::setupCentralWidget() {
     propertyScroll->setWidget(propertyPanel_);
 
     auto* rightSplitter = new QSplitter(Qt::Vertical);
+    rightSplitter->setHandleWidth(8);
     rightSplitter->addWidget(propertyScroll);
     rightSplitter->addWidget(assetsPanel_);
     // Let Assets expand; allow Property to shrink.
@@ -356,6 +383,12 @@ void MainWindow::connectSignals() {
     // Assets panel -> viewport (surface selection from gallery click)
     connect(assetsPanel_, &AssetsPanel::surfaceClicked, [this](int surfIdx, const QString&) {
         viewport_->selectSurface(surfIdx);
+    });
+    connect(assetsPanel_, &AssetsPanel::surfaceTreeChanged, this, [this]() {
+        if (!viewport_->hasModel()) return;
+        QString model = QFileInfo(viewport_->meshData().filePath()).absoluteFilePath();
+        if (!saveSurfaceGroups(model, assetsPanel_->surfaceTree()))
+            statusBar()->showMessage("Could not save surface groups to user profile", 5000);
     });
 
     // Bottom toolbar
@@ -465,10 +498,11 @@ void MainWindow::connectSignals() {
 
     // Surface material change -> PropertyPanel update
     connect(viewport_, &Viewport3D::surfaceMaterialChanged,
-        [this](int, const QString& materialName) {
-            propertyPanel_->setMaterialName(materialName);
+        [this](int index, const QString& materialName) {
+            if (index == viewport_->selectedSurfaceIndex())
+                propertyPanel_->setMaterialName(materialName);
         });
-    connect(viewport_, &Viewport3D::surfaceAppearanceChanged, this, &MainWindow::syncAssetsSurface);
+    connect(viewport_, &Viewport3D::surfaceAppearanceChanged, this, &MainWindow::updateMaterialPreview);
 
     // Library panel -> sound file selection
     connect(libraryPanel_, &LibraryPanel::soundFileSelected, [this](const QString& path) {
@@ -577,6 +611,10 @@ bool MainWindow::openProjectFile(const QString& path) {
 
     for (int i = 0; i < static_cast<int>(data->surfaceColors.size()); ++i)
         viewport_->setSurfaceColor(i, data->surfaceColors[i]);
+    // After colors: a material sets its own color and texture.
+    for (int i = 0; i < static_cast<int>(data->surfaceMaterials.size()); ++i)
+        if (data->surfaceMaterials[i])
+            viewport_->assignMaterial(i, *data->surfaceMaterials[i]);
 
     viewport_->clearPlacedPoints();
     viewport_->restorePlacedPoints(data->placedPoints);
@@ -611,6 +649,8 @@ void MainWindow::saveProjectToFile(const QString& filepath) {
     data.stlFilePath = viewport_->hasModel() ? viewport_->meshData().filePath() : QString();
     data.scaleFactor = viewport_->scaleFactor();
     data.surfaceColors = viewport_->surfaceColors();
+    for (int i = 0; i < static_cast<int>(viewport_->surfaces().size()); ++i)
+        data.surfaceMaterials.push_back(viewport_->getSurfaceMaterial(i));
     data.placedPoints = viewport_->placedPoints();
     data.soundSourceFile = soundSourceFile_;
 
@@ -829,6 +869,7 @@ void MainWindow::onSurfaceSelected(int index) {
     propertyPanel_->setSurfaceControlsEnabled(true);
     auto mat = viewport_->getSurfaceMaterial(index);
     propertyPanel_->setMaterialName(mat ? QString::fromStdString(mat->name) : "");
+    updateMaterialPreview(index);
 }
 
 void MainWindow::onSurfaceDeselected() {
@@ -898,33 +939,26 @@ void MainWindow::updatePlacementToolbar() {
 }
 
 void MainWindow::populateAssetsFromRenderer(const QString& filepath) {
-    assetsPanel_->clearSurfaces();
-
-    const auto& colors = viewport_->surfaceColors();
     QVector<AssetsPanel::SurfaceInfo> surfaces;
-    for (int i = 0; i < static_cast<int>(colors.size()); ++i) {
-        Color3i displayColor = linearSurfaceColorToDisplay(colors[i]);
-        QString texPath;
-        if (auto m = viewport_->getSurfaceMaterial(i))
-            texPath = QString::fromStdString(m->texturePath);
-        QPixmap thumb = loadSurfaceTextureThumbnail(viewport_, i);
-        surfaces.append({QString("Surface %1").arg(i + 1), displayColor, i, texPath, thumb});
-    }
+    for (int i = 0; i < static_cast<int>(viewport_->surfaces().size()); ++i)
+        surfaces.append({QString("Surface %1").arg(i + 1), i});
 
     QFileInfo fi(filepath);
     assetsPanel_->addStlSurfaces(fi.baseName(), surfaces);
+    assetsPanel_->restoreSurfaceTree(loadSurfaceGroups(fi.absoluteFilePath()));
     refreshAssetsPointLists();
 }
 
-void MainWindow::syncAssetsSurface(int surfIdx) {
-    if (!viewport_->hasModel())
+void MainWindow::updateMaterialPreview(int surfIdx) {
+    if (surfIdx != viewport_->selectedSurfaceIndex())
         return;
-    const auto& colors = viewport_->surfaceColors();
-    if (surfIdx < 0 || surfIdx >= static_cast<int>(colors.size()))
+    if (!viewport_->getSurfaceMaterial(surfIdx)) {
+        propertyPanel_->setMaterialPreview(QColor());
         return;
-    Color3i displayColor = linearSurfaceColorToDisplay(colors[surfIdx]);
-    QPixmap thumb = loadSurfaceTextureThumbnail(viewport_, surfIdx);
-    assetsPanel_->updateSurfaceAppearance(surfIdx, displayColor, thumb);
+    }
+    Color3i c = linearSurfaceColorToDisplay(viewport_->surfaceColors()[surfIdx]);
+    propertyPanel_->setMaterialPreview(QColor(c[0], c[1], c[2]),
+                                       loadSurfaceTextureThumbnail(viewport_, surfIdx));
 }
 
 } // namespace prs
