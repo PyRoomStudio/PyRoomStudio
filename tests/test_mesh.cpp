@@ -24,7 +24,7 @@ static QByteArray createMinimalSTL() {
     return data;
 }
 
-static QByteArray createBoxSTL() {
+static QByteArray createBoxSTL(float jitter = 0.0f) {
     // 12 triangles forming a unit cube
     QByteArray data(80, '\0');
     uint32_t count = 12;
@@ -41,7 +41,7 @@ static QByteArray createBoxSTL() {
     };
 
     // Front  (z=1)
-    addTri(0,0,1, 0,0,1, 1,0,1, 1,1,1);
+    addTri(0,0,1, jitter,0,1, 1,0,1, 1,1,1);
     addTri(0,0,1, 0,0,1, 1,1,1, 0,1,1);
     // Back (z=0)
     addTri(0,0,-1, 1,0,0, 0,0,0, 0,1,0);
@@ -132,6 +132,20 @@ private slots:
         MeshData mesh;
         QVERIFY(mesh.loadSTL(tmp.fileName()));
         QVERIFY(mesh.isClosed());
+        QCOMPARE(mesh.boundaryEdgeCount(), 0);
+    }
+
+    void testIsClosedBoxWithFloatNoise() {
+        // Shared vertex off by 1e-7 (exporter rounding) must still count as closed.
+        QTemporaryFile tmp;
+        tmp.setAutoRemove(true);
+        tmp.setFileTemplate(QDir::tempPath() + "/testXXXXXX.stl");
+        QVERIFY(tmp.open());
+        tmp.write(createBoxSTL(1e-7f));
+        tmp.close();
+
+        MeshData mesh;
+        QVERIFY(mesh.loadSTL(tmp.fileName()));
         QCOMPARE(mesh.boundaryEdgeCount(), 0);
     }
 
